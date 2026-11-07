@@ -36,11 +36,11 @@ export function TabBar({ active }: { active: Route['name'] }) {
           <span className={styles.icon}>
             <Icon name={tab.icon} />
             {tab.route === 'booster' && boosters > 0 && (
-              <span
-                className={styles.dot}
-                aria-label={`${boosters} disponible${boosters > 1 ? 's' : ''}`}
-              >
+              <span className={styles.dot}>
                 {boosters}
+                <span className="visually-hidden">
+                  {` booster${boosters > 1 ? 's' : ''} disponible${boosters > 1 ? 's' : ''},`}
+                </span>
               </span>
             )}
           </span>

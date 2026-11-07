@@ -69,13 +69,7 @@
 .packButton {
   display: block;
   width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-}
-
-.packButton:disabled {
-  cursor: default;
+  cursor: pointer;
 }
 
 .packReady {

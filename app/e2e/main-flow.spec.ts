@@ -42,7 +42,7 @@ test('open a booster, find it in the album, recycle three puffs', async ({ page 
   await expect(page.getByRole('link', { name: `${flavor}, ` }).first()).toBeVisible();
 
   // 3. Open more boosters until a fusion is possible, then recycle.
-  await page.getByRole('link', { name: 'Booster' }).click();
+  await page.getByRole('link', { name: /Booster/ }).click();
   for (let i = 0; i < 11; i++) await openWithSkip(page);
   const before = await ownedCount(page);
   expect(before).toBe(12);

@@ -68,6 +68,7 @@ export function BoosterScreen() {
         <section className={styles.stage} aria-label="Booster du moment">
           <div
             className={styles.stock}
+            role="img"
             aria-label={`${unlimited ? 'Illimités' : `${boosters.stock} sur ${max}`} boosters en stock`}
           >
             {unlimited ? (
@@ -79,19 +80,17 @@ export function BoosterScreen() {
             )}
           </div>
           <div className={styles.packArea} {...tilt}>
-            <button
-              type="button"
+            {/* Tapping the pack is a shortcut for pointers; the button below is the accessible action. */}
+            <div
               className={styles.packButton}
-              onClick={open}
-              disabled={!canOpen}
-              aria-label={`Ouvrir le ${type.name}`}
-              tabIndex={-1}
+              onClick={canOpen ? open : undefined}
+              aria-hidden="true"
             >
               <BoosterPack
                 name={type.name}
                 className={canOpen ? styles.packReady : styles.packEmpty}
               />
-            </button>
+            </div>
           </div>
           <p className={styles.timer} aria-live="polite">
             {unlimited
