@@ -21,7 +21,6 @@ dataset/
 
 # Generated game assets (npm run assets)
 app/public/puffs/
-app/src/data/generated/
 
 # OS / editors
 .DS_Store
