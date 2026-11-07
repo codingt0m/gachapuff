@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 
-const THEME = '#140b2e';
+const THEME = '#0a3326';
 
 export default defineConfig({
   base: './',
@@ -38,9 +38,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // App shell is precached; the 1 600 puff images are cached on first view.
+        // App shell is precached.
         globPatterns: ['**/*.{js,css,html,woff2,svg}', 'icons/*.png'],
-        globIgnores: ['puffs/**'],
+        // Puff images are cached on first view; only Latin font subsets are needed offline.
+        globIgnores: ['puffs/**', '**/*cyrillic*', '**/*vietnamese*', '**/*greek*'],
         navigateFallback: 'index.html',
         runtimeCaching: [
           {
@@ -60,6 +61,8 @@ export default defineConfig({
       },
     }),
   ],
+  // Test artefacts are written while the app runs: never reload the page for them.
+  server: { watch: { ignored: ['**/test-results/**', '**/playwright-report/**'] } },
   build: { target: 'es2022', chunkSizeWarningLimit: 600 },
   test: {
     include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],

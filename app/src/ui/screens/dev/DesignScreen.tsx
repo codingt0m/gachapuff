@@ -16,7 +16,10 @@ import { useToast } from '../../components/Toast.tsx';
 import styles from './DevScreens.module.css';
 
 const COLORS = [
-  'bg',
+  'felt',
+  'felt-dark',
+  'paper',
+  'ink',
   'bg-deep',
   'surface',
   'surface-2',
@@ -90,9 +93,9 @@ export default function DesignScreen() {
       <section className={styles.section}>
         <h2>Typographie</h2>
         <p style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)' }}>
-          Lilita One — titres, chiffres
+          Pixelify Sans — titres, chiffres, boutons
         </p>
-        <p>Nunito — texte courant, labels, boutons secondaires.</p>
+        <p>Atkinson Hyperlegible Next — texte courant et libellés.</p>
         {TYPE.map((t) => (
           <p key={t} style={{ fontSize: `var(--fs-${t})`, lineHeight: 1.2 }}>
             <code>--fs-{t}</code> Ouvre ton booster

@@ -29,7 +29,7 @@ test('open a booster, find it in the album, recycle three puffs', async ({ page 
   await page.getByRole('button', { name: 'Déchirer' }).click();
   const dialog = page.getByRole('dialog');
   const add = dialog.getByRole('button', { name: 'Ajouter à la collection' });
-  await expect(add).toBeVisible({ timeout: 15_000 });
+  await expect(add).toBeVisible();
   const flavor = (await dialog.getByRole('heading', { level: 2 }).textContent())?.trim() ?? '';
   expect(flavor).not.toBe('');
   await add.click();
@@ -52,7 +52,7 @@ test('open a booster, find it in the album, recycle three puffs', async ({ page 
   await page.getByRole('button', { name: 'Fusionner', exact: true }).click();
   const confirm = page.getByRole('button', { name: 'Fusionner quand même' });
   if (await confirm.isVisible()) await confirm.click();
-  await page.getByRole('button', { name: 'Trop bien !' }).click({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Trop bien !' }).click();
 
   expect(await ownedCount(page)).toBe(before - 2);
 

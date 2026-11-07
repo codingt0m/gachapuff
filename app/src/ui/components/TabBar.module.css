@@ -7,10 +7,8 @@
   height: calc(var(--tabbar-h) + var(--safe-bottom));
   padding: 0 calc(var(--safe-right) + var(--sp-2)) var(--safe-bottom)
     calc(var(--safe-left) + var(--sp-2));
-  background: linear-gradient(180deg, rgb(35 23 80 / 0.92), rgb(20 11 46 / 0.98));
-  border-top: 3px solid var(--c-bg-deep);
-  box-shadow: 0 -6px 24px rgb(0 0 0 / 0.35);
-  backdrop-filter: blur(10px);
+  background: var(--c-ink);
+  border-top: 3px solid var(--c-gold-lo);
 }
 
 .tab {
@@ -23,7 +21,9 @@
   color: var(--c-text-faint);
   text-decoration: none;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-black);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   transition: color var(--dur-fast);
 }
 
@@ -37,7 +37,7 @@
   place-items: center;
   width: 52px;
   height: 32px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   transition:
     background var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-bounce);
@@ -50,7 +50,7 @@
 .tab[aria-current='page'] .icon {
   background: var(--c-primary);
   color: #fff;
-  box-shadow: 0 3px 0 var(--c-primary-lo);
+  outline: 2px solid var(--c-paper);
   transform: translateY(-2px);
 }
 
@@ -65,9 +65,10 @@
   background: var(--c-gold);
   color: var(--c-ink);
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: var(--fs-xs);
   line-height: 16px;
-  border: 2px solid var(--c-bg-deep);
+  border: 2px solid var(--c-ink);
   animation: pop var(--dur-slow) var(--ease-bounce);
 }
 
@@ -81,8 +82,7 @@
     align-content: start;
     padding: calc(var(--header-h) + var(--sp-6)) 0 var(--sp-4);
     border-top: 0;
-    border-right: 3px solid var(--c-bg-deep);
-    box-shadow: 6px 0 24px rgb(0 0 0 / 0.25);
+    border-right: 3px solid var(--c-gold-lo);
   }
 
   .tab {

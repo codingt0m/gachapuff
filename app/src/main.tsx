@@ -1,5 +1,5 @@
-import '@fontsource/lilita-one/latin.css';
-import '@fontsource-variable/nunito/wght.css';
+import '@fontsource-variable/pixelify-sans/wght.css';
+import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
 import './ui/styles/tokens.css';
 import './ui/styles/base.css';
 import './ui/styles/motion.css';

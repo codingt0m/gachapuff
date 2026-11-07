@@ -36,8 +36,8 @@
   gap: var(--sp-2);
   min-height: var(--tap-min);
   padding: 0 var(--sp-3);
-  border: 2px solid var(--c-line);
-  border-radius: var(--r-pill);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-sm);
   background: var(--c-surface);
   color: var(--c-text);
   font-weight: var(--fw-bold);
@@ -52,8 +52,7 @@
 .tierTab[aria-checked='true'] {
   background: var(--tier);
   color: var(--ink);
-  border-color: var(--c-bg-deep);
-  box-shadow: 0 3px 0 var(--c-bg-deep);
+  box-shadow: 3px 3px 0 var(--c-ink);
   transform: translateY(-2px);
 }
 
@@ -64,7 +63,7 @@
 .tierCount {
   min-width: 22px;
   padding: 0 6px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   background: rgb(0 0 0 / 0.3);
   text-align: center;
 }
@@ -80,13 +79,12 @@
   justify-items: center;
   padding: var(--sp-5) var(--sp-4);
   border-radius: var(--r-xl);
-  background:
-    radial-gradient(80% 60% at 50% 0%, rgb(255 210 63 / 0.18), transparent 70%),
-    linear-gradient(180deg, var(--c-surface-2), var(--c-surface));
-  border: 3px solid var(--c-bg-deep);
+  background: var(--tex-dots), var(--c-primary);
+  border: 4px solid var(--c-ink);
   box-shadow:
-    var(--sh-card),
-    inset 0 2px 0 rgb(255 255 255 / 0.1);
+    inset 0 0 0 4px var(--c-gold),
+    inset 0 0 0 6px var(--c-ink),
+    var(--sh-float);
 }
 
 .slots {
@@ -100,8 +98,9 @@
   display: grid;
   place-items: center;
   border-radius: var(--r-md);
-  background: var(--c-bg-deep);
-  box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.5);
+  background: var(--c-paper);
+  border: 3px solid var(--c-ink);
+  box-shadow: inset 3px 4px 0 rgb(0 0 0 / 0.2);
 }
 
 .slot[data-filled='true'] {
@@ -109,12 +108,14 @@
 }
 
 .slotEmpty {
-  color: var(--c-line);
+  color: var(--c-paper-dark);
   font-family: var(--font-display);
   font-size: var(--fs-3xl);
 }
 
 .formula {
+  color: var(--c-paper);
+  text-shadow: var(--sh-text);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -125,7 +126,9 @@
 }
 
 .warning {
-  color: var(--c-gold);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--c-ink);
+  color: var(--c-gold-hi);
   font-weight: var(--fw-bold);
   text-align: center;
 }

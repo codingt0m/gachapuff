@@ -21,7 +21,7 @@
   min-height: var(--tap-min);
   padding: 0 var(--sp-3) 0 var(--sp-1);
   border: 0;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   background: none;
   color: var(--c-text-muted);
   font-weight: var(--fw-bold);
@@ -55,14 +55,16 @@
   position: absolute;
   bottom: 3%;
   height: 66%;
-  filter: brightness(0) invert(0.16) sepia(1) hue-rotate(215deg) saturate(2.5);
+  filter: brightness(0);
+  opacity: 0.35;
 }
 
 .locked p {
   position: relative;
   padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--r-pill);
-  background: var(--c-scrim);
+  border: 2px solid var(--c-ink);
+  background: var(--c-paper);
+  color: var(--c-ink);
 }
 
 .info {
@@ -96,7 +98,8 @@
   padding: var(--sp-4);
   border-radius: var(--r-lg);
   background: var(--c-surface);
-  border: 2px solid var(--c-surface-2);
+  border: var(--outline);
+  box-shadow: var(--sh-card);
 }
 
 .facts dt {
@@ -136,9 +139,11 @@
   width: 100%;
   min-height: var(--tap-min);
   padding: var(--sp-2) var(--sp-3);
-  border: 2px solid;
-  border-radius: var(--r-md);
-  background: var(--c-surface);
+  border: 2px solid var(--c-ink);
+  border-left: 8px solid;
+  border-radius: var(--r-sm);
+  background: var(--c-paper);
+  color: var(--c-ink);
   text-align: left;
   transition: transform var(--dur-fast) var(--ease-bounce);
 }
@@ -148,8 +153,9 @@
 }
 
 .copy[aria-current='true'] {
-  background: var(--c-surface-3);
-  box-shadow: 0 0 0 3px var(--c-gold);
+  background: #fff8e6;
+  box-shadow: 4px 4px 0 var(--c-ink);
+  transform: translate(-2px, -2px);
 }
 
 .copyTier {
@@ -157,14 +163,16 @@
   align-items: center;
   gap: var(--sp-1);
   padding: 0 var(--sp-2);
-  border-radius: var(--r-pill);
-  font-family: var(--font-display);
-  font-size: var(--fs-sm);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-sm);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  font-size: var(--fs-xs);
 }
 
 .copyDate {
   margin-left: auto;
-  color: var(--c-text-muted);
+  color: #4a4a4a;
   font-size: var(--fs-sm);
 }
 

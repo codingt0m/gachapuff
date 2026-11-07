@@ -6,6 +6,7 @@
 
 html {
   color-scheme: dark;
+  background-color: var(--c-felt);
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }
@@ -18,12 +19,19 @@ body {
   font-weight: var(--fw-regular);
   line-height: var(--lh-body);
   color: var(--c-text);
-  background-color: var(--c-bg);
-  background-image:
-    radial-gradient(120% 70% at 50% -10%, var(--c-felt-1) 0%, transparent 60%),
-    radial-gradient(90% 60% at 50% 120%, #1d0f45 0%, transparent 70%);
-  background-attachment: fixed;
   overflow-x: hidden;
+}
+
+/* The table: baize grain + a lamp-lit centre fading to dark edges. Fixed layer, painted once. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(130% 90% at 50% 35%, transparent 40%, rgb(0 0 0 / 0.55) 100%), var(--tex-grain),
+    var(--c-felt);
+  pointer-events: none;
 }
 
 #root {
@@ -35,9 +43,9 @@ h2,
 h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: var(--fw-display);
   line-height: var(--lh-tight);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
 }
 
 p {
@@ -61,7 +69,7 @@ img {
 }
 
 a {
-  color: var(--c-cyan);
+  color: var(--c-gold-hi);
 }
 
 :focus-visible {
@@ -91,7 +99,8 @@ a {
   background: var(--c-gold);
   color: var(--c-ink);
   font-weight: var(--fw-bold);
-  border-radius: var(--r-pill);
+  border: var(--outline);
+  border-radius: var(--r-sm);
   transform: translateY(-200%);
 }
 

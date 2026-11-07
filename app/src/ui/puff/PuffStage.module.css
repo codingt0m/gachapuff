@@ -26,13 +26,13 @@
   width: min(80%, 420px);
   aspect-ratio: 0.8;
   border-radius: 50%;
+  /* A lamp pool on the baize, lightly tinted by the rarity colour. */
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--glow) 55%, transparent),
+    color-mix(in srgb, var(--glow) 22%, rgb(255 255 255 / 0.16)),
     transparent
   );
   transform: translate(calc(-50% + var(--tx) * -30px), calc(var(--ty) * -20px));
-  filter: blur(18px);
   opacity: 0.85;
   animation: halo 5s ease-in-out infinite;
   pointer-events: none;

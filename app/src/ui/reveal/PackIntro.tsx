@@ -84,7 +84,15 @@ export function PackIntro({
         {torn ? 'Ça vient…' : 'Glisse le long des pointillés pour déchirer'}
       </p>
       {!torn && (
-        <Button variant="secondary" onClick={complete} withFeedback={false}>
+        <Button
+          variant="secondary"
+          onClick={(event) => {
+            // The overlay skips the animation on click: this one must not reach it.
+            event.stopPropagation();
+            complete();
+          }}
+          withFeedback={false}
+        >
           Déchirer
         </Button>
       )}

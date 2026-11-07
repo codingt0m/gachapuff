@@ -1,21 +1,31 @@
+/* Rarity: a stamped tag (colour + icon + name, never colour alone). */
 .rarity {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
   padding: 2px var(--sp-3) 2px var(--sp-2);
-  border: 2px solid var(--c-bg-deep);
-  border-radius: var(--r-pill);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-sm);
   font-family: var(--font-display);
-  letter-spacing: 0.03em;
+  font-weight: var(--fw-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   line-height: 1.2;
   white-space: nowrap;
-  box-shadow: 0 3px 0 var(--c-bg-deep);
+  box-shadow: 2px 2px 0 var(--c-ink);
+}
+
+/* Pixel type is unreadable this small: small tags use the text face. */
+.sm,
+.md {
+  font-family: var(--font-body);
+  font-weight: var(--fw-black);
 }
 
 .sm {
   font-size: var(--fs-xs);
   padding: 0 var(--sp-2) 0 var(--sp-1);
-  box-shadow: 0 2px 0 var(--c-bg-deep);
+  box-shadow: none;
 }
 
 .md {
@@ -26,18 +36,20 @@
   font-size: var(--fs-xl);
   padding: var(--sp-1) var(--sp-4) var(--sp-1) var(--sp-3);
   border-width: 3px;
-  box-shadow: 0 4px 0 var(--c-bg-deep);
+  box-shadow: 3px 3px 0 var(--c-ink);
+  transform: rotate(-2deg);
 }
 
+/* Chips: little ivory tickets. */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  padding: var(--sp-1) var(--sp-3);
-  border: 1px solid var(--c-line);
-  border-radius: var(--r-pill);
-  background: var(--c-surface);
-  color: var(--c-text);
+  padding: 2px var(--sp-3);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-sm);
+  background: var(--c-paper);
+  color: var(--c-ink);
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   white-space: nowrap;
@@ -47,8 +59,7 @@
   display: inline-block;
   flex: none;
   border-radius: 50%;
-  border: 2px solid var(--c-bg-deep);
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+  border: 2px solid var(--c-ink);
 }
 
 /* Finish glyphs: a distinct shape AND fill per finish. */
@@ -57,7 +68,7 @@
   flex: none;
   background: #d9d3f0;
   border-radius: 50%;
-  box-shadow: 0 0 0 1.5px var(--c-bg-deep);
+  box-shadow: 0 0 0 1.5px var(--c-ink);
 }
 
 .glyph[data-finish='shiny'] {

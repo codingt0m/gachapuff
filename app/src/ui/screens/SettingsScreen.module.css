@@ -17,7 +17,8 @@
   padding: var(--sp-4) var(--sp-5);
   border-radius: var(--r-lg);
   background: var(--c-surface);
-  border: 2px solid var(--c-surface-2);
+  border: var(--outline);
+  box-shadow: var(--sh-card);
 }
 
 .cardTitle {

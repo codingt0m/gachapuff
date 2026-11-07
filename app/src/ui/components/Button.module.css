@@ -1,7 +1,5 @@
 .button {
   --btn-bg: var(--c-primary);
-  --btn-hi: var(--c-primary-hi);
-  --btn-lo: var(--c-primary-lo);
   --btn-ink: #fff;
   position: relative;
   display: inline-flex;
@@ -11,87 +9,77 @@
   min-height: var(--tap-min);
   min-width: var(--tap-min);
   padding: var(--sp-2) var(--sp-5);
-  border: 3px solid var(--c-bg-deep);
+  border: var(--outline);
   border-radius: var(--r-md);
-  background: linear-gradient(180deg, var(--btn-hi) 0%, var(--btn-bg) 55%, var(--btn-lo) 100%);
+  background: var(--btn-bg);
   color: var(--btn-ink);
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: var(--fs-lg);
-  letter-spacing: 0.03em;
-  text-shadow: 0 2px 0 rgb(0 0 0 / 0.25);
-  box-shadow:
-    0 5px 0 var(--btn-lo),
-    0 5px 0 3px var(--c-bg-deep),
-    var(--sh-inset);
-  transform: translateY(0);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--sh-chunky), var(--sh-inset);
+  transform: translate(0, 0);
   transition:
-    transform var(--dur-fast) var(--ease-bounce),
-    box-shadow var(--dur-fast) var(--ease-out),
-    filter var(--dur-fast);
+    transform var(--dur-instant) var(--ease-out),
+    box-shadow var(--dur-instant) var(--ease-out),
+    background-color var(--dur-fast);
   user-select: none;
   touch-action: manipulation;
 }
 
 .button:hover:not(:disabled) {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
+  transform: translate(-1px, -1px);
   box-shadow:
-    0 7px 0 var(--btn-lo),
-    0 7px 0 3px var(--c-bg-deep),
+    5px 5px 0 var(--c-ink),
     var(--sh-inset);
 }
 
 .button:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow:
-    0 1px 0 var(--btn-lo),
-    0 1px 0 3px var(--c-bg-deep),
-    var(--sh-inset);
+  transform: translate(3px, 3px);
+  box-shadow: var(--sh-chunky-pressed), var(--sh-inset);
 }
 
 .button:disabled {
   cursor: not-allowed;
-  filter: grayscale(0.85) brightness(0.7);
+  --btn-bg: #4b5a53;
+  --btn-ink: #b9c4bd;
+  box-shadow: var(--sh-chunky-pressed);
+  transform: translate(3px, 3px);
 }
 
 .secondary {
-  --btn-bg: var(--c-surface-3);
-  --btn-hi: #5a45ad;
-  --btn-lo: var(--c-surface);
+  --btn-bg: #2f6fb5;
 }
 
 .ghost {
   --btn-bg: transparent;
-  --btn-hi: transparent;
-  --btn-lo: transparent;
   border-color: transparent;
   box-shadow: none;
   color: var(--c-text-muted);
   font-family: var(--font-body);
   font-weight: var(--fw-bold);
   font-size: var(--fs-md);
-  text-shadow: none;
+  text-transform: none;
+  letter-spacing: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .ghost:hover:not(:disabled),
 .ghost:active:not(:disabled) {
   box-shadow: none;
+  transform: none;
   color: var(--c-text);
-  background: rgb(255 255 255 / 0.06);
 }
 
 .jackpot {
   --btn-bg: var(--c-gold);
-  --btn-hi: var(--c-gold-hi);
-  --btn-lo: var(--c-gold-lo);
   --btn-ink: var(--c-ink);
-  text-shadow: 0 2px 0 rgb(255 255 255 / 0.45);
 }
 
 .danger {
-  --btn-bg: #c42b2b;
-  --btn-hi: var(--c-danger);
-  --btn-lo: #7a1111;
+  --btn-bg: var(--c-primary-lo);
 }
 
 .sm {
@@ -117,8 +105,15 @@
 .xl {
   min-height: 76px;
   padding: var(--sp-4) var(--sp-10);
-  font-size: var(--fs-2xl);
-  border-radius: var(--r-lg);
+  font-size: var(--fs-3xl);
+  border-width: 4px;
+  box-shadow:
+    6px 6px 0 var(--c-ink),
+    var(--sh-inset);
+}
+
+.xl:active:not(:disabled) {
+  transform: translate(5px, 5px);
 }
 
 .block {

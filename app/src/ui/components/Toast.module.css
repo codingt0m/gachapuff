@@ -13,19 +13,19 @@
 
 .toast {
   padding: var(--sp-3) var(--sp-4);
-  border: 3px solid var(--c-bg-deep);
+  border: var(--outline);
   border-radius: var(--r-md);
-  background: var(--c-surface-3);
-  color: var(--c-text);
+  background: var(--c-paper);
+  color: var(--c-ink);
   font-weight: var(--fw-bold);
   box-shadow: var(--sh-card);
   animation: enter var(--dur-slow) var(--ease-bounce) both;
 }
 
 .toast[data-tone='success'] {
-  background: #1d6b45;
+  background: #cfe8b8;
 }
 
 .toast[data-tone='warning'] {
-  background: #8a4b00;
+  background: #f5d78e;
 }

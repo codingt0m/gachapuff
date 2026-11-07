@@ -29,9 +29,9 @@
   position: relative;
   width: 56px;
   height: 32px;
-  border-radius: var(--r-pill);
-  background: var(--c-bg-deep);
-  border: 2px solid var(--c-line);
+  border-radius: var(--r-sm);
+  background: rgb(0 0 0 / 0.35);
+  border: 2px solid var(--c-ink);
   transition: background var(--dur-base) var(--ease-out);
 }
 
@@ -41,9 +41,9 @@
   left: 2px;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: 2px;
   background: var(--c-text-faint);
-  box-shadow: 0 2px 0 rgb(0 0 0 / 0.4);
+  border: 2px solid var(--c-ink);
   transition:
     transform var(--dur-base) var(--ease-bounce),
     background var(--dur-base);
@@ -51,10 +51,9 @@
 
 .row[aria-checked='true'] .track {
   background: var(--c-success);
-  border-color: var(--c-bg-deep);
 }
 
 .row[aria-checked='true'] .thumb {
   transform: translateX(24px);
-  background: #fff;
+  background: var(--c-paper);
 }

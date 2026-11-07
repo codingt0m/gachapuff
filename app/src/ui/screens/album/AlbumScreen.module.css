@@ -38,8 +38,8 @@
 }
 
 .percent {
-  color: var(--c-cyan);
-  font-weight: var(--fw-black);
+  color: var(--c-gold-hi);
+  font-family: var(--font-display);
 }
 
 .banner {
@@ -51,8 +51,11 @@
   margin-bottom: var(--sp-4);
   padding: var(--sp-4);
   border-radius: var(--r-lg);
-  background: linear-gradient(135deg, rgb(216 27 86 / 0.35), rgb(136 71 255 / 0.35));
-  border: 2px solid var(--c-primary);
+  background: var(--c-paper);
+  color: var(--c-ink);
+  border: var(--outline);
+  box-shadow: var(--sh-card);
+  transform: rotate(-0.6deg);
 }
 
 .body {

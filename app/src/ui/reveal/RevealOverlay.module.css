@@ -20,7 +20,7 @@
       color-mix(in srgb, var(--hint) calc(var(--charge) * 45%), transparent),
       transparent 70%
     ),
-    radial-gradient(120% 80% at 50% 50%, #1b0d40, var(--c-bg-deep) 70%);
+    var(--tex-grain), radial-gradient(120% 80% at 50% 50%, var(--c-felt-dark), #031510 75%);
   transition: background var(--dur-slow) var(--ease-out);
 }
 
@@ -32,7 +32,7 @@
       color-mix(in srgb, var(--tier) 45%, transparent),
       transparent 70%
     ),
-    radial-gradient(120% 80% at 50% 50%, #1b0d40, var(--c-bg-deep) 70%);
+    var(--tex-grain), radial-gradient(120% 80% at 50% 50%, var(--c-felt-dark), #031510 75%);
 }
 
 /* God rays behind the stage, in the hint / tier colour. */
@@ -82,10 +82,10 @@
   place-items: center;
   width: var(--tap-min);
   height: var(--tap-min);
-  border: 2px solid var(--c-line);
-  border-radius: 50%;
-  background: var(--c-surface);
-  color: var(--c-text);
+  border: 2px solid var(--c-paper);
+  border-radius: var(--r-md);
+  background: var(--c-ink);
+  color: var(--c-paper);
 }
 
 .content {
@@ -133,8 +133,8 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgb(255 255 255 / 0.85);
-  box-shadow: 0 0 18px #fff;
+  background: var(--c-paper);
+  border: 3px solid var(--c-ink);
   animation: swipe 1.8s var(--ease-out) infinite;
   pointer-events: none;
 }
@@ -161,8 +161,10 @@
 .instruction {
   min-height: 1.5em;
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: var(--fs-lg);
   text-align: center;
+  text-transform: uppercase;
   text-shadow: var(--sh-text);
 }
 
@@ -219,7 +221,7 @@
   width: 34%;
   translate: -50% 0;
   rotate: calc(var(--i) * -120deg);
-  filter: drop-shadow(0 0 12px var(--from));
+  filter: drop-shadow(3px 3px 0 var(--c-ink));
 }
 
 @keyframes orbit {
@@ -318,10 +320,13 @@
 .new,
 .dupe {
   padding: 2px var(--sp-3);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  text-transform: uppercase;
   font-size: var(--fs-md);
-  border: 2px solid var(--c-bg-deep);
+  border: 2px solid var(--c-ink);
+  box-shadow: 2px 2px 0 var(--c-ink);
   transform: rotate(-4deg);
 }
 
@@ -333,8 +338,8 @@
 }
 
 .dupe {
-  background: var(--c-surface-3);
-  color: var(--c-text);
+  background: var(--c-paper);
+  color: var(--c-ink);
 }
 
 .flavor {

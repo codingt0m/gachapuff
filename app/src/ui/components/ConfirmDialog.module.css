@@ -1,11 +1,11 @@
 .dialog {
   width: min(92vw, 420px);
   padding: var(--sp-6);
-  border: 3px solid var(--c-bg-deep);
+  border: var(--outline);
   border-radius: var(--r-lg);
-  background: var(--c-surface-2);
-  color: var(--c-text);
-  box-shadow: var(--sh-card);
+  background: var(--c-paper);
+  color: var(--c-ink);
+  box-shadow: var(--sh-float);
 }
 
 .dialog[open] {
@@ -14,7 +14,6 @@
 
 .dialog::backdrop {
   background: var(--c-scrim);
-  backdrop-filter: blur(4px);
 }
 
 .title {
@@ -23,7 +22,7 @@
 }
 
 .body {
-  color: var(--c-text-muted);
+  color: #3a3a3a;
   margin-bottom: var(--sp-6);
 }
 

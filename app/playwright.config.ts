@@ -4,7 +4,9 @@ const PORT = 4321;
 
 export default defineConfig({
   testDir: 'e2e',
-  timeout: 60_000,
+  // WebGL runs on a software GPU in headless Chromium: generous timeouts.
+  timeout: 180_000,
+  expect: { timeout: 30_000 },
   fullyParallel: false,
   reporter: 'list',
   use: {

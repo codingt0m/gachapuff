@@ -14,42 +14,46 @@
   touch-action: manipulation;
 }
 
+/* An ivory playing card laid on the table, inner border in the rarity colour. */
 .frame {
   position: relative;
   display: block;
   width: 100%;
   aspect-ratio: 1;
+  border: var(--outline);
   border-radius: var(--r-md);
-  background:
-    radial-gradient(
-      70% 60% at 50% 55%,
-      color-mix(in srgb, var(--tier) 35%, transparent),
-      transparent 70%
-    ),
-    var(--c-surface);
-  border: 3px solid color-mix(in srgb, var(--tier) 80%, var(--c-bg-deep));
-  box-shadow: 0 4px 0 var(--c-bg-deep);
+  background: var(--c-paper);
+  box-shadow:
+    inset 0 0 0 3px var(--c-paper),
+    inset 0 0 0 6px var(--tier),
+    var(--sh-card);
   overflow: hidden;
   transition:
     transform var(--dur-fast) var(--ease-bounce),
     box-shadow var(--dur-fast) var(--ease-out);
 }
 
+/* Missing puff: an empty slot pressed into the baize. */
 .thumb[data-owned='false'] .frame {
-  border-color: var(--c-surface-2);
-  border-style: dashed;
-  background: var(--c-bg-deep);
-  box-shadow: none;
+  border: 2px dashed var(--c-line);
+  background: rgb(0 0 0 / 0.22);
+  box-shadow: inset 2px 3px 0 rgb(0 0 0 / 0.3);
 }
 
 .thumb:hover .frame,
 .thumb:focus-visible .frame {
-  transform: translateY(-3px) rotate(-1deg);
-  box-shadow: 0 7px 0 var(--c-bg-deep);
+  transform: translate(-2px, -3px) rotate(-1.5deg);
+}
+
+.thumb[data-owned='true']:hover .frame {
+  box-shadow:
+    inset 0 0 0 3px var(--c-paper),
+    inset 0 0 0 6px var(--tier),
+    var(--sh-float);
 }
 
 .thumb:active .frame {
-  transform: translateY(2px) scale(0.97);
+  transform: translate(1px, 1px) scale(0.97);
 }
 
 .thumb:focus-visible {
@@ -63,10 +67,12 @@
 
 .thumb[data-selected='true'] .frame {
   border-color: var(--c-gold);
+  transform: translate(-2px, -4px) rotate(2deg);
   box-shadow:
-    0 0 0 3px var(--c-gold),
-    0 0 22px var(--c-gold);
-  transform: translateY(-3px) scale(1.03);
+    inset 0 0 0 3px var(--c-paper),
+    inset 0 0 0 6px var(--tier),
+    0 0 0 3px var(--c-ink),
+    var(--sh-float);
 }
 
 .thumb:disabled {
@@ -84,8 +90,8 @@
 }
 
 .thumb[data-owned='false'] .img {
-  filter: brightness(0) invert(0.16) sepia(1) hue-rotate(215deg) saturate(2.5);
-  opacity: 0.85;
+  filter: brightness(0);
+  opacity: 0.32;
 }
 
 /* Static foil hint on the silhouette (no animation: hundreds of these can be on screen). */
@@ -141,29 +147,35 @@
   opacity: 0.85;
 }
 
+/* Card index in the corner: rarity icon on its colour. */
 .pip {
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 8px;
+  left: 8px;
   display: grid;
   place-items: center;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  border: 2px solid var(--c-bg-deep);
+  border-radius: var(--r-sm);
+  border: 2px solid var(--c-ink);
 }
 
+/* Duplicate count: a red casino chip. */
 .count {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
-  padding: 0 var(--sp-2);
+  right: 6px;
+  bottom: 6px;
+  min-width: 26px;
+  padding: 0 var(--sp-1);
   border-radius: var(--r-pill);
-  background: var(--c-gold);
-  color: var(--c-ink);
+  background: var(--c-primary);
+  color: #fff;
   font-family: var(--font-display);
+  font-weight: var(--fw-display);
   font-size: var(--fs-sm);
-  border: 2px solid var(--c-bg-deep);
+  line-height: 20px;
+  border: 2px dashed #fff;
+  outline: 2px solid var(--c-ink);
 }
 
 .name {
@@ -184,6 +196,6 @@
 }
 
 .note {
-  color: var(--c-gold);
+  color: var(--c-gold-hi);
   font-weight: var(--fw-bold);
 }

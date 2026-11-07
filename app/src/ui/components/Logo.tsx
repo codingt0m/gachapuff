@@ -6,13 +6,13 @@ export function PuffMark({ size = 32 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="pm-body" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ff4f86" />
-          <stop offset="0.5" stopColor="#d81b56" />
-          <stop offset="1" stopColor="#8f0c35" />
+          <stop offset="0" stopColor="#ef4a3f" />
+          <stop offset="0.5" stopColor="#d6312b" />
+          <stop offset="1" stopColor="#8e1914" />
         </linearGradient>
         <linearGradient id="pm-smoke" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#2de2e6" />
-          <stop offset="1" stopColor="#fff1a8" />
+          <stop offset="0" stopColor="#f2e8d5" />
+          <stop offset="1" stopColor="#f5cf6e" />
         </linearGradient>
       </defs>
       <path
@@ -28,8 +28,8 @@ export function PuffMark({ size = 32 }: { size?: number }) {
         width="10"
         height="8"
         rx="2.5"
-        fill="#2a1a5e"
-        stroke="#0c0620"
+        fill="#121212"
+        stroke="#121212"
         strokeWidth="2.5"
       />
       <rect
@@ -39,11 +39,11 @@ export function PuffMark({ size = 32 }: { size?: number }) {
         height="34"
         rx="7"
         fill="url(#pm-body)"
-        stroke="#0c0620"
+        stroke="#121212"
         strokeWidth="3"
       />
       <rect x="20" y="29" width="4" height="22" rx="2" fill="#fff" opacity="0.45" />
-      <circle cx="27" cy="51" r="2.5" fill="#ffd23f" />
+      <circle cx="27" cy="51" r="2.5" fill="#e2a93b" />
     </svg>
   );
 }

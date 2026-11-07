@@ -5,7 +5,8 @@
   padding: var(--sp-4);
   border-radius: var(--r-lg);
   background: var(--c-surface);
-  border: 2px solid var(--c-surface-2);
+  border: var(--outline);
+  box-shadow: var(--sh-card);
   animation: enter var(--dur-base) var(--ease-out) both;
 }
 
@@ -15,8 +16,9 @@
   margin: 0;
   padding: 3px;
   border: 0;
-  border-radius: var(--r-pill);
-  background: var(--c-bg-deep);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-sm);
+  background: rgb(0 0 0 / 0.35);
 }
 
 .segmentItem {
@@ -37,7 +39,7 @@
   display: grid;
   place-items: center;
   min-height: 38px;
-  border-radius: var(--r-pill);
+  border-radius: 2px;
   color: var(--c-text-muted);
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
@@ -47,9 +49,8 @@
 }
 
 .segmentItem input:checked + span {
-  background: var(--c-primary);
-  color: #fff;
-  box-shadow: 0 2px 0 var(--c-primary-lo);
+  background: var(--c-paper);
+  color: var(--c-ink);
 }
 
 .segmentItem input:focus-visible + span {
@@ -73,10 +74,10 @@
   min-width: 0;
   min-height: var(--tap-min);
   padding: 0 var(--sp-3);
-  border: 2px solid var(--c-line);
+  border: 2px solid var(--c-ink);
   border-radius: var(--r-sm);
-  background: var(--c-bg-deep);
-  color: var(--c-text);
+  background: var(--c-paper);
+  color: var(--c-ink);
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
   text-transform: none;
