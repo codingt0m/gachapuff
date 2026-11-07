@@ -5,7 +5,7 @@ Aucun achat, aucune pub, aucun serveur : tout tourne dans le navigateur (version
 
 ## Structure
 
-```
+```text
 gachapuff/
 ├─ app/        le jeu (Vite + TypeScript + React)
 ├─ dataset/    images sources des puffs (PNG 1024², non versionné)
@@ -70,7 +70,7 @@ Couleurs, typo, espacements : [`app/src/ui/styles/tokens.css`](app/src/ui/styles
 
 ## Architecture
 
-```
+```text
 app/src/
 ├─ domain/    logique pure et testée (tirage, rareté, recyclage, régénération) — ni React ni navigateur
 ├─ data/      manifeste, sauvegarde versionnée (Zod + migrations), IndexedDB derrière une interface
