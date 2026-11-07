@@ -1,0 +1,110 @@
+/*
+ * Design tokens. Every colour, size, radius, shadow, duration and curve of the UI
+ * comes from here. Rarity colours are injected from src/config/gameConfig.ts
+ * (--rarity-<id>, --rarity-<id>-ink) by ui/theme.ts so they have a single source.
+ */
+:root {
+  /* ---- colour: night-club casino ---- */
+  --c-bg: #140b2e;
+  --c-bg-deep: #0c0620;
+  --c-surface: #231750;
+  --c-surface-2: #2f2068;
+  --c-surface-3: #3d2b80;
+  --c-line: #4d3a92;
+  --c-text: #fff6e9;
+  --c-text-muted: #c9bdf0;
+  --c-text-faint: #9a8cc8;
+  --c-ink: #140b2e;
+
+  --c-primary: #d81b56;
+  --c-primary-hi: #ff4f86;
+  --c-primary-lo: #8f0c35;
+  --c-gold: #ffd23f;
+  --c-gold-hi: #fff1a8;
+  --c-gold-lo: #c27a00;
+  --c-cyan: #2de2e6;
+  --c-lime: #9dff5c;
+  --c-danger: #ff5a5a;
+  --c-success: #3ddc84;
+  --c-focus: #2de2e6;
+
+  --c-felt-1: #2a145e;
+  --c-felt-2: #140b2e;
+  --c-scrim: rgb(8 4 22 / 0.78);
+
+  /* ---- typography (2 families) ---- */
+  --font-display: 'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Nunito Variable', 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fs-xs: 0.75rem; /* 12 */
+  --fs-sm: 0.875rem; /* 14 */
+  --fs-md: 1rem; /* 16 */
+  --fs-lg: 1.25rem; /* 20 */
+  --fs-xl: 1.5rem; /* 24 */
+  --fs-2xl: 2rem; /* 32 */
+  --fs-3xl: 2.75rem; /* 44 */
+  --fs-4xl: 3.75rem; /* 60 */
+  --lh-tight: 1.05;
+  --lh-body: 1.45;
+  --fw-regular: 500;
+  --fw-bold: 800;
+  --fw-black: 950;
+  --tracking-wide: 0.06em;
+
+  /* ---- spacing: 4 px base ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* ---- radii ---- */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* ---- shadows: chunky, arcade-like ---- */
+  --sh-chunky: 0 4px 0 rgb(0 0 0 / 0.45);
+  --sh-chunky-pressed: 0 1px 0 rgb(0 0 0 / 0.45);
+  --sh-card: 0 6px 0 rgb(0 0 0 / 0.35), 0 16px 32px rgb(0 0 0 / 0.35);
+  --sh-float: 0 24px 48px rgb(0 0 0 / 0.5);
+  --sh-text: 0 3px 0 rgb(0 0 0 / 0.5);
+  --sh-inset: inset 0 2px 0 rgb(255 255 255 / 0.18), inset 0 -3px 0 rgb(0 0 0 / 0.25);
+
+  /* ---- sizes ---- */
+  --tap-min: 44px;
+  --header-h: 56px;
+  --tabbar-h: 68px;
+  --rail-w: 96px;
+  --content-max: 1200px;
+  --thumb-size: 104px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* ---- motion: durations come from config/motion.ts (injected), curves here ---- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-snap: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  /* ---- layers ---- */
+  --z-nav: 20;
+  --z-header: 30;
+  --z-overlay: 50;
+  --z-toast: 70;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --thumb-size: 132px;
+  }
+}

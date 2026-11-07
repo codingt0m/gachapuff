@@ -1,0 +1,92 @@
+.rarity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-3) 2px var(--sp-2);
+  border: 2px solid var(--c-bg-deep);
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 var(--c-bg-deep);
+}
+
+.sm {
+  font-size: var(--fs-xs);
+  padding: 0 var(--sp-2) 0 var(--sp-1);
+  box-shadow: 0 2px 0 var(--c-bg-deep);
+}
+
+.md {
+  font-size: var(--fs-sm);
+}
+
+.lg {
+  font-size: var(--fs-xl);
+  padding: var(--sp-1) var(--sp-4) var(--sp-1) var(--sp-3);
+  border-width: 3px;
+  box-shadow: 0 4px 0 var(--c-bg-deep);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+}
+
+.swatch {
+  display: inline-block;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--c-bg-deep);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+}
+
+/* Finish glyphs: a distinct shape AND fill per finish. */
+.glyph {
+  display: inline-block;
+  flex: none;
+  background: #d9d3f0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--c-bg-deep);
+}
+
+.glyph[data-finish='shiny'] {
+  background: radial-gradient(circle, #fff 0 30%, #ffe9a8 31% 100%);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.glyph[data-finish='golden'] {
+  background: linear-gradient(135deg, #fff1a8, #ffc21a 45%, #a86400);
+  border-radius: 3px;
+  transform: rotate(45deg) scale(0.8);
+}
+
+.glyph[data-finish='chromatic'] {
+  background: conic-gradient(#ff5a5a, #ffd23f, #3ddc84, #2de2e6, #6c5bff, #e040f0, #ff5a5a);
+}
+
+.glyph[data-finish='crystal'] {
+  background: linear-gradient(160deg, #ffffff, #a9e6ff 40%, #6aa8ff 70%, #e3f6ff);
+  clip-path: polygon(50% 0, 100% 30%, 82% 100%, 18% 100%, 0 30%);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.glyph[data-finish='cosmic'] {
+  background:
+    radial-gradient(circle at 30% 30%, #fff 0 6%, transparent 8%),
+    radial-gradient(circle at 70% 60%, #fff 0 5%, transparent 7%),
+    radial-gradient(circle at 40% 70%, #2de2e6, #7a1fd6 60%, #18063a);
+}

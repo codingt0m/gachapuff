@@ -1,0 +1,120 @@
+/*
+ * Motion vocabulary — the only animations of the UI:
+ *   enter   something appears (fade + rise)
+ *   exit    something leaves
+ *   pop     a reaction to a tap / a value change (bouncy scale)
+ *   reward  something good happened (glow pulse)
+ *   shake   attention / impact
+ *   float   idle life (slow bob)
+ *   shimmer loading skeletons
+ * Durations come from --dur-* (config/motion.ts), curves from tokens.css.
+ * html[data-motion='reduced'] turns them into simple fades.
+ */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes reward {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 var(--reward-color, var(--c-gold)));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px var(--reward-color, var(--c-gold)));
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(calc(var(--shake, 6px) * -1), calc(var(--shake, 6px) * 0.4));
+  }
+  40% {
+    transform: translate(var(--shake, 6px), calc(var(--shake, 6px) * -0.6));
+  }
+  60% {
+    transform: translate(calc(var(--shake, 6px) * -0.6), var(--shake, 6px));
+  }
+  80% {
+    transform: translate(calc(var(--shake, 6px) * 0.5), calc(var(--shake, 6px) * -0.3));
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.anim-enter {
+  animation: enter var(--dur-slow) var(--ease-out) both;
+}
+
+.anim-pop {
+  animation: pop var(--dur-slow) var(--ease-bounce);
+}
+
+.anim-reward {
+  animation: reward var(--dur-reward) var(--ease-out) 2;
+}
+
+.anim-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: var(--dur-fast) !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-motion='reduced'] .anim-enter {
+  animation: none;
+}

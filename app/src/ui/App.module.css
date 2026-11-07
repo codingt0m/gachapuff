@@ -1,0 +1,15 @@
+.main {
+  min-height: 100dvh;
+  padding-top: calc(var(--safe-top) + var(--header-h));
+  padding-bottom: calc(var(--safe-bottom) + var(--tabbar-h));
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  outline: none;
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding-bottom: 0;
+    padding-left: var(--rail-w);
+  }
+}

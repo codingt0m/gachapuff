@@ -1,0 +1,35 @@
+.track {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r-pill);
+  background: var(--c-bg-deep);
+  border: 2px solid var(--c-bg-deep);
+  box-shadow: inset 0 2px 0 rgb(0 0 0 / 0.4);
+  overflow: hidden;
+}
+
+.md {
+  height: 14px;
+}
+
+.sm {
+  height: 8px;
+  border-width: 1px;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill);
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(115deg, rgb(255 255 255 / 0.18) 0 6px, transparent 6px 12px),
+    linear-gradient(180deg, color-mix(in srgb, var(--bar) 70%, #fff), var(--bar));
+  transition: width var(--dur-reward) var(--ease-out);
+}
+
+.track[data-complete='true'] .fill {
+  background:
+    repeating-linear-gradient(115deg, rgb(255 255 255 / 0.3) 0 6px, transparent 6px 12px),
+    linear-gradient(180deg, var(--c-gold-hi), var(--c-gold));
+}

@@ -1,0 +1,42 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  line-height: 1;
+}
+
+.word {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  color: var(--c-gold);
+  background: linear-gradient(180deg, var(--c-gold-hi) 0%, var(--c-gold) 50%, #ff9f1a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 0 #8f0c35) drop-shadow(0 2px 0 var(--c-bg-deep));
+  transform: rotate(-3deg);
+}
+
+.puff {
+  background: linear-gradient(180deg, #ffffff 0%, var(--c-cyan) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.sm .word {
+  font-size: var(--fs-xl);
+}
+
+.md .word {
+  font-size: var(--fs-2xl);
+}
+
+.lg {
+  gap: var(--sp-2);
+}
+
+.lg .word {
+  font-size: var(--fs-4xl);
+  filter: drop-shadow(0 4px 0 #8f0c35) drop-shadow(0 4px 0 var(--c-bg-deep))
+    drop-shadow(0 0 24px rgb(255 210 63 / 0.35));
+}

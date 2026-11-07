@@ -1,0 +1,135 @@
+.button {
+  --btn-bg: var(--c-primary);
+  --btn-hi: var(--c-primary-hi);
+  --btn-lo: var(--c-primary-lo);
+  --btn-ink: #fff;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: var(--sp-2) var(--sp-5);
+  border: 3px solid var(--c-bg-deep);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--btn-hi) 0%, var(--btn-bg) 55%, var(--btn-lo) 100%);
+  color: var(--btn-ink);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  letter-spacing: 0.03em;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 0.25);
+  box-shadow:
+    0 5px 0 var(--btn-lo),
+    0 5px 0 3px var(--c-bg-deep),
+    var(--sh-inset);
+  transform: translateY(0);
+  transition:
+    transform var(--dur-fast) var(--ease-bounce),
+    box-shadow var(--dur-fast) var(--ease-out),
+    filter var(--dur-fast);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow:
+    0 7px 0 var(--btn-lo),
+    0 7px 0 3px var(--c-bg-deep),
+    var(--sh-inset);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    0 1px 0 var(--btn-lo),
+    0 1px 0 3px var(--c-bg-deep),
+    var(--sh-inset);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.85) brightness(0.7);
+}
+
+.secondary {
+  --btn-bg: var(--c-surface-3);
+  --btn-hi: #5a45ad;
+  --btn-lo: var(--c-surface);
+}
+
+.ghost {
+  --btn-bg: transparent;
+  --btn-hi: transparent;
+  --btn-lo: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--c-text-muted);
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-md);
+  text-shadow: none;
+}
+
+.ghost:hover:not(:disabled),
+.ghost:active:not(:disabled) {
+  box-shadow: none;
+  color: var(--c-text);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.jackpot {
+  --btn-bg: var(--c-gold);
+  --btn-hi: var(--c-gold-hi);
+  --btn-lo: var(--c-gold-lo);
+  --btn-ink: var(--c-ink);
+  text-shadow: 0 2px 0 rgb(255 255 255 / 0.45);
+}
+
+.danger {
+  --btn-bg: #c42b2b;
+  --btn-hi: var(--c-danger);
+  --btn-lo: #7a1111;
+}
+
+.sm {
+  min-height: 36px;
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-md);
+  border-radius: var(--r-sm);
+}
+
+/* Small buttons keep a 44 px hit area. */
+.sm::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.lg {
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-6);
+  font-size: var(--fs-xl);
+}
+
+.xl {
+  min-height: 76px;
+  padding: var(--sp-4) var(--sp-10);
+  font-size: var(--fs-2xl);
+  border-radius: var(--r-lg);
+}
+
+.block {
+  width: 100%;
+}
+
+.icon {
+  display: inline-flex;
+  font-size: 1.1em;
+}
+
+.label {
+  white-space: nowrap;
+}
