@@ -1,0 +1,17 @@
+ok voici un projet de jeu web 
+on veut qu'il soit mobile friendly et utilisable sur pc
+inspiration pokemon tcgp ; wiki masters; case csgo 
+le concept: on a des boosters de puff jnr (une puff par boster)
+Un seul type de booster au lancement du jeu  .
+il y a des puffs plus rare que d'autres.
+une puff peut avoir des caractéristiques qui la rende plus rare du genre brillante; chromatique ; christal. 
+La hierarchie des rareté reste a definir
+on a aussi la fumée qui par defaut est blanche mais qui peut etre plus rare avec des couleurs aleatoire et m^me avec des degradés.
+Il faut que le jeux soit visuellement delightfull avec beaucoup de travail sur les effets sur les visuels des puffs.
+les probas restent a definir.
+le temps de regenartion du booster reste a definir
+systeme d'échange a rareté égal 
+systeme de recyclage de rareté detruire trois puff d'unr rareté N pour en obtenir une de rareté N+1
+ui/ux dopamine maxing inspiration casino et balatro pour les effets visuels
+playfull
+pas de gameplay en dehors de la contemplation et la collection

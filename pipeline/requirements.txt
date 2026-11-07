@@ -1,0 +1,10 @@
+requests
+beautifulsoup4
+pillow
+numpy
+scipy
+rembg[cpu]
+# detourage des visuels marketing (Grounding DINO + SAM)
+# torch CPU : pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch
+transformers

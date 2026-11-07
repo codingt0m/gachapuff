@@ -1,0 +1,31 @@
+# Dependencies & builds
+node_modules/
+dist/
+dev-dist/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+# Python
+__pycache__/
+*.pyc
+
+# Pipeline working files (heavy, regenerable cache + manual review data kept locally)
+pipeline/_travail/
+pipeline/logs/
+pipeline/a_verifier/
+
+# Source dataset (~300 MB of PNG) — not versioned, see README
+dataset/
+
+# Generated game assets (npm run assets)
+app/public/puffs/
+app/src/data/generated/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
