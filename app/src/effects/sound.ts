@@ -33,14 +33,24 @@ class SoundEngine {
   /** Call from a user gesture: creates / resumes the audio context. */
   unlock(): void {
     if (!this.ctx) {
-      const Ctor = globalThis.AudioContext;
+      const Ctor =
+        globalThis.AudioContext ??
+        (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctor) return;
       this.ctx = new Ctor();
       this.master = this.ctx.createGain();
       this.master.gain.value = MASTER_GAIN;
       this.master.connect(this.ctx.destination);
     }
-    if (this.ctx.state === 'suspended') void this.ctx.resume();
+    // iOS can leave the context "interrupted" (after a call, backgrounding...), not just "suspended".
+    if (this.ctx.state !== 'running') {
+      void this.ctx.resume();
+      // WebKit only fully unlocks once a source actually starts inside the gesture.
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+      src.connect(this.ctx.destination);
+      src.start(0);
+    }
   }
 
   play(id: SoundId): void {

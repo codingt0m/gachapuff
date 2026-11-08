@@ -73,13 +73,11 @@ export function App({ notices }: { notices: BootNotice[] }) {
 
   // Audio stays silent until the first interaction.
   useEffect(() => {
+    // WebKit doesn't treat pointerdown/touchstart as audio-unlocking gestures; touchend/click it does.
     const unlock = () => sound.unlock();
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
-    return () => {
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
-    };
+    const events = ['pointerdown', 'touchend', 'click', 'keydown'] as const;
+    events.forEach((e) => window.addEventListener(e, unlock, { capture: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, unlock, { capture: true }));
   }, []);
 
   // Booster regeneration.
