@@ -21,7 +21,8 @@ const NotFoundScreen = lazy(() => import('./screens/NotFoundScreen.tsx'));
 const DesignScreen = lazy(() => import('./screens/dev/DesignScreen.tsx'));
 const ShowcaseScreen = lazy(() => import('./screens/dev/ShowcaseScreen.tsx'));
 const SimulatorScreen = lazy(() => import('./screens/dev/SimulatorScreen.tsx'));
-const RevealOverlay = lazy(() => import('./reveal/RevealOverlay.tsx'));
+const loadRevealOverlay = () => import('./reveal/RevealOverlay.tsx');
+const RevealOverlay = lazy(loadRevealOverlay);
 
 const REGEN_CHECK_MS = 1000;
 
@@ -109,6 +110,12 @@ export function App({ notices }: { notices: BootNotice[] }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [reveal]);
 
+  // The opening overlay (WebGL renderer included) is fetched ahead of the first booster.
+  useEffect(() => {
+    const id = window.setTimeout(() => void loadRevealOverlay().catch(() => {}), 500);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // New screen: start at the top (the album restores its own scroll).
   useEffect(() => {
     if (route.name !== 'album') window.scrollTo(0, 0);
@@ -116,16 +123,6 @@ export function App({ notices }: { notices: BootNotice[] }) {
 
   return (
     <RevealContext.Provider value={setReveal}>
-      <a
-        className="skip-link"
-        href="#main"
-        onClick={(e) => {
-          e.preventDefault();
-          document.getElementById('main')?.focus();
-        }}
-      >
-        Aller au contenu
-      </a>
       <Header />
       <main id="main" tabIndex={-1} className={styles.main} inert={reveal ? true : undefined}>
         <Suspense fallback={<ScreenSkeleton />}>

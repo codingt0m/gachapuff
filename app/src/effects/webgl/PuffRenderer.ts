@@ -264,11 +264,15 @@ export class PuffRenderer {
     const sameImage = this.look?.imageUrl === look.imageUrl;
     this.look = look;
     this.particles.shape = look.smoke.shape ?? 'cloud';
+    const needsImage = !(sameImage && this.texture);
+    // Fetch the image while the engraving waits for its font, not after.
+    const imagePromise = needsImage ? loadImage(look.imageUrl) : null;
+    imagePromise?.catch(() => {});
     await this.updateEngraving(look, token);
-    if (sameImage && this.texture) return;
+    if (!imagePromise) return;
     this.smokeIntensity = 0;
     this.particles.reset();
-    const image = await loadImage(look.imageUrl);
+    const image = await imagePromise;
     if (token !== this.lookToken || this.disposed) return;
     if (this.texture) this.gl.deleteTexture(this.texture);
     this.texture = uploadTexture(this.gl, image);

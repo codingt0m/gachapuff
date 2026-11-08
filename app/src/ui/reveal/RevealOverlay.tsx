@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { motion } from '../../config/motion.ts';
+import { assetUrl } from '../../data/manifest.ts';
 import { finishDef, rarityIndex } from '../../domain/rarity.ts';
 import { boosterType } from '../../domain/roll.ts';
 import { burstConfetti } from '../../effects/confetti.ts';
 import { engravingLabel } from '../../effects/engraving.ts';
 import { openingColors } from '../../effects/openingFx.ts';
 import { sound } from '../../effects/sound.ts';
+import { preloadImage } from '../../effects/webgl/gl.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { Button } from '../components/Button.tsx';
 import { Icon } from '../components/Icons.tsx';
@@ -70,6 +72,12 @@ function RevealRound({
   useEffect(() => {
     rootRef.current?.focus();
   }, []);
+
+  // Fetch the puff while the pack opens, so it is ready when it bursts out.
+  const detailImage = puff?.images.detail;
+  useEffect(() => {
+    if (detailImage) preloadImage(assetUrl(detailImage));
+  }, [detailImage]);
 
   // Confetti at the burst (not when skipped, not with reduced motion).
   useEffect(() => {

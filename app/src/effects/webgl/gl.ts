@@ -52,14 +52,46 @@ export function uploadTexture(gl: WebGLRenderingContext, image: TexImageSource):
   return texture;
 }
 
+const IMAGE_CACHE_SIZE = 24;
+const imageCache = new Map<string, Promise<HTMLImageElement>>();
+
+/**
+ * Loads and decodes an image, sharing the request with any earlier call for the same URL
+ * (see `preloadImage`), so a puff fetched ahead of its reveal shows at once.
+ */
 export function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
+  const cached = imageCache.get(url);
+  if (cached) {
+    // Refresh its place in the LRU order.
+    imageCache.delete(url);
+    imageCache.set(url, cached);
+    return cached;
+  }
+  const promise = new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.decoding = 'async';
-    img.onload = () => resolve(img);
+    img.onload = () => {
+      img.decode().then(
+        () => resolve(img),
+        () => resolve(img),
+      );
+    };
     img.onerror = () => reject(new Error(`Image failed to load: ${url}`));
     img.src = url;
   });
+  promise.catch(() => imageCache.delete(url));
+  imageCache.set(url, promise);
+  while (imageCache.size > IMAGE_CACHE_SIZE) {
+    const oldest = imageCache.keys().next().value;
+    if (oldest === undefined) break;
+    imageCache.delete(oldest);
+  }
+  return promise;
+}
+
+/** Starts fetching an image now so that a later `loadImage` of it resolves immediately. */
+export function preloadImage(url: string): void {
+  loadImage(url).catch(() => {});
 }
 
 export function hexToRgb(hex: string): [number, number, number] {

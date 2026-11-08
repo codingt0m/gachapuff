@@ -610,7 +610,7 @@ void main() {
     a = min(1.0, a + speck);
   }
   // Thin out towards the canvas edges instead of being sliced by them.
-  float edge = (1.0 - smoothstep(0.45, 1.0, vClip.y)) * (1.0 - smoothstep(0.8, 1.0, abs(vClip.x)));
+  float edge = (1.0 - smoothstep(0.78, 1.0, vClip.y)) * (1.0 - smoothstep(0.86, 1.0, abs(vClip.x)));
   gl_FragColor = vec4(col, a) * edge;
 }
 `;

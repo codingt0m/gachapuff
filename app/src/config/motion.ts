@@ -89,7 +89,7 @@ export const render = {
  */
 export const smoke = {
   /** Room for the normal plume (~50 alive) plus a held cloud. */
-  maxParticles: 200,
+  maxParticles: 260,
   life: [2.8, 4.2],
   /** Constant thin stream. */
   trickleRate: 7,
@@ -109,8 +109,31 @@ export const smoke = {
   ringSize: [0.05, 0.3],
   heartSize: [0.04, 0.24],
   starSize: [0.045, 0.26],
-  /** Spiral: turn speed (rad/s), orbit radius growth (units/s), stream / cloud / size factors. */
-  spiral: { spin: 2.6, radius: 0.075, trickleBoost: 2.4, burstShare: 0.25, sizeScale: 0.45 },
+  /**
+   * Spiral: a DNA double helix. Two strands of fine smoke wound around the column, joined by
+   * rungs (base pairs), rising, slowly turning, then fraying apart into cloud at the top.
+   */
+  spiral: {
+    /** Phase advance per second of emission (rad/s): sets the pitch of the helix. */
+    twist: 6.5,
+    /** Slow rotation of the whole helix (rad/s). */
+    spin: 0.7,
+    /** Helix radius (units). */
+    radius: 0.075,
+    /** Radius growth towards the end of life: the strands fray apart. */
+    fray: 1.6,
+    /** Strand pairs per second, and start / end size of each strand dot. */
+    strandRate: 14,
+    strandSize: [0.022, 0.1],
+    /** Seconds between two rungs, dots per rung, size and opacity of rung dots. */
+    rungEvery: 0.14,
+    rungDots: 2,
+    rungSize: [0.016, 0.06],
+    rungOpacity: 0.42,
+    life: [2.8, 3.2],
+    /** Share of the exhale cloud kept besides the helix. */
+    burstShare: 0.15,
+  },
   opacity: 0.6,
   /** Emission multiplier with reduced motion. */
   reducedRate: 0.5,
@@ -123,18 +146,18 @@ export const smoke = {
     rampUp: 0.3,
     rampDown: 0.45,
     /** Particles per second at full output. */
-    rate: 32,
-    life: [3, 4.6],
-    startSize: 0.06,
-    endSize: [0.32, 0.6],
+    rate: 44,
+    life: [3.2, 5],
+    startSize: 0.08,
+    endSize: [0.42, 0.75],
     /** Half-angle of the emission cone around the vertical (rad). */
-    cone: 1.1,
+    cone: 1.45,
     /** How far the cloud billows out before slowing, share of the headroom. */
-    reach: 0.55,
+    reach: 0.8,
     /** How fast billowing particles slow down (1/s). */
     drag: 1.6,
     /** Slow rise afterwards: share of the headroom climbed over a particle's life. */
     lift: 0.4,
-    opacity: 0.42,
+    opacity: 0.62,
   },
 } as const;
