@@ -7,7 +7,7 @@ import { Button } from '../components/Button.tsx';
 import styles from './RevealOverlay.module.css';
 
 /** Share of the pack width to swipe across to tear it open. */
-const TEAR_DONE = 0.6;
+const TEAR_DONE = 0.25;
 const TICK_EVERY = 0.15;
 
 /** The pack, torn open with a swipe along its seam (or a button / Enter for accessibility). */
@@ -51,14 +51,15 @@ export function PackIntro({
     tilt.onPointerMove(event);
     const d = drag.current;
     if (!d || torn) return;
-    const progress = Math.min(1, Math.abs(event.clientX - d.startX) / d.width);
+    // Normalised so the tear line reaches 1 exactly when the swipe is long enough.
+    const progress = Math.min(1, Math.abs(event.clientX - d.startX) / (d.width * TEAR_DONE));
     setTear((t) => Math.max(t, progress));
     if (progress - d.lastTick >= TICK_EVERY) {
       d.lastTick = progress;
       sound.play('tick');
       haptic('tick');
     }
-    if (progress >= TEAR_DONE) complete();
+    if (progress >= 1) complete();
   };
 
   const onPointerUp = () => {

@@ -19,8 +19,8 @@ pipeline/a_verifier/
 # Source dataset (~300 MB of PNG) — not versioned, see README
 dataset/
 
-# Generated game assets (npm run assets)
-app/public/puffs/
+# Local cache of the asset build (the generated webp + manifest ARE versioned: the dataset is not)
+app/public/puffs/.cache.json
 
 # OS / editors
 .DS_Store

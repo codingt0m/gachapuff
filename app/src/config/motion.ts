@@ -68,14 +68,14 @@ export const render = {
     /** Grid cells per side of the displaced mesh. */
     gridCells: 128,
     /** Relief depth factor (1 = a fully round puff is as deep as it is wide). */
-    depth: 0.95,
+    depth: 0.665,
     /** Bbox width / height below which a puff is "slim" (cylinder), above which "wide" (box). */
     slimAspect: 0.3,
     wideAspect: 0.5,
     /** Edge roundness: slim -> wide (1 = fully round, lower = flat face). */
     roundness: [1, 0.4],
     /** Side wall depth, share of the silhouette width: slim -> wide. */
-    thickness: [0.25, 0.45],
+    thickness: [0.175, 0.315],
     /** Spacing of the stacked silhouettes forming the side wall, in units. */
     layerStep: 0.006,
     maxLayers: 40,
