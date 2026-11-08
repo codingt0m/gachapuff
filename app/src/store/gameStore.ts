@@ -1,5 +1,6 @@
 import { applyRegen } from '../domain/boosters.ts';
 import { openBooster, recycle, type GameContext } from '../domain/game.ts';
+import { rarityForPoints, rarityPoints } from '../domain/rarity.ts';
 import { createInitialState } from '../domain/save.ts';
 import type { Rng } from '../domain/rng.ts';
 import type { Catalog, GameConfig, PuffInstance, SaveState, Settings } from '../domain/types.ts';
@@ -86,6 +87,32 @@ export class GameStore {
 
   updateSettings(patch: Partial<Settings>): void {
     this.commit({ ...this.state, settings: { ...this.state.settings, ...patch } });
+  }
+
+  /** Dev: adds one plain copy of every puff not owned yet, so the album shows the whole catalog. */
+  devFillAlbum(): number {
+    const owned = new Set(this.state.collection.map((p) => p.puffId));
+    const now = this.clock();
+    const added: PuffInstance[] = this.catalog.puffs
+      .filter((p) => !owned.has(p.id))
+      .map((p) => {
+        const points = rarityPoints(this.config, this.catalog.baseTierOf.get(p.id) ?? 0, 'normal', 'white');
+        return {
+          uid: this.newId(),
+          puffId: p.id,
+          finish: 'normal',
+          smoke: { kind: 'white' },
+          engraving: { kind: 'none' },
+          rarity: rarityForPoints(this.config, points).id,
+          points,
+          obtainedAt: now,
+          origin: 'booster',
+        };
+      });
+    if (added.length > 0) {
+      this.commit({ ...this.state, collection: [...this.state.collection, ...added] });
+    }
+    return added.length;
   }
 
   /** Wipes the collection, keeping the player's settings. */

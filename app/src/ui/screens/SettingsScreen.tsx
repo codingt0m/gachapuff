@@ -202,6 +202,14 @@ export default function SettingsScreen() {
               <a href={paths.simulator}>Simulateur de probabilités</a>
             </li>
           </ul>
+          <Button
+            onClick={() => {
+              const n = store.devFillAlbum();
+              toast(n > 0 ? `${n} puffs ajoutées à l'album.` : 'Album déjà complet.', 'success');
+            }}
+          >
+            Remplir l'album (1 de chaque)
+          </Button>
         </section>
       )}
 
