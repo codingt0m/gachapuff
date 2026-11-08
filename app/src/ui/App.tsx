@@ -21,6 +21,7 @@ const NotFoundScreen = lazy(() => import('./screens/NotFoundScreen.tsx'));
 const DesignScreen = lazy(() => import('./screens/dev/DesignScreen.tsx'));
 const ShowcaseScreen = lazy(() => import('./screens/dev/ShowcaseScreen.tsx'));
 const SimulatorScreen = lazy(() => import('./screens/dev/SimulatorScreen.tsx'));
+const SortScreen = lazy(() => import('./screens/dev/SortScreen.tsx'));
 const loadRevealOverlay = () => import('./reveal/RevealOverlay.tsx');
 const RevealOverlay = lazy(loadRevealOverlay);
 
@@ -49,6 +50,8 @@ function Screen({ route }: { route: Route }) {
       return <ShowcaseScreen />;
     case 'simulator':
       return <SimulatorScreen />;
+    case 'sort':
+      return <SortScreen />;
     case 'notFound':
       return <NotFoundScreen />;
   }

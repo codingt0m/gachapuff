@@ -186,6 +186,21 @@ export default function SettingsScreen() {
         </dl>
       </section>
 
+      <section className={styles.card} aria-labelledby="s-sort">
+        <h2 id="s-sort" className={styles.cardTitle}>
+          Tri du dataset
+        </h2>
+        <p className={styles.muted}>
+          Swipe à droite pour garder une puff, à gauche pour l’écarter. Le résultat s’affiche en
+          texte à la fin.
+        </p>
+        <ul className={styles.links}>
+          <li>
+            <a href={paths.sort}>Trier les puffs</a>
+          </li>
+        </ul>
+      </section>
+
       {store.dev && (
         <section className={styles.card} aria-labelledby="s-dev">
           <h2 id="s-dev" className={styles.cardTitle}>

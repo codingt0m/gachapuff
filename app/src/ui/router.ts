@@ -10,6 +10,7 @@ export type Route =
   | { name: 'design' }
   | { name: 'showcase' }
   | { name: 'simulator' }
+  | { name: 'sort' }
   | { name: 'notFound' };
 
 export const paths = {
@@ -22,6 +23,7 @@ export const paths = {
   design: '#/dev/design',
   showcase: '#/dev/vitrine',
   simulator: '#/dev/simulateur',
+  sort: '#/tri',
 } as const;
 
 export function parseHash(hash: string): Route {
@@ -45,6 +47,8 @@ export function parseHash(hash: string): Route {
       return { name: 'showcase' };
     case '/dev/simulateur':
       return { name: 'simulator' };
+    case '/tri':
+      return { name: 'sort' };
     default:
       return { name: 'notFound' };
   }
