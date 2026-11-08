@@ -29,8 +29,8 @@
   position: relative;
   width: 56px;
   height: 32px;
-  border-radius: var(--r-sm);
-  background: rgb(0 0 0 / 0.35);
+  border-radius: var(--r-pill);
+  background: rgb(8 2 22 / 0.55);
   border: 2px solid var(--c-ink);
   transition: background var(--dur-base) var(--ease-out);
 }
@@ -41,7 +41,7 @@
   left: 2px;
   width: 24px;
   height: 24px;
-  border-radius: 2px;
+  border-radius: 50%;
   background: var(--c-text-faint);
   border: 2px solid var(--c-ink);
   transition:
@@ -50,7 +50,8 @@
 }
 
 .row[aria-checked='true'] .track {
-  background: var(--c-success);
+  background: var(--g-vice);
+  box-shadow: var(--glow-pink);
 }
 
 .row[aria-checked='true'] .thumb {

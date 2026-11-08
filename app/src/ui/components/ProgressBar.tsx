@@ -24,7 +24,7 @@ export function ProgressBar({
       aria-valuemax={max}
       aria-valuenow={value}
       data-complete={ratio >= 1}
-      style={{ '--fill': `${ratio * 100}%`, '--bar': color ?? 'var(--c-cyan)' } as CSSProperties}
+      style={{ '--fill': `${ratio * 100}%`, '--bar': color ?? 'var(--c-primary)' } as CSSProperties}
     >
       <span className={styles.fill} />
     </div>

@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 
-const THEME = '#0a3326';
+const THEME = '#12062a';
 
 export default defineConfig({
   base: './',

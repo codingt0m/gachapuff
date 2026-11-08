@@ -27,8 +27,10 @@
 }
 
 .model {
-  font-size: var(--fs-xl);
-  text-shadow: var(--sh-text);
+  font-size: var(--fs-lg);
+  text-shadow:
+    var(--stroke-ink-thin),
+    3px 3px 0 var(--c-ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -38,14 +40,17 @@
   flex: none;
   font-family: var(--font-display);
   color: var(--c-text-muted);
+  text-shadow: var(--stroke-ink-thin);
 }
 
 .tally[data-complete='true'] {
-  color: var(--c-gold);
+  color: var(--c-gold-hi);
+  text-shadow: 0 0 10px rgb(255 168 46 / 0.6);
 }
 
 .meta {
-  color: var(--c-text-faint);
+  color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
 }

@@ -16,8 +16,9 @@ import { useToast } from '../../components/Toast.tsx';
 import styles from './DevScreens.module.css';
 
 const COLORS = [
-  'felt',
-  'felt-dark',
+  'night',
+  'night-dark',
+  'night-light',
   'paper',
   'ink',
   'bg-deep',
@@ -31,7 +32,11 @@ const COLORS = [
   'primary',
   'primary-hi',
   'gold',
+  'gold-hi',
+  'peach',
+  'violet',
   'cyan',
+  'ocean',
   'lime',
   'danger',
   'success',
@@ -94,7 +99,17 @@ export default function DesignScreen() {
       <section className={styles.section}>
         <h2>Typographie</h2>
         <p style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)' }}>
-          Pixelify Sans — titres, chiffres, boutons
+          Bowlby One — titres, chiffres, boutons
+        </p>
+        <p
+          style={{
+            fontFamily: 'var(--font-script)',
+            fontSize: 'var(--fs-3xl)',
+            color: 'var(--c-primary-hi)',
+            textShadow: 'var(--sh-neon)',
+          }}
+        >
+          Mr Dafoe — accents néon
         </p>
         <p>Atkinson Hyperlegible Next — texte courant et libellés.</p>
         {TYPE.map((t) => (

@@ -85,7 +85,7 @@ function RevealRound({
     if (phase !== 'burst' || !canvas || reduced || !tier?.reveal.confetti) return;
     return burstConfetti(canvas, {
       count: tier.reveal.confetti,
-      colors: [tier.color, '#f2e8d5', '#e2a93b', '#d6312b', '#121212'],
+      colors: [tier.color, '#fff8f3', '#ffd166', '#ff2d87', '#22e0e6', '#8b4dff'],
     });
   }, [phase, reduced, tier]);
 

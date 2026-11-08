@@ -6,7 +6,8 @@
 
 html {
   color-scheme: dark;
-  background-color: var(--c-felt);
+  background-color: var(--c-night);
+  scrollbar-color: var(--c-primary) var(--c-night-dark);
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }
@@ -22,16 +23,77 @@ body {
   overflow-x: hidden;
 }
 
-/* The table: baize grain + a lamp-lit centre fading to dark edges. Fixed layer, painted once. */
-body::before {
+/*
+ * The backdrop, three fixed layers painted once (tree order = paint order):
+ *   body::before  dusk sky melting into the sun glow, turquoise sea, grain
+ *   #root::before striped synthwave sun sitting on the horizon
+ *   body::after   palm silhouettes framing the screen
+ * The upper sky stays deep violet so text keeps its contrast; the colour burns at the
+ * horizon, mostly behind the tab bar on phones.
+ */
+:root {
+  --horizon: 18%; /* height of the sea, from the bottom of the viewport */
+}
+
+body::before,
+body::after,
+#root::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(130% 90% at 50% 35%, transparent 40%, rgb(0 0 0 / 0.55) 100%), var(--tex-grain),
-    var(--c-felt);
   pointer-events: none;
+  /* Own compositing layer: rasterised once, never repainted when content animates above. */
+  will-change: transform;
+}
+
+body::before {
+  background:
+    radial-gradient(130% 95% at 50% 40%, transparent 45%, rgb(8 2 22 / 0.55) 100%),
+    var(--tex-grain),
+    radial-gradient(
+        42% 9% at 50% calc(100% - var(--horizon)),
+        rgb(255 214 140 / 0.75),
+        rgb(255 120 110 / 0.25) 60%,
+        transparent
+      )
+      no-repeat,
+    repeating-linear-gradient(180deg, transparent 0 7px, rgb(220 255 255 / 0.14) 7px 8px) bottom /
+      100% var(--horizon) no-repeat,
+    linear-gradient(180deg, #2fe0e0 0%, #0f9cc0 30%, #10508f 70%, #1b1d5e 100%) bottom / 100%
+      var(--horizon) no-repeat,
+    linear-gradient(
+      180deg,
+      #12062a 0%,
+      #1c0a40 26%,
+      #34106a 50%,
+      #5c1a84 66%,
+      #b02a82 75%,
+      #ff5f72 79%,
+      #ff9a5a 81%,
+      #ffc56a 82%
+    );
+}
+
+/* The sun, its bottom edge on the horizon line. */
+#root::before {
+  inset: auto 0 calc(var(--horizon) - 1px) 0;
+  height: min(26vw, 18vh, 190px);
+  background: url('../assets/decor/sun.svg') center bottom / contain no-repeat;
+  filter: drop-shadow(0 0 28px rgb(255 120 90 / 0.65));
+}
+
+body::after {
+  background:
+    url('../assets/decor/palms-left.svg') left -3vw bottom 0 / clamp(150px, 30vw, 380px) auto
+      no-repeat,
+    url('../assets/decor/palms-right.svg') right -3vw bottom 0 / clamp(150px, 30vw, 380px) auto
+      no-repeat;
+}
+
+::selection {
+  background: var(--c-primary);
+  color: #fff;
 }
 
 #root {
@@ -45,7 +107,7 @@ h3 {
   font-family: var(--font-display);
   font-weight: var(--fw-display);
   line-height: var(--lh-tight);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 p {

@@ -43,8 +43,10 @@
 }
 
 .pip[data-full='true'] {
-  background: var(--tex-stripes), var(--c-primary);
-  box-shadow: 3px 3px 0 var(--c-ink);
+  background: var(--tex-stripes), var(--g-promo);
+  box-shadow:
+    3px 3px 0 var(--c-ink),
+    var(--glow-pink);
   animation: pop var(--dur-slow) var(--ease-bounce);
 }
 
@@ -55,10 +57,13 @@
 .unlimited {
   padding: var(--sp-1) var(--sp-3);
   border: 2px solid var(--c-ink);
+  border-radius: var(--r-pill);
   background: var(--c-lime);
   color: var(--c-ink);
   font-weight: var(--fw-black);
   font-size: var(--fs-sm);
+  box-shadow: 2px 2px 0 var(--c-ink);
+  transform: rotate(-3deg);
 }
 
 .packArea {
@@ -82,8 +87,9 @@
 
 .timer {
   min-height: 1.5em;
-  color: var(--c-text-muted);
+  color: var(--c-text);
   font-weight: var(--fw-bold);
+  text-shadow: var(--sh-legible);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -119,7 +125,7 @@
   gap: var(--sp-3);
   padding: var(--sp-4);
   border-radius: var(--r-lg);
-  background: var(--c-surface);
+  background: var(--tex-scan), var(--g-panel);
   border: var(--outline);
   box-shadow: var(--sh-card);
 }
@@ -134,16 +140,24 @@
   justify-content: space-between;
   font-family: var(--font-display);
   font-size: var(--fs-lg);
+  text-shadow:
+    var(--stroke-ink-thin),
+    2px 2px 0 var(--c-primary);
 }
 
 .percent {
   justify-self: end;
   color: var(--c-gold-hi);
   font-family: var(--font-display);
+  text-shadow: 0 0 10px rgb(255 168 46 / 0.6);
 }
 
 .recentTitle {
-  font-size: var(--fs-lg);
+  font-family: var(--font-script);
+  font-size: var(--fs-2xl);
+  font-weight: 400;
+  color: var(--c-primary-hi);
+  text-shadow: var(--sh-neon);
 }
 
 .recent {

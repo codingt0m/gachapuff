@@ -5,17 +5,18 @@
   gap: var(--sp-1);
   padding: 2px var(--sp-3) 2px var(--sp-2);
   border: 2px solid var(--c-ink);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   line-height: 1.2;
   white-space: nowrap;
+  text-shadow: none;
   box-shadow: 2px 2px 0 var(--c-ink);
 }
 
-/* Pixel type is unreadable this small: small tags use the text face. */
+/* The poster face is too heavy this small: small tags use the text face. */
 .sm,
 .md {
   font-family: var(--font-body);
@@ -33,26 +34,28 @@
 }
 
 .lg {
-  font-size: var(--fs-xl);
+  font-size: clamp(var(--fs-md), 5vw, var(--fs-xl));
   padding: var(--sp-1) var(--sp-4) var(--sp-1) var(--sp-3);
   border-width: 3px;
   box-shadow: 3px 3px 0 var(--c-ink);
   transform: rotate(-2deg);
 }
 
-/* Chips: little ivory tickets. */
+/* Chips: little white stickers. */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
   padding: 2px var(--sp-3);
   border: 2px solid var(--c-ink);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   background: var(--c-paper);
+  box-shadow: 2px 2px 0 var(--c-ink);
   color: var(--c-ink);
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   white-space: nowrap;
+  text-shadow: none;
 }
 
 .swatch {

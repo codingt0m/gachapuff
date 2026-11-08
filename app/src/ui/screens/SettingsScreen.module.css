@@ -8,7 +8,7 @@
 
 .title {
   font-size: var(--fs-3xl);
-  text-shadow: var(--sh-text);
+  text-shadow: var(--sh-text-pop);
 }
 
 .card {
@@ -16,13 +16,16 @@
   gap: var(--sp-2);
   padding: var(--sp-4) var(--sp-5);
   border-radius: var(--r-lg);
-  background: var(--c-surface);
+  background: var(--tex-scan), var(--g-panel);
   border: var(--outline);
   box-shadow: var(--sh-card);
 }
 
 .cardTitle {
   font-size: var(--fs-xl);
+  text-shadow:
+    var(--stroke-ink-thin),
+    2px 2px 0 var(--c-primary);
 }
 
 .label {
@@ -102,7 +105,10 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--fs-2xl);
-  color: var(--c-gold);
+  color: var(--c-gold-hi);
+  text-shadow:
+    var(--stroke-ink-thin),
+    0 0 14px rgb(255 168 46 / 0.55);
 }
 
 .links {
@@ -120,7 +126,8 @@
 }
 
 .about {
-  color: var(--c-text-faint);
+  color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
   font-size: var(--fs-sm);
   text-align: center;
 }

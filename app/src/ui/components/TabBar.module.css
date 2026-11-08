@@ -7,8 +7,19 @@
   height: calc(var(--tabbar-h) + var(--safe-bottom));
   padding: 0 calc(var(--safe-right) + var(--sp-2)) var(--safe-bottom)
     calc(var(--safe-left) + var(--sp-2));
-  background: var(--c-ink);
-  border-top: 3px solid var(--c-gold-lo);
+  background: linear-gradient(0deg, rgb(12 4 32 / 0.96), rgb(26 9 58 / 0.97));
+}
+
+/* Neon tube along the inner edge. */
+.bar::before {
+  content: '';
+  position: absolute;
+  inset: -3px 0 auto 0;
+  height: 3px;
+  background: var(--g-neon-line);
+  box-shadow:
+    0 0 10px rgb(255 45 135 / 0.7),
+    0 0 2px rgb(255 255 255 / 0.6);
 }
 
 .tab {
@@ -37,21 +48,24 @@
   place-items: center;
   width: 52px;
   height: 32px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   transition:
     background var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-bounce);
 }
 
 .tab[aria-current='page'] {
-  color: var(--c-text);
+  color: var(--c-primary-hi);
+  text-shadow: 0 0 10px rgb(255 45 135 / 0.6);
 }
 
 .tab[aria-current='page'] .icon {
-  background: var(--c-primary);
+  background: var(--g-vice);
   color: #fff;
-  outline: 2px solid var(--c-paper);
-  transform: translateY(-2px);
+  border: 2px solid var(--c-ink);
+  outline: 2px solid #fff;
+  box-shadow: var(--glow-pink);
+  transform: translateY(-2px) rotate(-3deg);
 }
 
 .dot {
@@ -62,7 +76,7 @@
   height: 20px;
   padding: 0 5px;
   border-radius: var(--r-pill);
-  background: var(--c-gold);
+  background: var(--c-gold-hi);
   color: var(--c-ink);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
@@ -81,8 +95,14 @@
     grid-auto-rows: 88px;
     align-content: start;
     padding: calc(var(--header-h) + var(--sp-6)) 0 var(--sp-4);
-    border-top: 0;
-    border-right: 3px solid var(--c-gold-lo);
+    background: linear-gradient(90deg, rgb(12 4 32 / 0.96), rgb(26 9 58 / 0.97));
+  }
+
+  .bar::before {
+    inset: 0 -3px 0 auto;
+    width: 3px;
+    height: auto;
+    background: linear-gradient(180deg, #22e0e6, #8b4dff 33%, #ff2d87 66%, #ffa82e);
   }
 
   .tab {

@@ -22,13 +22,14 @@
 
 .title {
   font-size: var(--fs-3xl);
-  color: var(--c-gold);
-  text-shadow: var(--sh-text);
+  color: #fff;
+  text-shadow: var(--sh-text-pop);
 }
 
 .text {
   max-width: 36ch;
   color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
 }
 
 .detail {

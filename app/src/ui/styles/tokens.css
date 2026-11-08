@@ -1,44 +1,65 @@
 /*
- * Design tokens — "salle de jeux rétro": green baize table, ivory card stock,
- * playing-card red, brass, black ink outlines, hard offset shadows, pixel type.
+ * Design tokens — "Sunset Drive": a neon beach promo at dusk. Violet night sky melting
+ * into magenta, peach and gold, a turquoise sea, palm silhouettes; bold white lettering
+ * outlined in ink like a die-cut sticker, a hot-pink neon script, punchy gradients.
  * Every colour, size, radius, shadow, duration and curve of the UI comes from here.
  * Rarity colours are injected from src/config/gameConfig.ts (--rarity-<id>,
  * --rarity-<id>-ink) by ui/theme.ts so they have a single source.
  */
 :root {
-  /* ---- colour ---- */
-  --c-felt: #0f4a37;
-  --c-felt-dark: #0a3326;
-  --c-felt-light: #16624a;
-  --c-bg: var(--c-felt);
-  --c-bg-deep: #08241b;
-  --c-ink: #121212;
-  --c-surface: #0b2c22; /* panels laid on the table */
-  --c-surface-2: #123d30;
-  --c-surface-3: #1a5241;
-  --c-line: #2a6b55;
-  --c-paper: #f2e8d5; /* ivory card stock */
-  --c-paper-dark: #d9cbb0;
-  --c-text: #f6efe0;
-  --c-text-muted: #c3d6c8;
-  --c-text-faint: #8fb3a3;
+  /* ---- colour: the night sky ---- */
+  --c-night: #1d0b3d;
+  --c-night-dark: #12062a;
+  --c-night-light: #2f1260;
+  --c-bg: var(--c-night);
+  --c-bg-deep: #0c0420;
+  --c-ink: #160a2b; /* sticker outline: a violet-black, never pure black */
+  --c-surface: #22104a; /* panels floating over the sunset */
+  --c-surface-2: #2d1661;
+  --c-surface-3: #3b1d7a;
+  --c-line: #6a45b0;
+  --c-paper: #fff8f3; /* white sticker stock */
+  --c-paper-dark: #ecd6ea;
+  --c-text: #fff6fb;
+  --c-text-muted: #e8cdef;
+  --c-text-faint: #bba0d8;
 
-  --c-primary: #d6312b; /* card red */
-  --c-primary-hi: #ef4a3f;
-  --c-primary-lo: #8e1914;
-  --c-gold: #e2a93b; /* brass */
-  --c-gold-hi: #f5cf6e;
-  --c-gold-lo: #9a6a12;
-  --c-cyan: #4fc3c9;
-  --c-lime: #a8e05f;
-  --c-danger: #d6312b;
-  --c-success: #4caf50;
-  --c-focus: #f5cf6e;
+  /* ---- colour: neon & sunset accents ---- */
+  --c-primary: #ff2d87; /* hot pink neon */
+  --c-primary-hi: #ff6eb0;
+  --c-primary-lo: #b3125c;
+  --c-gold: #ffa82e; /* setting sun */
+  --c-gold-hi: #ffd166;
+  --c-gold-lo: #d0611a;
+  --c-peach: #ff7a59;
+  --c-violet: #8b4dff;
+  --c-cyan: #22e0e6; /* turquoise sea */
+  --c-ocean: #0aa6c9;
+  --c-lime: #5cf2c0; /* mint highlight ("new", dev) */
+  --c-danger: #ff3b5c;
+  --c-success: #2fd6a0;
+  --c-focus: #ffd166;
 
-  --c-scrim: rgb(5 20 15 / 0.82);
+  --c-scrim: rgb(14 4 32 / 0.84);
 
-  /* ---- typography (2 families) ---- */
-  --font-display: 'Pixelify Sans Variable', 'Courier New', monospace;
+  /* ---- gradients ---- */
+  /* Promo buttons: pink neon burning into orange. */
+  --g-vice: linear-gradient(100deg, #ff2d87 0%, #ff5470 48%, #ff9a3d 100%);
+  /* The big "open" call: gold sun dripping into pink. */
+  --g-jackpot: linear-gradient(180deg, #ffe07a 0%, #ffb02e 42%, #ff6a4d 78%, #ff3d8b 100%);
+  /* Candy wash: pink -> lilac -> sky. */
+  --g-crousty: linear-gradient(135deg, #ff7ac6 0%, #c58cff 50%, #5fe3ff 100%);
+  /* Six-colour promo logo fill: sky blue -> violet -> pink -> gold. */
+  --g-promo: linear-gradient(160deg, #4fb8ff 0%, #8a4dff 30%, #ff3d9a 64%, #ffb23a 100%);
+  --g-ocean: linear-gradient(110deg, #22e0e6 0%, #2b8cff 100%);
+  --g-neon-line: linear-gradient(90deg, #22e0e6, #8b4dff 33%, #ff2d87 66%, #ffa82e);
+  --g-panel: linear-gradient(165deg, #2b1360 0%, #1e0c42 60%, #1a0a3a 100%);
+  /* Light card stock for the collectible tiles: white with a candy blush. */
+  --g-card: linear-gradient(160deg, #ffffff 0%, #fff0f8 55%, #e9f8ff 100%);
+
+  /* ---- typography: impact display + neon script + legible text ---- */
+  --font-display: 'Bowlby One', 'Arial Black', Impact, sans-serif;
+  --font-script: 'Mr Dafoe', 'Brush Script MT', cursive;
   --font-body:
     'Atkinson Hyperlegible Next Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fs-xs: 0.75rem; /* 12 */
@@ -54,7 +75,7 @@
   --fw-regular: 400;
   --fw-bold: 700;
   --fw-black: 800;
-  --fw-display: 600;
+  --fw-display: 400; /* Bowlby One ships a single (very heavy) weight */
   --tracking-wide: 0.08em;
 
   /* ---- spacing: 4 px base ---- */
@@ -69,31 +90,48 @@
   --sp-12: 3rem;
   --sp-16: 4rem;
 
-  /* ---- radii: nearly square, like cards and chips ---- */
-  --r-sm: 3px;
-  --r-md: 6px;
-  --r-lg: 8px;
-  --r-xl: 12px;
+  /* ---- radii: soft die-cut sticker corners ---- */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
   --r-pill: 999px;
 
-  /* ---- borders & shadows: ink outlines, hard offset shadows, no glow ---- */
+  /* ---- borders & shadows: ink outlines, hard offset drops, neon glows ---- */
   --bw: 3px;
   --outline: var(--bw) solid var(--c-ink);
   --sh-chunky: 4px 4px 0 var(--c-ink);
   --sh-chunky-pressed: 1px 1px 0 var(--c-ink);
-  --sh-card: 5px 5px 0 rgb(0 0 0 / 0.55);
-  --sh-float: 8px 10px 0 rgb(0 0 0 / 0.45);
-  --sh-text: 2px 2px 0 var(--c-ink);
-  --sh-inset: inset 0 -4px 0 rgb(0 0 0 / 0.22), inset 0 2px 0 rgb(255 255 255 / 0.25);
+  --sh-card: 5px 5px 0 rgb(8 2 22 / 0.7), 0 12px 32px -8px rgb(255 45 135 / 0.28);
+  --sh-float: 8px 10px 0 rgb(8 2 22 / 0.6), 0 18px 44px -10px rgb(255 45 135 / 0.4);
+  --sh-inset: inset 0 -4px 0 rgb(40 0 40 / 0.25), inset 0 2px 0 rgb(255 255 255 / 0.4);
+  --glow-pink: 0 0 18px rgb(255 45 135 / 0.6);
+  --glow-cyan: 0 0 18px rgb(34 224 230 / 0.55);
+  /* Sticker lettering: an ink stroke all round, then a hard drop. */
+  --stroke-ink:
+    -2px -2px 0 var(--c-ink), 0 -2px 0 var(--c-ink), 2px -2px 0 var(--c-ink), 2px 0 0 var(--c-ink),
+    2px 2px 0 var(--c-ink), 0 2px 0 var(--c-ink), -2px 2px 0 var(--c-ink), -2px 0 0 var(--c-ink);
+  --stroke-ink-thin:
+    -1px -1px 0 var(--c-ink), 1px -1px 0 var(--c-ink), 1px 1px 0 var(--c-ink),
+    -1px 1px 0 var(--c-ink), 0 1.5px 0 var(--c-ink), 0 -1.5px 0 var(--c-ink),
+    1.5px 0 0 var(--c-ink), -1.5px 0 0 var(--c-ink);
+  --sh-text: var(--stroke-ink), 4px 4px 0 var(--c-ink);
+  /* Title variant: ink stroke, pink drop, ink drop (the promo-poster stack). */
+  --sh-text-pop: var(--stroke-ink), 0.07em 0.07em 0 var(--c-primary), 0.12em 0.12em 0 var(--c-ink);
+  /* Halo for small text laid straight on the backdrop (it may cross the sunset). */
+  --sh-legible: 0 1px 2px rgb(12 4 32 / 0.95), 0 0 10px rgb(12 4 32 / 0.75);
+  --sh-neon: 0 0 6px rgb(255 110 176 / 0.9), 0 0 18px rgb(255 45 135 / 0.7);
 
   /* ---- textures ---- */
   --tex-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --tex-dots: radial-gradient(rgb(0 0 0 / 0.18) 1px, transparent 1.5px) 0 0 / 6px 6px;
+  --tex-dots: radial-gradient(rgb(40 0 60 / 0.16) 1px, transparent 1.5px) 0 0 / 6px 6px;
   --tex-stripes: repeating-linear-gradient(
     -45deg,
-    rgb(255 255 255 / 0.07) 0 6px,
+    rgb(255 255 255 / 0.12) 0 6px,
     transparent 6px 12px
   );
+  /* Retro scanlines for neon panels. */
+  --tex-scan: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 4px);
 
   /* ---- sizes ---- */
   --tap-min: 44px;

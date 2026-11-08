@@ -13,11 +13,12 @@
 
 .title {
   font-size: var(--fs-3xl);
-  text-shadow: var(--sh-text);
+  text-shadow: var(--sh-text-pop);
 }
 
 .lead {
   color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
 }
 
 .tiers {
@@ -37,8 +38,8 @@
   min-height: var(--tap-min);
   padding: 0 var(--sp-3);
   border: 2px solid var(--c-ink);
-  border-radius: var(--r-sm);
-  background: var(--c-surface);
+  border-radius: var(--r-pill);
+  background: var(--g-panel);
   color: var(--c-text);
   font-weight: var(--fw-bold);
   font-size: var(--fs-sm);
@@ -63,7 +64,7 @@
 .tierCount {
   min-width: 22px;
   padding: 0 6px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   background: rgb(0 0 0 / 0.3);
   text-align: center;
 }
@@ -79,11 +80,12 @@
   justify-items: center;
   padding: var(--sp-5) var(--sp-4);
   border-radius: var(--r-xl);
-  background: var(--tex-dots), var(--c-primary);
+  background: var(--tex-dots), var(--tex-scan), var(--g-promo);
   border: 4px solid var(--c-ink);
   box-shadow:
-    inset 0 0 0 4px var(--c-gold),
+    inset 0 0 0 4px #fff,
     inset 0 0 0 6px var(--c-ink),
+    inset 0 0 40px rgb(255 255 255 / 0.18),
     var(--sh-float);
 }
 
@@ -98,9 +100,9 @@
   display: grid;
   place-items: center;
   border-radius: var(--r-md);
-  background: var(--c-paper);
+  background: var(--g-card);
   border: 3px solid var(--c-ink);
-  box-shadow: inset 3px 4px 0 rgb(0 0 0 / 0.2);
+  box-shadow: inset 3px 4px 0 rgb(60 0 80 / 0.18);
 }
 
 .slot[data-filled='true'] {
@@ -114,7 +116,7 @@
 }
 
 .formula {
-  color: var(--c-paper);
+  color: #fff;
   text-shadow: var(--sh-text);
   display: flex;
   flex-wrap: wrap;
@@ -127,6 +129,7 @@
 
 .warning {
   padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-pill);
   background: var(--c-ink);
   color: var(--c-gold-hi);
   font-weight: var(--fw-bold);
@@ -150,6 +153,7 @@
 .hint {
   margin-bottom: var(--sp-3);
   color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
 }
 
 .empty {
@@ -158,6 +162,7 @@
   gap: var(--sp-3);
   padding: var(--sp-8) var(--sp-4);
   color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
   text-align: center;
 }
 

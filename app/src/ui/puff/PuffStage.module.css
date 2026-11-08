@@ -31,10 +31,10 @@
   width: min(80%, 420px);
   aspect-ratio: 0.8;
   border-radius: 50%;
-  /* A lamp pool on the baize, lightly tinted by the rarity colour. */
+  /* A neon pool behind the puff, tinted by the rarity colour. */
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--glow) 22%, rgb(255 255 255 / 0.16)),
+    color-mix(in srgb, var(--glow) 30%, rgb(255 110 200 / 0.16)),
     transparent
   );
   transform: translate(calc(-50% + var(--tx) * -30px), calc(var(--ty) * -20px));
@@ -51,7 +51,7 @@
   width: min(42%, 220px);
   height: 5%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
+  background: radial-gradient(closest-side, rgb(10 2 30 / 0.6), transparent);
   transform: translateX(calc(-50% + var(--tx) * 40px)) scaleX(calc(1 + var(--tx) * 0.2));
   pointer-events: none;
 }

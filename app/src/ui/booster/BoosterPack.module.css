@@ -9,7 +9,10 @@
   --tear: 0;
   --charge: 0;
   --glow: var(--c-gold);
-  --wrap: var(--c-primary);
+  /* Promo print: sky blue -> violet -> pink -> gold, like a sunset poster. */
+  --wrap: linear-gradient(170deg, #4fb8ff 0%, #8a4dff 28%, #ff3d9a 60%, #ff9a3d 88%, #ffc95c 100%);
+  --seal-top-c: #6a46ff;
+  --seal-bottom-c: #ff8a3d;
   --seal-top: 9%;
   --seal-bottom: 6%;
   /* Bulge of the face in front of the seals; the bag swells as the charge builds. */
@@ -21,7 +24,7 @@
   --creases: repeating-linear-gradient(
     90deg,
     transparent 0 5px,
-    rgb(30 0 0 / 0.3) 5px 6px,
+    rgb(30 0 40 / 0.3) 5px 6px,
     rgb(255 240 230 / 0.14) 6px 7px,
     transparent 7px 12px
   );
@@ -60,7 +63,7 @@
 }
 
 .backFace {
-  background: var(--c-primary-lo);
+  background: #3a157a;
   transform: translateZ(calc(var(--depth) * -1))
     scale(calc(1 - var(--inset-x)), calc(1 - var(--inset-y)));
 }
@@ -76,7 +79,7 @@
     linear-gradient(
       150deg,
       rgb(255 236 222 / calc(var(--turn) * 0.16)) 30%,
-      rgb(30 0 0 / calc(var(--turn) * 0.7)) 62%
+      rgb(30 0 50 / calc(var(--turn) * 0.7)) 62%
     ),
     var(--creases) top / 100% 7% no-repeat,
     var(--creases) bottom / 100% 6% no-repeat,
@@ -139,10 +142,11 @@
       180deg,
       rgb(255 255 255 / 0.14),
       transparent 40%,
-      rgb(30 0 0 / 0.2) 75%,
-      rgb(30 0 0 / 0.45)
+      rgb(30 0 50 / 0.2) 75%,
+      rgb(30 0 50 / 0.45)
     ),
-    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 4px), var(--c-primary);
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 4px),
+    var(--seal-top-c);
 }
 
 .stripFoil {
@@ -156,10 +160,11 @@
       0deg,
       rgb(255 255 255 / 0.1),
       transparent 40%,
-      rgb(30 0 0 / 0.25) 75%,
-      rgb(30 0 0 / 0.5)
+      rgb(30 0 50 / 0.25) 75%,
+      rgb(30 0 50 / 0.5)
     ),
-    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 4px), var(--c-primary);
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 4px),
+    var(--seal-bottom-c);
   -webkit-mask: radial-gradient(4px at 50% 100%, #0000 98%, #000) 50% 100% / 8px 100%;
   mask: radial-gradient(4px at 50% 100%, #0000 98%, #000) 50% 100% / 8px 100%;
 }
@@ -170,7 +175,7 @@
   right: 6%;
   top: calc(var(--seal-top) * 0.62);
   height: 0;
-  border-top: 2px dashed rgb(242 232 213 / 0.75);
+  border-top: 2px dashed rgb(255 248 243 / 0.8);
   transform: translateZ(1px);
 }
 
@@ -195,10 +200,12 @@
   gap: 5%;
   overflow: hidden;
   background:
-    linear-gradient(rgb(30 0 0 / 0.16), transparent) top / 100% 7% no-repeat,
+    linear-gradient(rgb(30 0 50 / 0.16), transparent) top / 100% 7% no-repeat,
     var(--creases) top / 100% 4% no-repeat,
+    url('../assets/decor/palms-left.svg') left -14% bottom -2% / 46% auto no-repeat,
+    url('../assets/decor/palms-right.svg') right -14% bottom -2% / 46% auto no-repeat,
     var(--tex-dots),
-    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.1) 0 14px, transparent 14px 28px),
+    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.07) 0 14px, transparent 14px 28px),
     var(--wrap);
   border-radius: 9% / 5%;
   transform: translateZ(var(--depth)) scale(calc(1 - var(--inset-x)), calc(1 - var(--inset-y)));
@@ -232,7 +239,7 @@
     );
 }
 
-/* Brass sunburst behind the label. */
+/* Sunset rays behind the label. */
 .burst {
   position: absolute;
   top: 40%;
@@ -240,13 +247,13 @@
   width: 150%;
   aspect-ratio: 1;
   translate: -50% -50%;
-  background: repeating-conic-gradient(rgb(226 169 59 / 0.35) 0 9deg, transparent 9deg 18deg);
+  background: repeating-conic-gradient(rgb(255 230 140 / 0.32) 0 9deg, transparent 9deg 18deg);
   -webkit-mask: radial-gradient(closest-side, #000 25%, transparent 70%);
   mask: radial-gradient(closest-side, #000 25%, transparent 70%);
   animation: spin 40s linear infinite;
 }
 
-/* Central label: an ivory card with the mystery puff. */
+/* Central label: a white die-cut sticker with the mystery puff. */
 .medal {
   position: relative;
   display: grid;
@@ -255,10 +262,10 @@
   aspect-ratio: 0.72;
   border: 3px solid var(--c-ink);
   border-radius: var(--r-md);
-  background: var(--c-paper);
+  background: var(--g-card);
   box-shadow:
-    inset 0 0 0 4px var(--c-paper),
-    inset 0 0 0 6px var(--c-primary),
+    inset 0 0 0 4px #fff,
+    inset 0 0 0 7px var(--c-primary),
     5px 5px 0 var(--c-ink);
   transform: rotate(-4deg);
 }
@@ -277,12 +284,16 @@
   width: 42%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--c-gold);
-  color: var(--c-ink);
+  background: var(--c-cyan);
+  color: #fff;
   font-family: var(--font-display);
   font-weight: var(--fw-display);
   font-size: clamp(1rem, 6vw, 1.75rem);
+  text-shadow:
+    var(--stroke-ink-thin),
+    2px 2px 0 var(--c-ink);
   border: 3px solid var(--c-ink);
+  box-shadow: 3px 3px 0 var(--c-ink);
   transform: rotate(8deg);
 }
 
@@ -290,16 +301,17 @@
   position: relative;
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: clamp(1.15rem, 6.5vw, 1.85rem);
-  color: var(--c-paper);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-shadow: 3px 3px 0 var(--c-ink);
+  font-size: clamp(1.05rem, 6vw, 1.7rem);
+  color: #fff;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  text-shadow: var(--sh-text-pop);
 }
 
 .name {
   position: relative;
   padding: 2px var(--sp-3);
+  border-radius: var(--r-pill);
   background: var(--c-ink);
   color: var(--c-gold-hi);
   font-weight: var(--fw-black);
@@ -308,7 +320,7 @@
   text-transform: uppercase;
 }
 
-/* "1 puff" sticker: a brass chip. */
+/* "1 puff" sticker: a gold sun chip. */
 .sticker {
   position: absolute;
   top: 4%;
@@ -318,19 +330,24 @@
   width: 22%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--c-gold);
+  background: radial-gradient(circle at 35% 30%, #fff3b0, var(--c-gold-hi) 45%, var(--c-gold));
   color: var(--c-ink);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
   font-size: clamp(1rem, 5vw, 1.5rem);
   line-height: 0.8;
-  border: 3px dashed var(--c-ink);
+  border: 3px solid var(--c-ink);
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5px var(--c-ink);
   transform: rotate(12deg);
 }
 
 .sticker small {
-  font-size: 0.45em;
-  text-transform: uppercase;
+  font-family: var(--font-script);
+  font-size: 0.7em;
+  line-height: 0.9;
+  color: var(--c-primary-lo);
 }
 
 /* Light beam escaping from the opening (rarity hint colour). */

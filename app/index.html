@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a3326" />
+    <meta name="theme-color" content="#12062a" />
     <meta
       name="description"
       content="Gachapuff : ouvre des boosters, collectionne les puffs JNR, contemple les plus rares."
@@ -16,7 +16,17 @@
     <style>
       /* Static splash, painted before any script runs; React replaces it. */
       html {
-        background: #0f4a37;
+        background: linear-gradient(
+          180deg,
+          #12062a 0%,
+          #1c0a40 30%,
+          #34106a 52%,
+          #6b1b86 68%,
+          #c02f82 80%,
+          #ff7a62 92%,
+          #ffc56a 100%
+        );
+        min-height: 100%;
       }
       body {
         margin: 0;
@@ -25,15 +35,20 @@
         display: grid;
         place-items: center;
         min-height: 100dvh;
-        color: #f2e8d5;
+        color: #fff;
         font:
-          700 2.5rem/1 'Courier New',
-          monospace;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+          900 2.75rem/1 'Arial Black',
+          Impact,
+          sans-serif;
+        letter-spacing: 0;
+        text-transform: lowercase;
         text-shadow:
-          3px 3px 0 #d6312b,
-          5px 5px 0 #121212;
+          -2px -2px 0 #160a2b,
+          2px -2px 0 #160a2b,
+          -2px 2px 0 #160a2b,
+          2px 2px 0 #160a2b,
+          5px 5px 0 #ff2d87,
+          8px 8px 0 #160a2b;
       }
       .boot-splash span {
         animation: boot-pulse 1.4s ease-in-out infinite;

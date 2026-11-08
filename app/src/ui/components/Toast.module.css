@@ -14,8 +14,8 @@
 .toast {
   padding: var(--sp-3) var(--sp-4);
   border: var(--outline);
-  border-radius: var(--r-md);
-  background: var(--c-paper);
+  border-radius: var(--r-lg);
+  background: var(--g-card);
   color: var(--c-ink);
   font-weight: var(--fw-bold);
   box-shadow: var(--sh-card);
@@ -23,9 +23,9 @@
 }
 
 .toast[data-tone='success'] {
-  background: #cfe8b8;
+  background: linear-gradient(160deg, #e6fff5, #b8f5de);
 }
 
 .toast[data-tone='warning'] {
-  background: #f5d78e;
+  background: linear-gradient(160deg, #fff4d6, #ffd58a);
 }

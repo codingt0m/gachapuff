@@ -3,7 +3,7 @@
   padding: var(--sp-6);
   border: var(--outline);
   border-radius: var(--r-lg);
-  background: var(--c-paper);
+  background: var(--g-card);
   color: var(--c-ink);
   box-shadow: var(--sh-float);
 }
@@ -22,7 +22,7 @@
 }
 
 .body {
-  color: #3a3a3a;
+  color: #4a3a60;
   margin-bottom: var(--sp-6);
 }
 

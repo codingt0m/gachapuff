@@ -1,6 +1,11 @@
+/*
+ * Promo buttons: a gradient slab with an ink outline and a hard drop, white sticker
+ * lettering (ink stroke) on top, a sheen sliding across on hover.
+ */
 .button {
-  --btn-bg: var(--c-primary);
+  --btn-bg: var(--g-vice);
   --btn-ink: #fff;
+  --btn-stroke: var(--stroke-ink-thin);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -8,17 +13,22 @@
   gap: var(--sp-2);
   min-height: var(--tap-min);
   min-width: var(--tap-min);
-  padding: var(--sp-2) var(--sp-5);
+  max-width: 100%;
+  padding: var(--sp-2) var(--sp-4);
   border: var(--outline);
   border-radius: var(--r-md);
   background: var(--btn-bg);
   color: var(--btn-ink);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: var(--fs-lg);
-  letter-spacing: 0.04em;
+  font-size: clamp(var(--fs-md), 4.2vw, var(--fs-lg));
+  line-height: 1.1;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  text-shadow: var(--btn-stroke);
   box-shadow: var(--sh-chunky), var(--sh-inset);
+  overflow: hidden;
+  isolation: isolate;
   transform: translate(0, 0);
   transition:
     transform var(--dur-instant) var(--ease-out),
@@ -26,6 +36,27 @@
     background-color var(--dur-fast);
   user-select: none;
   touch-action: manipulation;
+}
+
+/* Sheen: a diagonal glint that sweeps across on hover. */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.45) 45%,
+    transparent 58%
+  );
+  translate: -110% 0;
+  transition: translate var(--dur-slow) var(--ease-out);
+  pointer-events: none;
+}
+
+.button:hover:not(:disabled)::before {
+  translate: 110% 0;
 }
 
 .button:hover:not(:disabled) {
@@ -42,27 +73,30 @@
 
 .button:disabled {
   cursor: not-allowed;
-  --btn-bg: #4b5a53;
-  --btn-ink: #b9c4bd;
+  --btn-bg: #3d2d5c;
+  --btn-ink: #a996c4;
+  --btn-stroke: none;
   box-shadow: var(--sh-chunky-pressed);
   transform: translate(3px, 3px);
 }
 
 .secondary {
-  --btn-bg: #2f6fb5;
+  --btn-bg: var(--g-ocean);
 }
 
 .ghost {
   --btn-bg: transparent;
   border-color: transparent;
   box-shadow: none;
-  color: var(--c-text-muted);
+  color: var(--c-text);
   font-family: var(--font-body);
   font-weight: var(--fw-bold);
   font-size: var(--fs-md);
   text-transform: none;
+  text-shadow: var(--sh-legible);
   letter-spacing: 0;
   text-decoration: underline;
+  text-decoration-color: var(--c-primary);
   text-underline-offset: 3px;
 }
 
@@ -73,13 +107,22 @@
   color: var(--c-text);
 }
 
+.ghost::before {
+  content: none;
+}
+
+/* The big one: the setting sun, with a neon halo. */
 .jackpot {
-  --btn-bg: var(--c-gold);
-  --btn-ink: var(--c-ink);
+  --btn-bg: var(--g-jackpot);
+  --btn-stroke: var(--stroke-ink), 3px 3px 0 var(--c-ink);
+  box-shadow:
+    var(--sh-chunky),
+    var(--sh-inset),
+    0 0 28px rgb(255 120 90 / 0.55);
 }
 
 .danger {
-  --btn-bg: var(--c-primary-lo);
+  --btn-bg: linear-gradient(100deg, #c4124f, #ff3b5c);
 }
 
 .sm {
@@ -98,18 +141,28 @@
 
 .lg {
   min-height: 56px;
-  padding: var(--sp-3) var(--sp-6);
-  font-size: var(--fs-xl);
+  padding: var(--sp-3) var(--sp-5);
+  font-size: clamp(1.05rem, 4.6vw, var(--fs-lg));
+  --btn-stroke: var(--stroke-ink), 2px 2px 0 var(--c-ink);
 }
 
 .xl {
   min-height: 76px;
-  padding: var(--sp-4) var(--sp-10);
-  font-size: var(--fs-3xl);
+  padding: var(--sp-4) var(--sp-8);
+  font-size: clamp(var(--fs-2xl), 10vw, var(--fs-3xl));
   border-width: 4px;
+  border-radius: var(--r-lg);
+  --btn-stroke: var(--stroke-ink), 4px 4px 0 var(--c-ink);
   box-shadow:
     6px 6px 0 var(--c-ink),
     var(--sh-inset);
+}
+
+.xl.jackpot {
+  box-shadow:
+    6px 6px 0 var(--c-ink),
+    var(--sh-inset),
+    0 0 36px rgb(255 120 90 / 0.6);
 }
 
 .xl:active:not(:disabled) {

@@ -5,31 +5,54 @@
   line-height: 1;
 }
 
-/* Pixel wordmark: ivory letters, red then ink offset shadows, like a marquee sign. */
+/*
+ * Promo-poster wordmark: "gacha" in heavy white sticker lettering (ink stroke, pink
+ * then ink drop), "puff" as a hot-pink neon script slung across its tail.
+ */
 .word {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--c-paper);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: #fff;
+  text-shadow: var(--sh-text-pop);
+}
+
+.puff {
+  display: inline-block;
+  margin-left: -0.12em;
+  font-family: var(--font-script);
+  font-size: 1.35em;
+  line-height: 0.6;
+  color: var(--c-primary-hi);
+  text-transform: none;
+  transform: rotate(-8deg) translateY(0.12em);
   text-shadow:
+    var(--stroke-ink),
+    3px 3px 0 var(--c-ink),
+    0 0 14px rgb(255 45 135 / 0.85);
+}
+
+.sm .word {
+  font-size: var(--fs-lg);
+  text-shadow:
+    var(--stroke-ink-thin),
     2px 2px 0 var(--c-primary),
     4px 4px 0 var(--c-ink);
 }
 
-.puff {
-  color: var(--c-gold-hi);
-}
-
-.sm .word {
-  font-size: var(--fs-xl);
+.sm .puff {
   text-shadow:
-    2px 2px 0 var(--c-primary),
-    3px 3px 0 var(--c-ink);
+    var(--stroke-ink-thin),
+    2px 2px 0 var(--c-ink),
+    0 0 10px rgb(255 45 135 / 0.85);
 }
 
 .md .word {
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-xl);
 }
 
 .lg {
@@ -39,6 +62,21 @@
 .lg .word {
   font-size: var(--fs-4xl);
   text-shadow:
-    3px 3px 0 var(--c-primary),
-    6px 6px 0 var(--c-ink);
+    -3px -3px 0 var(--c-ink),
+    0 -3px 0 var(--c-ink),
+    3px -3px 0 var(--c-ink),
+    3px 0 0 var(--c-ink),
+    3px 3px 0 var(--c-ink),
+    0 3px 0 var(--c-ink),
+    -3px 3px 0 var(--c-ink),
+    -3px 0 0 var(--c-ink),
+    6px 6px 0 var(--c-primary),
+    10px 10px 0 var(--c-ink);
+}
+
+.lg .puff {
+  text-shadow:
+    var(--stroke-ink),
+    4px 4px 0 var(--c-ink),
+    0 0 24px rgb(255 45 135 / 0.9);
 }

@@ -63,6 +63,8 @@
   position: relative;
   padding: var(--sp-2) var(--sp-4);
   border: 2px solid var(--c-ink);
+  border-radius: var(--r-pill);
+  box-shadow: 3px 3px 0 var(--c-ink);
   background: var(--c-paper);
   color: var(--c-ink);
 }
@@ -74,7 +76,8 @@
 }
 
 .model {
-  color: var(--c-text-muted);
+  color: var(--c-cyan);
+  text-shadow: var(--sh-legible);
   font-weight: var(--fw-black);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
@@ -83,7 +86,7 @@
 
 .flavor {
   font-size: var(--fs-3xl);
-  text-shadow: var(--sh-text);
+  text-shadow: var(--sh-text-pop);
 }
 
 .badges {
@@ -97,7 +100,7 @@
   margin: 0;
   padding: var(--sp-4);
   border-radius: var(--r-lg);
-  background: var(--c-surface);
+  background: var(--tex-scan), var(--g-panel);
   border: var(--outline);
   box-shadow: var(--sh-card);
 }
@@ -118,6 +121,9 @@
 .copiesTitle {
   font-size: var(--fs-xl);
   margin-bottom: var(--sp-2);
+  text-shadow:
+    var(--stroke-ink-thin),
+    2px 2px 0 var(--c-primary);
 }
 
 .copiesTitle span {
@@ -141,8 +147,8 @@
   padding: var(--sp-2) var(--sp-3);
   border: 2px solid var(--c-ink);
   border-left: 8px solid;
-  border-radius: var(--r-sm);
-  background: var(--c-paper);
+  border-radius: var(--r-md);
+  background: var(--g-card);
   color: var(--c-ink);
   text-align: left;
   transition: transform var(--dur-fast) var(--ease-bounce);
@@ -153,7 +159,7 @@
 }
 
 .copy[aria-current='true'] {
-  background: #fff8e6;
+  background: linear-gradient(160deg, #fff, #ffe3f1);
   box-shadow: 4px 4px 0 var(--c-ink);
   transform: translate(-2px, -2px);
 }
@@ -164,7 +170,7 @@
   gap: var(--sp-1);
   padding: 0 var(--sp-2);
   border: 2px solid var(--c-ink);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   font-weight: var(--fw-black);
   text-transform: uppercase;
   font-size: var(--fs-xs);
@@ -172,12 +178,13 @@
 
 .copyDate {
   margin-left: auto;
-  color: #4a4a4a;
+  color: #5a4a70;
   font-size: var(--fs-sm);
 }
 
 .empty {
   color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
 }
 
 .missing {

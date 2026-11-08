@@ -14,7 +14,7 @@
   touch-action: manipulation;
 }
 
-/* An ivory playing card laid on the table, inner border in the rarity colour. */
+/* A white die-cut sticker card with a candy blush, inner border in the rarity colour. */
 .frame {
   position: relative;
   display: block;
@@ -22,9 +22,9 @@
   aspect-ratio: 1;
   border: var(--outline);
   border-radius: var(--r-md);
-  background: var(--c-paper);
+  background: var(--g-card);
   box-shadow:
-    inset 0 0 0 3px var(--c-paper),
+    inset 0 0 0 3px #fff,
     inset 0 0 0 6px var(--tier),
     var(--sh-card);
   overflow: hidden;
@@ -33,10 +33,10 @@
     box-shadow var(--dur-fast) var(--ease-out);
 }
 
-/* Missing puff: an empty slot pressed into the baize. */
+/* Missing puff: an empty neon-outlined slot in the night. */
 .thumb[data-owned='false'] .frame {
   border: 2px dashed var(--c-line);
-  background: rgb(0 0 0 / 0.22);
+  background: rgb(18 6 42 / 0.8);
   box-shadow: inset 2px 3px 0 rgb(0 0 0 / 0.3);
 }
 
@@ -47,7 +47,7 @@
 
 .thumb[data-owned='true']:hover .frame {
   box-shadow:
-    inset 0 0 0 3px var(--c-paper),
+    inset 0 0 0 3px #fff,
     inset 0 0 0 6px var(--tier),
     var(--sh-float);
 }
@@ -66,12 +66,13 @@
 }
 
 .thumb[data-selected='true'] .frame {
-  border-color: var(--c-gold);
+  border-color: var(--c-primary);
   transform: translate(-2px, -4px) rotate(2deg);
   box-shadow:
-    inset 0 0 0 3px var(--c-paper),
+    inset 0 0 0 3px #fff,
     inset 0 0 0 6px var(--tier),
     0 0 0 3px var(--c-ink),
+    0 0 22px rgb(255 45 135 / 0.75),
     var(--sh-float);
 }
 
@@ -90,8 +91,8 @@
 }
 
 .thumb[data-owned='false'] .img {
-  filter: brightness(0);
-  opacity: 0.32;
+  filter: brightness(0) invert(0.35) sepia(1) hue-rotate(220deg) saturate(3);
+  opacity: 0.35;
 }
 
 /* Static foil hint on the silhouette (no animation: hundreds of these can be on screen). */
@@ -194,11 +195,11 @@
   place-items: center;
   width: 20px;
   height: 20px;
-  border-radius: var(--r-sm);
+  border-radius: 50%;
   border: 2px solid var(--c-ink);
 }
 
-/* Duplicate count: a red casino chip. */
+/* Duplicate count: a hot-pink neon chip. */
 .count {
   position: absolute;
   right: 6px;
@@ -206,7 +207,7 @@
   min-width: 26px;
   padding: 0 var(--sp-1);
   border-radius: var(--r-pill);
-  background: var(--c-primary);
+  background: var(--g-vice);
   color: #fff;
   font-family: var(--font-display);
   font-weight: var(--fw-display);
@@ -224,6 +225,7 @@
   font-weight: var(--fw-bold);
   line-height: 1.2;
   color: var(--c-text-muted);
+  text-shadow: var(--sh-legible);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

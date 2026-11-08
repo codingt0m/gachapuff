@@ -18,16 +18,22 @@
 
 .title {
   font-size: var(--fs-3xl);
-  text-shadow: var(--sh-text);
+  text-shadow: var(--sh-text-pop);
 }
 
 .count {
   font-family: var(--font-display);
   font-size: var(--fs-xl);
+  text-shadow: var(--stroke-ink-thin);
 }
 
 .muted {
   color: var(--c-text-faint);
+}
+
+.toolbar,
+.noResult {
+  text-shadow: var(--sh-legible);
 }
 
 .toolbar {
@@ -40,6 +46,7 @@
 .percent {
   color: var(--c-gold-hi);
   font-family: var(--font-display);
+  text-shadow: 0 0 10px rgb(255 168 46 / 0.6);
 }
 
 .banner {
@@ -51,7 +58,7 @@
   margin-bottom: var(--sp-4);
   padding: var(--sp-4);
   border-radius: var(--r-lg);
-  background: var(--c-paper);
+  background: var(--g-crousty);
   color: var(--c-ink);
   border: var(--outline);
   box-shadow: var(--sh-card);
