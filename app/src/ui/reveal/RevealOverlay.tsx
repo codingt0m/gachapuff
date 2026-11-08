@@ -4,6 +4,7 @@ import { finishDef, rarityIndex } from '../../domain/rarity.ts';
 import { boosterType } from '../../domain/roll.ts';
 import { burstConfetti } from '../../effects/confetti.ts';
 import { engravingLabel } from '../../effects/engraving.ts';
+import { openingColors } from '../../effects/openingFx.ts';
 import { sound } from '../../effects/sound.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { Button } from '../components/Button.tsx';
@@ -177,6 +178,7 @@ function RevealRound({
                 phase={phase === 'intro' ? 'intro' : 'charging'}
                 hintColor={timeline.hintColor}
                 charge={timeline.charge}
+                fxColors={reduced ? null : openingColors(instance)}
                 onTorn={timeline.startCharging}
               />
             ) : (

@@ -1,4 +1,5 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+import { burstConfetti } from '../../effects/confetti.ts';
 import { haptic } from '../../effects/haptics.ts';
 import { sound } from '../../effects/sound.ts';
 import { BoosterPack } from '../booster/BoosterPack.tsx';
@@ -16,18 +17,36 @@ export function PackIntro({
   phase,
   hintColor,
   charge,
+  fxColors,
   onTorn,
 }: {
   name: string;
   phase: 'intro' | 'charging';
   hintColor: string;
   charge: number;
+  /** Colours of the drawn puff's effects: they escape from the torn seam. Null = plain puff. */
+  fxColors: string[] | null;
   onTorn: () => void;
 }) {
   const [tear, setTear] = useState(0);
+  const fxCanvas = useRef<HTMLCanvasElement>(null);
   const drag = useRef<{ startX: number; width: number; lastTick: number } | null>(null);
   const tilt = usePointerTilt(phase === 'intro');
   const torn = phase !== 'intro';
+
+  // Sparkles shot out of the seam when the pack opens (the smoke is CSS, below).
+  useEffect(() => {
+    const canvas = fxCanvas.current;
+    if (!torn || !canvas || !fxColors) return;
+    return burstConfetti(canvas, {
+      count: 50,
+      colors: fxColors,
+      origin: { x: 0.5, y: 0.4 },
+      power: 0.9,
+    });
+    // fxColors is stable for the lifetime of a round.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [torn]);
 
   const complete = () => {
     drag.current = null;
@@ -80,6 +99,24 @@ export function PackIntro({
       >
         <BoosterPack name={name} tear={tear} open={torn} charge={charge} glow={hintColor} />
         {!torn && <span className={styles.swipeHint} aria-hidden="true" />}
+        {fxColors && (
+          <div className={styles.openFx} data-on={torn} aria-hidden="true">
+            {Array.from({ length: 9 }, (_, i) => (
+              <span
+                key={i}
+                className={styles.openPlume}
+                style={
+                  {
+                    '--c': fxColors[i % fxColors.length],
+                    '--i': i,
+                    '--dx': `${(i - 4) * 9}%`,
+                  } as CSSProperties
+                }
+              />
+            ))}
+            <canvas ref={fxCanvas} className={styles.openSparks} />
+          </div>
+        )}
       </div>
       <p className={styles.instruction} aria-live="polite">
         {torn ? 'Ça vient…' : 'Glisse le long des pointillés pour déchirer'}

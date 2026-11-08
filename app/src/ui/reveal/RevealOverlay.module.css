@@ -158,6 +158,62 @@
   }
 }
 
+/* Effects of the drawn puff escaping from the torn seam: coloured smoke + sparkles. */
+.openFx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.openFx[data-on='true'] {
+  visibility: visible;
+}
+
+.openPlume {
+  position: absolute;
+  left: calc(50% + var(--dx));
+  top: 14%;
+  width: 46%;
+  aspect-ratio: 1;
+  margin-left: -23%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--c), transparent 68%);
+  filter: blur(6px);
+  opacity: 0;
+}
+
+.openFx[data-on='true'] .openPlume {
+  animation: plume 1.6s var(--ease-out) calc(var(--i) * 70ms) both;
+}
+
+@keyframes plume {
+  0% {
+    opacity: 0;
+    transform: translateY(20%) scale(0.3);
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-170%) scale(1.7);
+  }
+}
+
+.openSparks {
+  position: absolute;
+  left: -100%;
+  top: -50%;
+  width: 300%;
+  height: 150%;
+}
+
+.overlay[data-reduced='true'] .openPlume {
+  animation-duration: 0.01ms;
+  animation-delay: 0s;
+}
+
 .instruction {
   min-height: 1.5em;
   font-family: var(--font-display);
