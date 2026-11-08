@@ -22,6 +22,10 @@ Deux chaines de detourage :
                                        emballages sont reconnus a leur panneau
                                        d'avertissement et ecartes), SAM la detoure
 
+Embouts transparents (Falcon, Rage Gorilla...) : sur visuel marketing, le detourage
+n'en garde souvent que des morceaux ; ils sont remplaces par l'embout de reference
+du modele (pipeline/embouts/, voir embouts.py).
+
 Usage :
     pip install -r pipeline/requirements.txt
     python pipeline/jnr_dataset.py                  # decouverte + telechargement + detourage
@@ -52,6 +56,8 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image, ImageFilter
+
+import embouts
 
 Image.MAX_IMAGE_PIXELS = 60_000_000
 
@@ -1470,17 +1476,26 @@ def run(only_normalize: bool, only_discover: bool, refresh: bool = False, retry:
         label = f"{p['model']} / {p['flavor']}"
         flavor = clean_name(fix["rename"].get(label, p["flavor"]))
         metrics = cut_metrics(url)
-        integ, resol = scores(issues, metrics)
+        # embout transparent rate (cornes, debris) : remplace par l'embout de reference
+        # du modele (voir embouts.py) ; sans reference, la puff est penalisee
+        nozzle = None
+        if p["model"] in embouts.MODELS and embouts.is_defective(embouts.load_alpha(png)):
+            nozzle = "embout remplace" if embouts.template_for(p["model"]) else "embout incomplet"
+        integ, resol = scores(issues, metrics, nozzle_replaced=nozzle == "embout remplace")
+        if nozzle == "embout incomplet":
+            integ = max(1, integ - 2)
         override = fix["notes"].get(label) or fix["notes"].get(f"{p['model']} / {flavor}") or {}
         integ = override.get("integrite", integ)
         resol = override.get("resolution", resol)
-        remark = override.get("remarque", ", ".join(issues))
+        remark = override.get("remarque", ", ".join(issues + ([nozzle] if nozzle else [])))
         # seuils de qualite : en dessous, l'image va dans _travail/ecartees/ (pas dans dataset/)
         kept = integ >= MIN_INTEGRITE and resol >= MIN_RESOLUTION
         folder = (OUT if kept else DISCARDED) / p["model"]
         folder.mkdir(parents=True, exist_ok=True)
         dest = folder / f"{flavor}.png"
         shutil.copyfile(png, dest)
+        if nozzle == "embout remplace":
+            embouts.fix_image(dest, p["model"])
         write_preview(dest, f"{p['model']} / {flavor}")
         print(f"[{i}/{len(order)}] {p['model']} / {flavor} ({p['source']}, {method}) "
               f"integrite {integ}/5, resolution {resol}/5"
@@ -1513,17 +1528,21 @@ def cut_metrics(url: str) -> dict:
         return {}
 
 
-def scores(issues, metrics):
+def scores(issues, metrics, nozzle_replaced=False):
     """Notes automatiques sur 5 (affinees ensuite par la revue visuelle).
     Integrite : la puff est-elle entiere et seule ? Resolution : taille de la puff
-    dans l'image source, avant mise a l'echelle."""
+    dans l'image source, avant mise a l'echelle.
+    nozzle_replaced : l'embout a ete remplace (embouts.py), un haut manquant n'est
+    donc plus un defaut."""
     integ = 5
     for s in issues:
         if "partiel" in s or "objets" in s or "emballage" in s:
             integ -= 2
-        elif "irregulier" in s or "tronque" in s or "profil" in s or "large" in s:
+        elif "irregulier" in s or "profil" in s or "large" in s:
             integ -= 1
-    if metrics.get("top_gap", 0) > 0.03:
+        elif "tronque" in s and not nozzle_replaced:
+            integ -= 1
+    if metrics.get("top_gap", 0) > 0.03 and not nozzle_replaced:
         integ -= 1
     if 0 < metrics.get("det", 1) < 0.35:
         integ -= 1

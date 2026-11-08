@@ -12,6 +12,8 @@ export interface Tilt {
 export class TiltController {
   value: Tilt = { x: 0, y: 0 };
   reducedMotion = false;
+  /** Idle presentation mode: wide slow turn instead of the small wobble. */
+  turntable = false;
   private target: Tilt = { x: 0, y: 0 };
   private velocity: Tilt = { x: 0, y: 0 };
   private lastInput = -Infinity;
@@ -49,7 +51,12 @@ export class TiltController {
   update(dt: number): Tilt {
     this.clock += dt * 1000;
     const idle = this.clock - this.lastInput > T.idleDelay;
-    if (idle) {
+    if (idle && this.turntable && !this.reducedMotion) {
+      // Presentation: a wide, slow side-to-side turn, as on a rotating display stand.
+      const phase = (this.clock / T.turntablePeriod) * Math.PI * 2;
+      const amp = T.maxAngle * T.turntableAmplitude;
+      this.target = { x: Math.sin(phase) * amp, y: Math.sin(phase * 2) * amp * 0.12 };
+    } else if (idle) {
       const amp = this.reducedMotion ? 0 : T.idleAmplitude;
       const phase = (this.clock / T.idlePeriod) * Math.PI * 2;
       this.target = { x: Math.sin(phase) * amp, y: Math.sin(phase * 0.7 + 1) * amp * 0.6 };

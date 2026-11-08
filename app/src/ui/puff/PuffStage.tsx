@@ -1,23 +1,30 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { motion } from '../../config/motion.ts';
-import type { FinishId, PuffDefinition, Smoke } from '../../domain/types.ts';
+import type { Engraving, FinishId, PuffDefinition, Smoke } from '../../domain/types.ts';
 import { assetUrl } from '../../data/manifest.ts';
+import { engravingLabel } from '../../effects/engraving.ts';
 import { TiltController } from '../../effects/tilt.ts';
 import { PuffRenderer } from '../../effects/webgl/PuffRenderer.ts';
 import { seedFrom, webglAvailable } from '../../effects/webglSupport.ts';
+import { useGame } from '../../store/GameProvider.tsx';
 import { useReducedMotion } from '../hooks.ts';
 import { CssPuff } from './CssPuff.tsx';
 import styles from './PuffStage.module.css';
+
+const NO_ENGRAVING: Engraving = { kind: 'none' };
 
 export interface PuffStageProps {
   puff: PuffDefinition;
   finish: FinishId;
   smoke: Smoke;
+  engraving?: Engraving;
   /** Seed for sparkle/facet layouts (instance uid). */
   seedKey: string;
   /** Halo colour (rarity colour, or the puff's own colour). */
   glow: string;
   label: string;
+  /** Idle presentation: a wide, slow turn instead of the small wobble. */
+  turntable?: boolean;
   /** Delay (ms) before the white silhouette floods into colour; null = shown at once. */
   revealDelay?: number | null;
   /** Listen to the gyroscope (permission handled by the caller). */
@@ -33,13 +40,16 @@ export function PuffStage({
   puff,
   finish,
   smoke,
+  engraving = NO_ENGRAVING,
   seedKey,
   glow,
   label,
+  turntable = false,
   revealDelay = null,
   gyro = false,
   className,
 }: PuffStageProps) {
+  const { config } = useGame();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<PuffRenderer | null>(null);
@@ -57,6 +67,10 @@ export function PuffStage({
     tiltRef.current.reducedMotion = reduced;
     if (rendererRef.current) rendererRef.current.reducedMotion = reduced;
   }, [reduced]);
+
+  useEffect(() => {
+    tiltRef.current.turntable = turntable;
+  }, [turntable]);
 
   useEffect(() => {
     if (!gyro) return;
@@ -107,6 +121,7 @@ export function PuffStage({
   }, [fallback]);
 
   const smokeKey = JSON.stringify(smoke);
+  const engravingKey = JSON.stringify(engraving);
   useEffect(() => {
     const renderer = rendererRef.current;
     if (!renderer) return;
@@ -116,13 +131,16 @@ export function PuffStage({
         imageUrl: assetUrl(puff.images.detail),
         finish,
         smoke: JSON.parse(smokeKey) as Smoke,
+        engraving: JSON.parse(engravingKey) as Engraving,
+        serialEdition: config.serialEdition,
         nozzle: puff.nozzle,
+        bbox: puff.bbox,
         seed: seedFrom(seedKey),
       })
       .catch((error: unknown) => console.warn(error));
     // `reduced` is synced by its own effect; re-running here would reload the look.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [puff, finish, smokeKey, seedKey, fallback]);
+  }, [puff, finish, smokeKey, engravingKey, seedKey, fallback, config.serialEdition]);
 
   useEffect(() => {
     const renderer = rendererRef.current;
@@ -143,7 +161,14 @@ export function PuffStage({
       <span className={styles.halo} aria-hidden="true" />
       <span className={styles.shadow} aria-hidden="true" />
       {fallback ? (
-        <CssPuff puff={puff} finish={finish} smoke={smoke} tiltRef={tiltRef} />
+        <CssPuff
+          puff={puff}
+          finish={finish}
+          smoke={smoke}
+          engravingText={engravingLabel(engraving, config.serialEdition)}
+          engravingKind={engraving.kind}
+          tiltRef={tiltRef}
+        />
       ) : (
         <div ref={hostRef} className={styles.canvas} />
       )}

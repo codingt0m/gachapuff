@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { cleanPseudo, PSEUDO_MAX } from '../../domain/save.ts';
 import type { MotionPreference } from '../../domain/types.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { Button } from '../components/Button.tsx';
@@ -33,6 +34,15 @@ export default function SettingsScreen() {
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [pseudo, setPseudo] = useState(settings.pseudo ?? '');
+
+  const savePseudo = () => {
+    const clean = cleanPseudo(pseudo);
+    setPseudo(clean ?? '');
+    if (clean === settings.pseudo) return;
+    store.updateSettings({ pseudo: clean });
+    if (clean) toast(`Pseudo enregistré : ${clean}`, 'success');
+  };
 
   const onImport = async (file: File | undefined) => {
     if (!file) return;
@@ -50,6 +60,30 @@ export default function SettingsScreen() {
   return (
     <div className={styles.screen}>
       <h1 className={styles.title}>Réglages</h1>
+
+      <section className={styles.card} aria-labelledby="s-profile">
+        <h2 id="s-profile" className={styles.cardTitle}>
+          Profil
+        </h2>
+        <label className={styles.field}>
+          <span className={styles.label}>Pseudo</span>
+          <input
+            type="text"
+            value={pseudo}
+            maxLength={PSEUDO_MAX}
+            autoComplete="nickname"
+            placeholder="Ton pseudo"
+            onChange={(e) => setPseudo(e.target.value)}
+            onBlur={savePseudo}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.currentTarget.blur();
+            }}
+          />
+        </label>
+        <p className={styles.muted}>
+          Une puff signée sur cinq porte la signature de celui qui l’a tirée : la tienne.
+        </p>
+      </section>
 
       <section className={styles.card} aria-labelledby="s-feel">
         <h2 id="s-feel" className={styles.cardTitle}>

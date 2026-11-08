@@ -44,6 +44,12 @@ for (const f of gameConfig.finishes)
 console.info('\nFumée');
 for (const s of gameConfig.smokes)
   console.info(`${s.name.padEnd(12)} ${pct(sim.smoke[s.kind] / draws)}`);
+console.info('\nForme de fumée');
+for (const s of gameConfig.smokeShapes)
+  console.info(`${s.name.padEnd(12)} ${pct(sim.shape[s.shape] / draws)}`);
+console.info('\nGravure');
+for (const e of gameConfig.engravings)
+  console.info(`${e.name.padEnd(12)} ${pct(sim.engraving[e.kind] / draws)}`);
 console.info('\nPalier de base');
 gameConfig.baseTiers.tiers.forEach((t, i) => {
   const size = catalog.byBaseTier[i]?.length ?? 0;

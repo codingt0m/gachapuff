@@ -4,7 +4,7 @@ import { exactRarityDistribution, simulateBoosters } from './distribution.ts';
 import { createSeededRng } from './rng.ts';
 import { boosterType, rollBooster, rollForRarity } from './roll.ts';
 import { catalog, config, definitions } from './testing/fixtures.ts';
-import type { BoosterType } from './types.ts';
+import { FINISH_IDS, type BoosterType, type FinishId } from './types.ts';
 
 const classic = boosterType(config, 'classic');
 
@@ -26,12 +26,29 @@ describe('rollBooster', () => {
     const rng = createSeededRng(12);
     for (let i = 0; i < 5_000; i++) {
       const { smoke } = rollBooster(catalog, classic, config, rng);
-      if (smoke.kind === 'solid') expect(smoke.color).toMatch(/^#[0-9a-f]{6}$/);
-      if (smoke.kind === 'gradient') {
+      if (smoke.kind === 'solid' || smoke.kind === 'glitter') {
+        expect(smoke.color).toMatch(/^#[0-9a-f]{6}$/);
+      }
+      if ('colors' in smoke) {
         expect(smoke.colors.length).toBeGreaterThanOrEqual(2);
         expect(smoke.colors.length).toBeLessThanOrEqual(3);
       }
+      // 'cloud' is stored as an absent shape.
+      expect(smoke.shape).not.toBe('cloud');
     }
+  });
+
+  it('draws serial numbers inside the edition', () => {
+    const rng = createSeededRng(7);
+    let serials = 0;
+    for (let i = 0; i < 5_000; i++) {
+      const { engraving } = rollBooster(catalog, classic, config, rng);
+      if (engraving.kind !== 'serial') continue;
+      serials++;
+      expect(engraving.serial).toBeGreaterThanOrEqual(1);
+      expect(engraving.serial).toBeLessThanOrEqual(config.serialEdition);
+    }
+    expect(serials).toBeGreaterThan(0);
   });
 
   it('matches the exact distribution over 100 000 openings', () => {
@@ -57,7 +74,10 @@ describe('rollBooster', () => {
       ...classic,
       id: 'titan',
       baseTierWeights: [0, 0, 0, 0, 1],
-      finishWeights: { normal: 0, shiny: 0, golden: 0, chromatic: 0, crystal: 0, cosmic: 1 },
+      finishWeights: {
+        ...Object.fromEntries(FINISH_IDS.map((f) => [f, 0])),
+        cosmic: 1,
+      } as Record<FinishId, number>,
     };
     const roll = rollBooster(catalog, titanOnly, config, createSeededRng(1));
     expect(roll.puff.model).toBe('Big Mac 100K');

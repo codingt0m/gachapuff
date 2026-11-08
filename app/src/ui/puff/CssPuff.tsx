@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { tilt as tiltConfig } from '../../config/motion.ts';
-import type { FinishId, PuffDefinition, Smoke } from '../../domain/types.ts';
+import type { Engraving, FinishId, PuffDefinition, Smoke } from '../../domain/types.ts';
 import { assetUrl } from '../../data/manifest.ts';
 import type { TiltController } from '../../effects/tilt.ts';
 import { smokeBackground } from '../components/SmokeSwatch.tsx';
@@ -14,11 +14,15 @@ export function CssPuff({
   puff,
   finish,
   smoke,
+  engravingText,
+  engravingKind,
   tiltRef,
 }: {
   puff: PuffDefinition;
   finish: FinishId;
   smoke: Smoke;
+  engravingText: string | null;
+  engravingKind: Engraving['kind'];
   tiltRef: RefObject<TiltController>;
 }) {
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -60,6 +64,15 @@ export function CssPuff({
         <img className={styles.img} src={image} alt="" draggable={false} />
         {finish !== 'normal' && <span className={styles.foil} data-finish={finish} style={mask} />}
         <span className={styles.gloss} style={mask} />
+        {engravingText && (
+          <span
+            className={styles.engraving}
+            data-kind={engravingKind}
+            style={{ top: `${(puff.bbox.y + puff.bbox.h * 0.78) * 100}%` }}
+          >
+            {engravingText}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -39,6 +39,49 @@ describe('parseSave', () => {
     expect(parseSave({ version: 0 }, NOW, config).status).toBe('corrupted');
   });
 
+  it('migrates a v1 save: no engraving, rose gold becomes bronze', () => {
+    const state = playedState();
+    const v1 = structuredClone({
+      ...state,
+      version: 1,
+      collection: state.collection.map((instance, n) => {
+        const old: Record<string, unknown> = { ...instance };
+        delete old.engraving;
+        if (n === 0) old.finish = 'rosegold';
+        return old;
+      }),
+    });
+    const result = parseSave(v1, NOW, config);
+    expect(result.status).toBe('ok');
+    expect(result.state.version).toBe(3);
+    expect(result.state.collection.map((i) => i.engraving)).toEqual([
+      { kind: 'none' },
+      { kind: 'none' },
+    ]);
+    expect(result.state.collection[0]?.finish).toBe('bronze');
+  });
+
+  it('migrates a v2 save: ring smoke becomes a shape, dropped finishes are replaced', () => {
+    const state = playedState();
+    const v2 = structuredClone({
+      ...state,
+      version: 2,
+      collection: state.collection.map((instance, n) => ({
+        ...instance,
+        finish: n === 0 ? 'neon' : 'pixel',
+        smoke: n === 0 ? { kind: 'rings', color: '#ff0000' } : instance.smoke,
+      })),
+    });
+    const result = parseSave(v2, NOW, config);
+    expect(result.status).toBe('ok');
+    expect(result.state.collection.map((i) => i.finish)).toEqual(['chromatic', 'shiny']);
+    expect(result.state.collection[0]?.smoke).toEqual({
+      kind: 'solid',
+      color: '#ff0000',
+      shape: 'rings',
+    });
+  });
+
   it('repairs invalid settings without losing the collection', () => {
     const result = parseSave({ ...playedState(), settings: 'nope' }, NOW, config);
     expect(result.status).toBe('ok');

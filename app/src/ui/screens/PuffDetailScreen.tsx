@@ -6,6 +6,7 @@ import { assetUrl } from '../../data/manifest.ts';
 import { gyroNeedsPermission, gyroSupported, requestGyroPermission } from '../../effects/tilt.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { Button } from '../components/Button.tsx';
+import { EngravingBadge } from '../components/EngravingBadge.tsx';
 import { FinishBadge, FinishGlyph } from '../components/FinishBadge.tsx';
 import { Icon } from '../components/Icons.tsx';
 import { RarityBadge } from '../components/RarityBadge.tsx';
@@ -74,8 +75,10 @@ export default function PuffDetailScreen({ id, uid }: { id: string; uid: string 
               puff={puff}
               finish={selected.finish}
               smoke={selected.smoke}
+              engraving={selected.engraving}
               seedKey={selected.uid}
               glow={tier.color}
+              turntable
               gyro={gyro}
               label={`${puff.flavor}, ${puff.model}`}
             />
@@ -130,6 +133,14 @@ export default function PuffDetailScreen({ id, uid }: { id: string; uid: string 
                   <SmokeBadge smoke={selected.smoke} />
                 </dd>
               </div>
+              {selected.engraving.kind !== 'none' && (
+                <div>
+                  <dt>Gravure</dt>
+                  <dd>
+                    <EngravingBadge engraving={selected.engraving} />
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>Obtenue le</dt>
                 <dd>{formatDate(selected.obtainedAt)}</dd>

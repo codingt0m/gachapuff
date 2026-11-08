@@ -1,5 +1,6 @@
 import type { PuffDefinition, PuffInstance } from '../../domain/types.ts';
 import { Button } from '../components/Button.tsx';
+import { EngravingBadge } from '../components/EngravingBadge.tsx';
 import { FinishBadge } from '../components/FinishBadge.tsx';
 import { RarityBadge } from '../components/RarityBadge.tsx';
 import { SmokeBadge } from '../components/SmokeSwatch.tsx';
@@ -41,6 +42,7 @@ export function RevealResult({
       <div className={styles.chips}>
         <FinishBadge finish={instance.finish} />
         <SmokeBadge smoke={instance.smoke} />
+        <EngravingBadge engraving={instance.engraving} />
       </div>
       <div className={styles.actions}>
         <Button variant="jackpot" size="lg" block onClick={onPrimary} autoFocus>

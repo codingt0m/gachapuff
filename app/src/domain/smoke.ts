@@ -1,6 +1,6 @@
 import { randomBetween, randomInt, type Rng } from './rng.ts';
 import { smokeDef } from './rarity.ts';
-import type { GameConfig, Smoke, SmokeKind } from './types.ts';
+import type { GameConfig, Smoke, SmokeKind, SmokeShape } from './types.ts';
 
 /** Max random shift of each gradient hue around its evenly spaced slot (in turns). */
 const HUE_JITTER = 0.12;
@@ -22,14 +22,22 @@ function vividColor(rng: Rng, config: GameConfig, hue: number): string {
 }
 
 /** Draws the colours of a smoke of the given kind. Gradient hues are kept well apart. */
-export function rollSmoke(rng: Rng, config: GameConfig, kind: SmokeKind): Smoke {
-  if (kind === 'white') return { kind };
+export function rollSmoke(
+  rng: Rng,
+  config: GameConfig,
+  kind: SmokeKind,
+  shape: SmokeShape = 'cloud',
+): Smoke {
+  const withShape = shape === 'cloud' ? {} : { shape };
+  if (kind === 'white' || kind === 'rainbow') return { kind, ...withShape };
   const { min, max } = smokeDef(config, kind).colorCount;
   const count = Math.max(1, randomInt(rng, min, max));
   const start = rng.next();
   const colors = Array.from({ length: count }, (_, i) =>
     vividColor(rng, config, (start + i / count + (rng.next() - 0.5) * HUE_JITTER + 1) % 1),
   );
-  if (kind === 'solid') return { kind, color: colors[0] as string };
-  return { kind, colors };
+  if (kind === 'solid' || kind === 'glitter') {
+    return { kind, color: colors[0] as string, ...withShape };
+  }
+  return { kind, colors, ...withShape };
 }

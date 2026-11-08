@@ -1,7 +1,16 @@
 import type { GameConfig, SaveState, Settings } from './types.ts';
 
 /** Bump when SaveState changes shape, and add a migration in data/saveSchema.ts. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 3;
+
+/** Longest player pseudo. */
+export const PSEUDO_MAX = 20;
+
+/** Trimmed pseudo, or undefined when empty. */
+export function cleanPseudo(raw: string | undefined): string | undefined {
+  const pseudo = raw?.trim().replace(/\s+/g, ' ').slice(0, PSEUDO_MAX);
+  return pseudo ? pseudo : undefined;
+}
 
 export const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, motion: 'system' };
 

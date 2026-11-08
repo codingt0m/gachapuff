@@ -124,9 +124,47 @@
   opacity: 0.9;
 }
 
+.foil[data-finish='silver'] {
+  background: linear-gradient(160deg, #f4f7fb, #9aa3ae 40%, #3c424a 70%, #e6ebf2);
+  mix-blend-mode: luminosity;
+  opacity: 0.85;
+}
+
+.foil[data-finish='bronze'] {
+  background: linear-gradient(160deg, #ffe3d8, #dc8a74 40%, #6e2c22 70%, #ffd2c2);
+  mix-blend-mode: color;
+  opacity: 0.9;
+}
+
 .foil[data-finish='chromatic'] {
   background: linear-gradient(115deg, #ff5a5a, #ffd23f, #3ddc84, #2de2e6, #6c5bff, #e040f0);
   opacity: 0.55;
+}
+
+.foil[data-finish='ruby'],
+.foil[data-finish='emerald'] {
+  background:
+    linear-gradient(120deg, transparent 35%, rgb(255 255 255 / 0.7) 45%, transparent 55%),
+    conic-gradient(
+      from 20deg at 40% 45%,
+      var(--g-a),
+      var(--g-b),
+      var(--g-a),
+      var(--g-b),
+      var(--g-a)
+    );
+  mix-blend-mode: hard-light;
+  opacity: 0.85;
+}
+
+.foil[data-finish='ruby'] {
+  --g-a: #e0123a;
+  --g-b: #5a0010;
+}
+
+.foil[data-finish='emerald'] {
+  --g-a: #18c46e;
+  --g-b: #04401f;
 }
 
 .foil[data-finish='crystal'] {
@@ -198,4 +236,46 @@
 .note {
   color: var(--c-gold-hi);
   font-weight: var(--fw-bold);
+}
+
+.foil[data-finish='amethyst'] {
+  background:
+    linear-gradient(120deg, transparent 35%, rgb(255 255 255 / 0.7) 45%, transparent 55%),
+    conic-gradient(from 20deg at 40% 45%, #b057ff, #2f0a55, #b057ff, #2f0a55, #b057ff);
+  mix-blend-mode: hard-light;
+  opacity: 0.85;
+}
+
+.foil[data-finish='chrome'] {
+  background: linear-gradient(180deg, #8fa6c4, #f4f8ff 46%, #1a1c22 50%, #50545e 75%, #c9d2de);
+  mix-blend-mode: luminosity;
+  opacity: 0.95;
+}
+
+.foil[data-finish='frost'] {
+  background:
+    radial-gradient(circle, transparent 35%, rgb(235 248 255 / 0.9) 75%),
+    repeating-linear-gradient(35deg, rgb(255 255 255 / 0.4) 0 1px, transparent 1px 7px);
+  opacity: 0.9;
+}
+
+.foil[data-finish='lava'] {
+  background:
+    repeating-linear-gradient(70deg, transparent 0 12px, rgb(255 120 20) 12px 14px),
+    repeating-linear-gradient(-40deg, transparent 0 18px, rgb(255 200 60) 18px 19px), #1a0a05;
+  mix-blend-mode: hard-light;
+  opacity: 0.92;
+}
+
+.foil[data-finish='glitch'] {
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.25) 0 1px, transparent 1px 3px),
+    linear-gradient(
+      90deg,
+      rgb(255 0 80 / 0.4),
+      transparent 30%,
+      transparent 70%,
+      rgb(0 220 255 / 0.4)
+    );
+  opacity: 1;
 }

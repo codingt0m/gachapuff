@@ -46,6 +46,7 @@ export function instance(overrides: Partial<PuffInstance> & { uid: string }): Pu
     puffId: 'alien-10k--mango',
     finish: 'normal',
     smoke: { kind: 'white' },
+    engraving: { kind: 'none' },
     rarity: 'common',
     points: 0,
     obtainedAt: NOW,

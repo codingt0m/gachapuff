@@ -36,6 +36,9 @@ export const tilt = {
   idlePeriod: 6200,
   /** Inactivity before idle wobble resumes. */
   idleDelay: 1800,
+  /** Turntable idle (presentation): share of maxAngle swept and period (ms). */
+  turntableAmplitude: 0.95,
+  turntablePeriod: 9000,
   /** Gyroscope degrees mapped to maxAngle. */
   gyroRange: 25,
 } as const;
@@ -58,6 +61,26 @@ export const render = {
   smokeFadeIn: 600,
   /** Effect speed when reduced motion is on. */
   reducedSpeed: 0.35,
+  /** Volume: the silhouette inflated into a relief, plus a side wall behind it. */
+  volume: {
+    /** Height-field resolution (texels per side). */
+    fieldSize: 256,
+    /** Grid cells per side of the displaced mesh. */
+    gridCells: 128,
+    /** Relief depth factor (1 = a fully round puff is as deep as it is wide). */
+    depth: 0.95,
+    /** Bbox width / height below which a puff is "slim" (cylinder), above which "wide" (box). */
+    slimAspect: 0.3,
+    wideAspect: 0.5,
+    /** Edge roundness: slim -> wide (1 = fully round, lower = flat face). */
+    roundness: [1, 0.4],
+    /** Side wall depth, share of the silhouette width: slim -> wide. */
+    thickness: [0.25, 0.45],
+    /** Spacing of the stacked silhouettes forming the side wall, in units. */
+    layerStep: 0.006,
+    maxLayers: 40,
+    mobileMaxLayers: 24,
+  },
 } as const;
 
 /**
@@ -77,6 +100,16 @@ export const smoke = {
   endSize: [0.2, 0.36],
   /** Sideways wander. */
   drift: 0.06,
+  /** Sideways push when the puff tilts (puff units per second per radian). */
+  wind: 0.9,
+  /** Rings / hearts / stars: share of the exhale cloud kept besides the shaped puff. */
+  shapeBurstShare: 0.1,
+  /** Start / end size of each shaped puff. */
+  ringSize: [0.05, 0.3],
+  heartSize: [0.04, 0.24],
+  starSize: [0.045, 0.26],
+  /** Spiral: turn speed (rad/s), orbit radius growth (units/s), stream / cloud / size factors. */
+  spiral: { spin: 2.6, radius: 0.075, trickleBoost: 2.4, burstShare: 0.25, sizeScale: 0.45 },
   opacity: 0.6,
   /** Emission multiplier with reduced motion. */
   reducedRate: 0.5,

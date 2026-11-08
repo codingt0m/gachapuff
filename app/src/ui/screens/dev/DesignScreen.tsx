@@ -53,6 +53,7 @@ export default function DesignScreen() {
     puffId: sample?.id ?? '',
     finish,
     smoke: { kind: 'gradient', colors: ['#ff3d7f', '#2de2e6'] },
+    engraving: { kind: 'none' },
     rarity,
     points: 0,
     obtainedAt: 0,

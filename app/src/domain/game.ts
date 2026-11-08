@@ -2,7 +2,7 @@ import { consumeBooster } from './boosters.ts';
 import { nextRarity } from './rarity.ts';
 import { boosterType, rollBooster, rollForRarity, type Roll } from './roll.ts';
 import type { Rng } from './rng.ts';
-import type { Catalog, GameConfig, PuffInstance, SaveState } from './types.ts';
+import type { Catalog, Engraving, GameConfig, PuffInstance, SaveState } from './types.ts';
 
 /** Everything a state transition needs from the outside world, injected. */
 export interface GameContext {
@@ -20,12 +20,27 @@ export interface Pull {
   instance: PuffInstance;
 }
 
-function toInstance(roll: Roll, ctx: GameContext, origin: PuffInstance['origin']): PuffInstance {
+/** A signed puff is sometimes signed by the player who pulled it. */
+function signEngraving(roll: Roll, ctx: GameContext, pseudo: string | undefined): Engraving {
+  const { engraving } = roll;
+  if (engraving.kind !== 'signature' || !pseudo) return engraving;
+  return ctx.rng.next() < ctx.config.ownSignatureChance
+    ? { kind: 'signature', by: pseudo }
+    : engraving;
+}
+
+function toInstance(
+  roll: Roll,
+  ctx: GameContext,
+  origin: PuffInstance['origin'],
+  pseudo: string | undefined,
+): PuffInstance {
   return {
     uid: ctx.newId(),
     puffId: roll.puff.id,
     finish: roll.finish,
     smoke: roll.smoke,
+    engraving: signEngraving(roll, ctx, pseudo),
     rarity: roll.rarity,
     points: roll.points,
     obtainedAt: ctx.now,
@@ -38,7 +53,12 @@ export function openBooster(state: SaveState, ctx: GameContext, typeId?: string)
     ? state.boosters
     : consumeBooster(state.boosters, ctx.now, ctx.config.regen);
   const type = boosterType(ctx.config, typeId ?? ctx.config.defaultBoosterType);
-  const instance = toInstance(rollBooster(ctx.catalog, type, ctx.config, ctx.rng), ctx, 'booster');
+  const instance = toInstance(
+    rollBooster(ctx.catalog, type, ctx.config, ctx.rng),
+    ctx,
+    'booster',
+    state.settings.pseudo,
+  );
   return {
     instance,
     state: {
@@ -83,7 +103,7 @@ export function recycle(state: SaveState, uids: readonly string[], ctx: GameCont
   if (!target) throw new Error('Cannot recycle: max-tier');
   const type = boosterType(ctx.config, ctx.config.recycle.boosterType);
   const roll = rollForRarity(ctx.catalog, type, ctx.config, target.id, ctx.rng);
-  const instance = toInstance(roll, ctx, 'recycle');
+  const instance = toInstance(roll, ctx, 'recycle', state.settings.pseudo);
   const removed = new Set(uids);
   return {
     instance,

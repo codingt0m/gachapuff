@@ -1,17 +1,22 @@
-import { pickUniform, pickWeighted, type Rng } from './rng.ts';
+import { pickUniform, pickWeighted, randomInt, type Rng } from './rng.ts';
 import { rarityForPoints, rarityPoints } from './rarity.ts';
 import { rollSmoke } from './smoke.ts';
 import {
+  ENGRAVING_KINDS,
   FINISH_IDS,
   SMOKE_KINDS,
+  SMOKE_SHAPES,
   type BoosterType,
   type Catalog,
+  type Engraving,
+  type EngravingKind,
   type FinishId,
   type GameConfig,
   type PuffDefinition,
   type RarityId,
   type Smoke,
   type SmokeKind,
+  type SmokeShape,
 } from './types.ts';
 
 /** The result of a draw, before it becomes an owned instance. */
@@ -19,15 +24,18 @@ export interface Roll {
   puff: PuffDefinition;
   finish: FinishId;
   smoke: Smoke;
+  engraving: Engraving;
   points: number;
   rarity: RarityId;
 }
 
-/** One (base tier, finish, smoke kind) combination with its exact probability. */
+/** One (base tier, finish, smoke kind, smoke shape, engraving) combination with its probability. */
 export interface Outcome {
   baseTier: number;
   finish: FinishId;
   smoke: SmokeKind;
+  shape: SmokeShape;
+  engraving: EngravingKind;
   probability: number;
   points: number;
   rarity: RarityId;
@@ -50,7 +58,7 @@ function normalise(weights: readonly number[]): number[] {
   return weights.map((w) => Math.max(0, w) / total);
 }
 
-/** Every combination of the three axes with its probability for this booster type. */
+/** Every combination of the five axes with its probability for this booster type. */
 export function enumerateOutcomes(
   catalog: Catalog,
   type: BoosterType,
@@ -59,19 +67,40 @@ export function enumerateOutcomes(
   const base = normalise(effectiveBaseWeights(catalog, type));
   const finish = normalise(FINISH_IDS.map((f) => type.finishWeights[f]));
   const smoke = normalise(SMOKE_KINDS.map((s) => type.smokeWeights[s]));
+  const shape = normalise(SMOKE_SHAPES.map((s) => type.smokeShapeWeights[s]));
+  const engraving = normalise(ENGRAVING_KINDS.map((e) => type.engravingWeights[e]));
   const outcomes: Outcome[] = [];
   base.forEach((pb, baseTier) => {
     FINISH_IDS.forEach((f, fi) => {
       SMOKE_KINDS.forEach((s, si) => {
-        const probability = pb * (finish[fi] ?? 0) * (smoke[si] ?? 0);
-        if (probability <= 0) return;
-        const points = rarityPoints(config, baseTier, f, s);
-        const rarity = rarityForPoints(config, points).id;
-        outcomes.push({ baseTier, finish: f, smoke: s, probability, points, rarity });
+        SMOKE_SHAPES.forEach((sh, shi) => {
+          ENGRAVING_KINDS.forEach((e, ei) => {
+            const probability =
+              pb * (finish[fi] ?? 0) * (smoke[si] ?? 0) * (shape[shi] ?? 0) * (engraving[ei] ?? 0);
+            if (probability <= 0) return;
+            const points = rarityPoints(config, baseTier, f, s, e, sh);
+            const rarity = rarityForPoints(config, points).id;
+            outcomes.push({
+              baseTier,
+              finish: f,
+              smoke: s,
+              shape: sh,
+              engraving: e,
+              probability,
+              points,
+              rarity,
+            });
+          });
+        });
       });
     });
   });
   return outcomes;
+}
+
+function rollEngraving(rng: Rng, config: GameConfig, kind: EngravingKind): Engraving {
+  if (kind === 'serial') return { kind, serial: randomInt(rng, 1, config.serialEdition) };
+  return { kind };
 }
 
 function materialise(
@@ -81,13 +110,16 @@ function materialise(
   baseTier: number,
   finish: FinishId,
   smokeKind: SmokeKind,
+  shape: SmokeShape,
+  engravingKind: EngravingKind,
 ): Roll {
   const puff = pickUniform(rng, catalog.byBaseTier[baseTier] ?? []);
-  const points = rarityPoints(config, baseTier, finish, smokeKind);
+  const points = rarityPoints(config, baseTier, finish, smokeKind, engravingKind, shape);
   return {
     puff,
     finish,
-    smoke: rollSmoke(rng, config, smokeKind),
+    smoke: rollSmoke(rng, config, smokeKind, shape),
+    engraving: rollEngraving(rng, config, engravingKind),
     points,
     rarity: rarityForPoints(config, points).id,
   };
@@ -112,7 +144,15 @@ export function rollBooster(
     rng,
     SMOKE_KINDS.map((s) => [s, type.smokeWeights[s]] as const),
   );
-  return materialise(catalog, config, rng, baseTier, finish, smoke);
+  const shape = pickWeighted(
+    rng,
+    SMOKE_SHAPES.map((s) => [s, type.smokeShapeWeights[s]] as const),
+  );
+  const engraving = pickWeighted(
+    rng,
+    ENGRAVING_KINDS.map((e) => [e, type.engravingWeights[e]] as const),
+  );
+  return materialise(catalog, config, rng, baseTier, finish, smoke, shape, engraving);
 }
 
 /** Draws with the booster's rules, conditioned on the global rarity (used by recycling). */
@@ -129,5 +169,5 @@ export function rollForRarity(
     rng,
     candidates.map((c) => [c, c.probability] as const),
   );
-  return materialise(catalog, config, rng, o.baseTier, o.finish, o.smoke);
+  return materialise(catalog, config, rng, o.baseTier, o.finish, o.smoke, o.shape, o.engraving);
 }

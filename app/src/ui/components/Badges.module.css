@@ -84,6 +84,18 @@
   transform: rotate(45deg) scale(0.8);
 }
 
+.glyph[data-finish='silver'] {
+  background: linear-gradient(135deg, #ffffff, #b4bcc6 45%, #59616c);
+  border-radius: 3px;
+  transform: rotate(45deg) scale(0.8);
+}
+
+.glyph[data-finish='bronze'] {
+  background: linear-gradient(135deg, #ffe7dd, #e39a84 45%, #8a3a2c);
+  border-radius: 3px;
+  transform: rotate(45deg) scale(0.8);
+}
+
 .glyph[data-finish='chromatic'] {
   background: conic-gradient(#ff5a5a, #ffd23f, #3ddc84, #2de2e6, #6c5bff, #e040f0, #ff5a5a);
 }
@@ -95,9 +107,91 @@
   box-shadow: none;
 }
 
+.glyph[data-finish='ruby'] {
+  background: linear-gradient(160deg, #ffd0da, #ff2a55 35%, #9c0020 70%, #ff8aa2);
+  clip-path: polygon(50% 0, 100% 30%, 82% 100%, 18% 100%, 0 30%);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Emerald: step-cut octagon. */
+.glyph[data-finish='emerald'] {
+  background: linear-gradient(160deg, #c9ffe2, #1fd47a 35%, #066b35 70%, #7cf0b4);
+  clip-path: polygon(25% 0, 75% 0, 100% 20%, 100% 80%, 75% 100%, 25% 100%, 0 80%, 0 20%);
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .glyph[data-finish='cosmic'] {
   background:
     radial-gradient(circle at 30% 30%, #fff 0 6%, transparent 8%),
     radial-gradient(circle at 70% 60%, #fff 0 5%, transparent 7%),
     radial-gradient(circle at 40% 70%, #2de2e6, #7a1fd6 60%, #18063a);
+}
+
+.glyph[data-finish='amethyst'] {
+  background: linear-gradient(160deg, #f0dcff, #a64dff 35%, #4a0f86 70%, #d6a8ff);
+  clip-path: polygon(50% 0, 100% 30%, 82% 100%, 18% 100%, 0 30%);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Frost: snowflake-ish 6-point star. */
+.glyph[data-finish='frost'] {
+  background: linear-gradient(160deg, #ffffff, #bfe8ff 50%, #7cc4f0);
+  clip-path: polygon(
+    50% 0,
+    60% 35%,
+    93% 25%,
+    68% 50%,
+    93% 75%,
+    60% 65%,
+    50% 100%,
+    40% 65%,
+    7% 75%,
+    32% 50%,
+    7% 25%,
+    40% 35%
+  );
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.glyph[data-finish='chrome'] {
+  background: linear-gradient(180deg, #8fa6c4, #ffffff 45%, #22252c 52%, #9aa3b0);
+}
+
+.glyph[data-finish='lava'] {
+  background:
+    linear-gradient(60deg, transparent 45%, #ffb020 46% 54%, transparent 55%),
+    linear-gradient(-30deg, transparent 40%, #ff5a00 41% 49%, transparent 50%), #2a0d04;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.glyph[data-finish='glitch'] {
+  background: linear-gradient(180deg, #ff2a6d 0 33%, #05d9e8 33% 66%, #d1f7ff 66%);
+  border-radius: 0;
+  transform: skewX(-15deg) scale(0.85);
+}
+
+/* Engraving marks: a gold nib for signed copies, an etched plate for numbered ones. */
+.engraveMark {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.engraveMark[data-engraving='signature'] {
+  background: linear-gradient(135deg, #fff1a8, #e0a31c 50%, #8a5200);
+  clip-path: polygon(50% 0, 85% 45%, 55% 100%, 45% 100%, 15% 45%);
+}
+
+.engraveMark[data-engraving='serial'] {
+  border: 2px solid currentcolor;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, currentcolor 0 1.5px, transparent 1.5px 3.5px)
+    center / 70% 40% no-repeat;
 }

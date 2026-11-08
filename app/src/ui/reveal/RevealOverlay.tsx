@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { motion } from '../../config/motion.ts';
-import { finishDef, rarityIndex, smokeDef } from '../../domain/rarity.ts';
+import { finishDef, rarityIndex } from '../../domain/rarity.ts';
 import { boosterType } from '../../domain/roll.ts';
 import { burstConfetti } from '../../effects/confetti.ts';
+import { engravingLabel } from '../../effects/engraving.ts';
 import { sound } from '../../effects/sound.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { Button } from '../components/Button.tsx';
 import { Icon } from '../components/Icons.tsx';
+import { smokeLabel } from '../components/SmokeSwatch.tsx';
 import { feedback } from '../feedback.ts';
 import { useReducedMotion } from '../hooks.ts';
 import { PuffStage } from '../puff/PuffStage.tsx';
@@ -115,7 +117,8 @@ function RevealRound({
   const showPuff = phase === 'burst' || phase === 'revealed';
   const burstFx = phase === 'burst' && !timeline.skipped;
   const stretch = reduced ? 1 : tier.reveal.slowMotion;
-  const announce = `${puff.flavor}, ${puff.model}. Rareté ${tier.name}, finition ${finishDef(config, instance.finish).name}, fumée ${smokeDef(config, instance.smoke.kind).name}.`;
+  const engraving = engravingLabel(instance.engraving, config.serialEdition);
+  const announce = `${puff.flavor}, ${puff.model}. Rareté ${tier.name}, finition ${finishDef(config, instance.finish).name}, ${smokeLabel(config, instance.smoke).toLowerCase()}${engraving ? `, gravure ${engraving}` : ''}.`;
 
   return (
     <div
@@ -192,6 +195,7 @@ function RevealRound({
                 puff={puff}
                 finish={instance.finish}
                 smoke={instance.smoke}
+                engraving={instance.engraving}
                 seedKey={instance.uid}
                 glow={tier.color}
                 label={announce}

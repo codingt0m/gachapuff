@@ -43,6 +43,31 @@ describe('openBooster', () => {
     openBooster(state, ctx());
     expect(state.collection).toHaveLength(0);
   });
+
+  it('signs about 1 signed puff in 5 with the pseudo of the player', () => {
+    const base = createInitialState(NOW, config);
+    const state = { ...base, settings: { ...base.settings, pseudo: 'Tom' } };
+    const c = ctx({ unlimitedBoosters: true, rng: createSeededRng(5) });
+    let signed = 0;
+    let byTom = 0;
+    for (let i = 0; i < 20_000; i++) {
+      const { engraving } = openBooster(state, c).instance;
+      if (engraving.kind !== 'signature') continue;
+      signed++;
+      if (engraving.by === 'Tom') byTom++;
+    }
+    expect(byTom / signed).toBeGreaterThan(config.ownSignatureChance - 0.04);
+    expect(byTom / signed).toBeLessThan(config.ownSignatureChance + 0.04);
+  });
+
+  it('keeps the house signature when the player has no pseudo', () => {
+    const state = createInitialState(NOW, config);
+    const c = ctx({ unlimitedBoosters: true, rng: createSeededRng(5) });
+    for (let i = 0; i < 5_000; i++) {
+      const { engraving } = openBooster(state, c).instance;
+      if (engraving.kind === 'signature') expect(engraving.by).toBeUndefined();
+    }
+  });
 });
 
 describe('recycle', () => {

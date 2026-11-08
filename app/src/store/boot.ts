@@ -57,7 +57,7 @@ export async function bootGame(): Promise<BootResult> {
     initialState: state,
     rng: flags.seed === null ? mathRandomRng : createSeededRng(flags.seed),
     newId: randomId,
-    unlimitedBoosters: flags.dev,
+    unlimitedBoosters: true,
     dev: flags.dev,
   });
   return { store, notices };

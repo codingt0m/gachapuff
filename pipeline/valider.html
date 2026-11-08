@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validation dataset</title>
+<style>
+  :root {
+    --felt: #0f4a37; --felt-deep: #08241b; --paper: #f2e8d5; --ink: #121212;
+    --text: #f6efe0; --muted: #a9c4b6; --ok: #3ccf7a; --ko: #e5483f; --gold: #e2a93b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--felt-deep); color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; overflow: hidden; user-select: none;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px; padding: 10px 16px;
+    border-bottom: 1px solid #1d4a3b; flex-wrap: wrap;
+  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  .stats { display: flex; gap: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .stats b { color: var(--text); }
+  .stats .ok b { color: var(--ok); } .stats .ko b { color: var(--ko); }
+  .bar { flex: 1; min-width: 120px; height: 6px; background: #163d31; border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--gold); width: 0; transition: width .2s; }
+  select, button {
+    font: inherit; color: var(--text); background: #133b2e; border: 1px solid #2a6b55;
+    border-radius: 6px; padding: 5px 10px; cursor: pointer;
+  }
+  button:hover { background: #18493a; }
+  button:disabled { opacity: .4; cursor: default; }
+  main { flex: 1; display: grid; place-items: center; position: relative; min-height: 0; }
+  .card {
+    width: min(440px, 86vw, 62vh); aspect-ratio: 3 / 4; border-radius: 16px;
+    background: var(--paper); box-shadow: 0 18px 50px rgb(0 0 0 / .45);
+    position: relative; touch-action: none; cursor: grab; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .card.bg-magenta { background: #ff00ff; }
+  .card.bg-ivoire { background: var(--paper); }
+  .card.bg-tapis { background: var(--felt); }
+  .card.dragging { cursor: grabbing; }
+  .card.anim { transition: transform .25s ease, opacity .25s ease; }
+  .card .pic { flex: 1; min-height: 0; display: grid; place-items: center; position: relative; }
+  .card img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
+  .card .info {
+    background: rgb(0 0 0 / .72); color: #fff; padding: 10px 14px;
+  }
+  .info .name { font-weight: 600; font-size: 15px; }
+  .info .meta { color: #cfe0d6; font-size: 12px; margin-top: 2px; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; margin-right: 4px; }
+  .tag.fix { background: var(--gold); color: var(--ink); }
+  .tag.off { background: var(--ko); color: #fff; }
+  .tag.okd { background: var(--ok); color: var(--ink); }
+  .stamp {
+    position: absolute; top: 22px; padding: 4px 12px; border: 4px solid; border-radius: 8px;
+    font-weight: 800; font-size: 26px; letter-spacing: 1px; opacity: 0; transform: rotate(-12deg);
+    background: rgb(255 255 255 / .75);
+  }
+  .stamp.ok { left: 18px; color: var(--ok); }
+  .stamp.ko { right: 18px; color: var(--ko); transform: rotate(12deg); }
+  .avant {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    background: var(--gold); color: var(--ink); font-weight: 700; padding: 2px 10px; border-radius: 10px;
+    display: none;
+  }
+  .showing-orig .avant { display: block; }
+  .actions { display: flex; gap: 14px; justify-content: center; padding: 14px 16px 6px; }
+  .actions button { min-width: 130px; padding: 10px 16px; font-weight: 600; }
+  .actions .ko { border-color: var(--ko); color: #ffd6d3; }
+  .actions .ok { border-color: var(--ok); color: #d3ffe5; }
+  .help { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 12px; }
+  kbd {
+    font: 11px ui-monospace, monospace; background: #133b2e; border: 1px solid #2a6b55;
+    border-bottom-width: 2px; border-radius: 4px; padding: 0 5px;
+  }
+  .empty { color: var(--muted); text-align: center; font-size: 16px; }
+  .toast {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: #000c; padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Validation du dataset</h1>
+  <div class="stats">
+    <span><b id="s-todo">0</b> à revoir</span>
+    <span class="ok"><b id="s-ok">0</b> validées</span>
+    <span class="ko"><b id="s-ko">0</b> désactivées</span>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <select id="filter" title="Puffs affichées">
+    <option value="todo">À revoir</option>
+    <option value="fix">Embouts remplacés</option>
+    <option value="ok">Validées</option>
+    <option value="ko">Désactivées</option>
+    <option value="all">Toutes</option>
+  </select>
+  <button id="bg" title="Fond de carte (B)">Fond : magenta</button>
+</header>
+
+<main id="stage"></main>
+
+<div class="actions">
+  <button class="ko" id="b-ko">← Désactiver</button>
+  <button id="b-undo" title="Annuler la dernière décision">↶ Retour</button>
+  <button class="ok" id="b-ok">Valider →</button>
+</div>
+<div class="help">
+  Glisser la carte, ou <kbd>←</kbd> désactiver · <kbd>→</kbd> valider ·
+  <kbd>↓</kbd> / <kbd>Retour arrière</kbd> annuler · <kbd>B</kbd> fond ·
+  maintenir <kbd>A</kbd> : avant correction (embouts remplacés)
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let items = [], list = [], idx = 0, busy = false, canUndo = false;
+// magenta par defaut : fait ressortir les bords du detourage (halos, debris, trous)
+const BGS = ['magenta', 'ivoire', 'tapis'];
+let bg = 0;
+const enc = encodeURIComponent;
+const imgUrl = (it, orig) => `/img?src=${orig ? 'orig' : 'cur'}&f=${enc(it.file)}&v=${it.active ? 1 : 0}`;
+
+const FILTERS = {
+  todo: (it) => !it.decision,
+  fix: (it) => it.original,
+  ok: (it) => it.decision === 'ok',
+  ko: (it) => it.decision === 'ko',
+  all: () => true,
+};
+
+async function load() {
+  const r = await fetch('/api/state');
+  const s = await r.json();
+  items = s.items; canUndo = s.canUndo;
+  list = items.filter(FILTERS[$('filter').value]);
+}
+
+function stats() {
+  const ok = items.filter((i) => i.decision === 'ok').length;
+  const ko = items.filter((i) => i.decision === 'ko').length;
+  $('s-ok').textContent = ok; $('s-ko').textContent = ko;
+  $('s-todo').textContent = items.length - ok - ko;
+  $('bar').style.width = `${(100 * (ok + ko)) / Math.max(1, items.length)}%`;
+  $('b-undo').disabled = !canUndo;
+}
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+function render() {
+  stats();
+  const stage = $('stage');
+  stage.innerHTML = '';
+  idx = Math.max(0, Math.min(idx, list.length - 1));
+  const it = list[idx];
+  $('b-ok').disabled = $('b-ko').disabled = !it;
+  if (!it) {
+    stage.innerHTML = `<div class="empty">Rien à afficher dans ce filtre.<br>
+      Pense à lancer <kbd>cd app &amp;&amp; npm run assets</kbd> pour mettre le jeu à jour.</div>`;
+    return;
+  }
+  const tags = [
+    it.original ? '<span class="tag fix">embout remplacé</span>' : '',
+    it.decision === 'ok' ? '<span class="tag okd">validée</span>' : '',
+    it.decision === 'ko' ? '<span class="tag off">désactivée</span>' : '',
+  ].join('');
+  const card = document.createElement('div');
+  card.className = 'card bg-' + BGS[bg];
+  card.innerHTML = `
+    <div class="pic">
+      <img alt="" src="${imgUrl(it)}">
+      <span class="avant">AVANT</span>
+      <span class="stamp ok">VALIDER</span>
+      <span class="stamp ko">DÉSACTIVER</span>
+    </div>
+    <div class="info">
+      <div class="name">${esc(it.model)} — ${esc(it.flavor)}</div>
+      <div class="meta">${tags}intégrité ${it.integ}/5 · résolution ${it.resol}/5
+        ${it.remark ? ' · ' + esc(it.remark) : ''} · ${idx + 1}/${list.length}</div>
+    </div>`;
+  stage.appendChild(card);
+  drag(card, it);
+  // prechargement de la suivante
+  if (list[idx + 1]) new Image().src = imgUrl(list[idx + 1]);
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+}
+
+function drag(card, it) {
+  let x0 = null, dx = 0;
+  const stamps = { ok: card.querySelector('.stamp.ok'), ko: card.querySelector('.stamp.ko') };
+  const move = (d) => {
+    card.style.transform = `translateX(${d}px) rotate(${d / 18}deg)`;
+    stamps.ok.style.opacity = Math.max(0, Math.min(1, d / 110));
+    stamps.ko.style.opacity = Math.max(0, Math.min(1, -d / 110));
+  };
+  card.addEventListener('pointerdown', (e) => {
+    if (busy) return;
+    x0 = e.clientX; dx = 0; card.setPointerCapture(e.pointerId);
+    card.classList.add('dragging'); card.classList.remove('anim');
+  });
+  card.addEventListener('pointermove', (e) => { if (x0 !== null) move((dx = e.clientX - x0)); });
+  const end = () => {
+    if (x0 === null) return;
+    x0 = null; card.classList.remove('dragging');
+    if (Math.abs(dx) > 110) decide(dx > 0 ? 'ok' : 'ko');
+    else { card.classList.add('anim'); move(0); }
+  };
+  card.addEventListener('pointerup', end);
+  card.addEventListener('pointercancel', end);
+}
+
+async function decide(d) {
+  const it = list[idx];
+  if (!it || busy) return;
+  busy = true;
+  const card = document.querySelector('.card');
+  if (card) {
+    card.classList.add('anim');
+    const w = window.innerWidth;
+    card.style.transform = `translateX(${d === 'ok' ? w : -w}px) rotate(${d === 'ok' ? 25 : -25}deg)`;
+    card.style.opacity = '0';
+    card.querySelector(`.stamp.${d}`).style.opacity = 1;
+  }
+  try {
+    const r = await fetch('/api/decide', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: it.key, decision: d }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    await load();
+    const p = list.findIndex((x) => x.key === it.key);
+    if (p >= 0) idx = p + 1;            // toujours dans le filtre : on avance
+    await new Promise((res) => setTimeout(res, 140));
+  } catch (e) {
+    toast('Erreur : ' + e.message); await load();
+  }
+  busy = false;
+  render();
+}
+
+async function undo() {
+  if (busy) return;
+  busy = true;
+  try {
+    const r = await fetch('/api/undo', { method: 'POST' });
+    const { key } = await r.json();
+    await load();
+    if (key) {
+      let p = list.findIndex((x) => x.key === key);
+      if (p < 0) { $('filter').value = 'all'; await load(); p = list.findIndex((x) => x.key === key); }
+      idx = Math.max(0, p);
+      toast('Annulé : ' + key);
+    } else toast('Rien à annuler');
+  } finally { busy = false; render(); }
+}
+
+function showOriginal(on) {
+  const it = list[idx], card = document.querySelector('.card');
+  if (!it || !card || !it.original) return;
+  card.querySelector('img').src = imgUrl(it, on);
+  card.classList.toggle('showing-orig', on);
+}
+
+$('b-ok').onclick = () => decide('ok');
+$('b-ko').onclick = () => decide('ko');
+$('b-undo').onclick = undo;
+$('bg').onclick = () => {
+  bg = (bg + 1) % BGS.length;
+  $('bg').textContent = 'Fond : ' + BGS[bg];
+  const card = document.querySelector('.card');
+  if (card) card.className = card.className.replace(/bg-\w+/, 'bg-' + BGS[bg]);
+};
+$('filter').onchange = async () => { idx = 0; await load(); render(); $('filter').blur(); };
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); decide('ok'); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); decide('ko'); }
+  else if (e.key === 'ArrowDown' || e.key === 'Backspace') { e.preventDefault(); undo(); }
+  else if (e.key === 'b' || e.key === 'B') $('bg').click();
+  else if ((e.key === 'a' || e.key === 'A') && !e.repeat) showOriginal(true);
+});
+document.addEventListener('keyup', (e) => { if (e.key === 'a' || e.key === 'A') showOriginal(false); });
+
+load().then(render);
+</script>
+</body>
+</html>

@@ -30,6 +30,26 @@
   margin-bottom: var(--sp-2);
 }
 
+.field {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.field input {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-md);
+  background: var(--c-bg-deep);
+  color: var(--c-text);
+  font: inherit;
+}
+
+.field input:focus-visible {
+  outline: 3px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
 .radios {
   display: grid;
   gap: var(--sp-1);

@@ -24,6 +24,8 @@ function merge(a: SimulationResult | null, b: SimulationResult): SimulationResul
     rarity: add(a.rarity, b.rarity),
     finish: add(a.finish, b.finish),
     smoke: add(a.smoke, b.smoke),
+    shape: add(a.shape, b.shape),
+    engraving: add(a.engraving, b.engraving),
     baseTier: a.baseTier.map((v, i) => v + (b.baseTier[i] ?? 0)),
     distinctPuffs: Math.max(a.distinctPuffs, b.distinctPuffs),
   };
@@ -135,6 +137,36 @@ export default function SimulatorScreen() {
                     {s.name} <small>(+{s.points})</small>
                   </th>
                   <td>{formatPercent(pct(result?.smoke[s.kind] ?? 0), 2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        <section className={styles.section}>
+          <h2>Formes de fumée</h2>
+          <table className={styles.table}>
+            <tbody>
+              {config.smokeShapes.map((s) => (
+                <tr key={s.shape}>
+                  <th scope="row">
+                    {s.name} <small>(+{s.points})</small>
+                  </th>
+                  <td>{formatPercent(pct(result?.shape[s.shape] ?? 0), 2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        <section className={styles.section}>
+          <h2>Gravures</h2>
+          <table className={styles.table}>
+            <tbody>
+              {config.engravings.map((e) => (
+                <tr key={e.kind}>
+                  <th scope="row">
+                    {e.name} <small>(+{e.points})</small>
+                  </th>
+                  <td>{formatPercent(pct(result?.engraving[e.kind] ?? 0), 2)}</td>
                 </tr>
               ))}
             </tbody>

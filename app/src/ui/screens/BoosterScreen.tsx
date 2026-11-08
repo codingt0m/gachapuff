@@ -72,7 +72,7 @@ export function BoosterScreen() {
             aria-label={`${unlimited ? 'Illimités' : `${boosters.stock} sur ${max}`} boosters en stock`}
           >
             {unlimited ? (
-              <span className={styles.unlimited}>∞ boosters (dev)</span>
+              <span className={styles.unlimited}>∞ boosters</span>
             ) : (
               Array.from({ length: max }, (_, i) => (
                 <span key={i} className={styles.pip} data-full={i < boosters.stock} />

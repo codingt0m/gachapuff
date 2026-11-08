@@ -1,4 +1,6 @@
 import type {
+  EngravingDef,
+  EngravingKind,
   FinishDef,
   FinishId,
   GameConfig,
@@ -6,6 +8,8 @@ import type {
   RarityTier,
   SmokeDef,
   SmokeKind,
+  SmokeShape,
+  SmokeShapeDef,
 } from './types.ts';
 
 export function finishDef(config: GameConfig, id: FinishId): FinishDef {
@@ -20,15 +24,35 @@ export function smokeDef(config: GameConfig, kind: SmokeKind): SmokeDef {
   return def;
 }
 
+export function smokeShapeDef(config: GameConfig, shape: SmokeShape): SmokeShapeDef {
+  const def = config.smokeShapes.find((s) => s.shape === shape);
+  if (!def) throw new Error(`Unknown smoke shape "${shape}"`);
+  return def;
+}
+
+export function engravingDef(config: GameConfig, kind: EngravingKind): EngravingDef {
+  const def = config.engravings.find((e) => e.kind === kind);
+  if (!def) throw new Error(`Unknown engraving "${kind}"`);
+  return def;
+}
+
 export function rarityPoints(
   config: GameConfig,
   baseTier: number,
   finish: FinishId,
   smoke: SmokeKind,
+  engraving: EngravingKind = 'none',
+  shape: SmokeShape = 'cloud',
 ): number {
   const base = config.baseTiers.tiers[baseTier];
   if (!base) throw new Error(`Unknown base tier ${baseTier}`);
-  return base.points + finishDef(config, finish).points + smokeDef(config, smoke).points;
+  return (
+    base.points +
+    finishDef(config, finish).points +
+    smokeDef(config, smoke).points +
+    smokeShapeDef(config, shape).points +
+    engravingDef(config, engraving).points
+  );
 }
 
 /** Highest tier whose threshold is reached. */

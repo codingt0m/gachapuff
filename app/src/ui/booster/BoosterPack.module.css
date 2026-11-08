@@ -1,49 +1,177 @@
+/*
+ * A puffed-up foil bag, in real CSS 3D. Side view of the pillow:
+ *   seals (flat, mid-plane) -> flank layers on a quarter circle -> printed face in front.
+ * No filter / mask / overflow on .pack or on any element holding 3D children: those
+ * would flatten the stack. Outlines live on the leaf elements.
+ */
 .pack {
   /* --mx/--my/--rx/--ry are inherited from the tilting wrapper (usePointerTilt). */
   --tear: 0;
   --charge: 0;
   --glow: var(--c-gold);
   --wrap: var(--c-primary);
+  --seal-top: 9%;
+  --seal-bottom: 6%;
+  /* Bulge of the face in front of the seals; the bag swells as the charge builds. */
+  --depth: calc(22px + var(--charge) * 12px);
+  /* How far the face is inset from the seal edges (share of the body size). */
+  --inset-x: 0.16;
+  --inset-y: 0.09;
+  /* Pinch creases of the foil next to the seals. */
+  --creases: repeating-linear-gradient(
+    90deg,
+    transparent 0 5px,
+    rgb(30 0 0 / 0.3) 5px 6px,
+    rgb(255 240 230 / 0.14) 6px 7px,
+    transparent 7px 12px
+  );
   position: relative;
   width: 100%;
   aspect-ratio: 0.68;
   transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transform-style: preserve-3d;
   transition: transform var(--dur-base) var(--ease-out);
-  /* Ink outline around the crimped silhouette, then a hard shadow on the table. */
-  filter: drop-shadow(2px 0 0 var(--c-ink)) drop-shadow(-2px 0 0 var(--c-ink))
-    drop-shadow(0 2px 0 var(--c-ink)) drop-shadow(0 -2px 0 var(--c-ink))
-    drop-shadow(8px 10px 0 rgb(0 0 0 / 0.45));
 }
 
-/* Crimped top strip, torn off when opening. */
-.strip {
+.pack > * {
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 13%;
+}
+
+/* Body box: everything between the two seals. */
+.layer,
+.face,
+.backFace {
+  left: 0;
+  right: 0;
+  top: var(--seal-top);
+  bottom: var(--seal-bottom);
+}
+
+.backFace {
+  border-radius: 9% / 5%;
+}
+
+/* Hard shadow on the table, behind the whole bag. */
+.cast {
+  inset: 0;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.45);
+  transform: translateZ(calc(var(--depth) * -1 - 4px)) translate(8px, 10px);
+}
+
+.backFace {
   background: var(--c-primary-lo);
-  -webkit-mask: radial-gradient(5px at 50% 0, #0000 98%, #000) 50% 0 / 10px 100%;
-  mask: radial-gradient(5px at 50% 0, #0000 98%, #000) 50% 0 / 10px 100%;
+  transform: translateZ(calc(var(--depth) * -1))
+    scale(calc(1 - var(--inset-x)), calc(1 - var(--inset-y)));
+}
+
+/* One slice of the pillow, printed like the face. Its visible ring forms the flank,
+   darker the more it turns sideways (towards the seals), a little lighter top-left.
+   Square corners on the mid-plane so the bag pinches into the seals, rounder in front. */
+.layer {
+  /* How far the surface turns away from the viewer here: cos of the profile angle. */
+  --turn: calc(1 - var(--in));
+  border-radius: calc(1% + var(--in) * 8%) / calc(0.5% + var(--in) * 4.5%);
+  background:
+    linear-gradient(
+      150deg,
+      rgb(255 236 222 / calc(var(--turn) * 0.16)) 30%,
+      rgb(30 0 0 / calc(var(--turn) * 0.7)) 62%
+    ),
+    var(--creases) top / 100% 7% no-repeat,
+    var(--creases) bottom / 100% 6% no-repeat,
+    var(--tex-dots),
+    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.1) 0 14px, transparent 14px 28px),
+    var(--wrap);
+  transform: translateZ(calc(var(--depth) * var(--z)))
+    scale(calc(1 - var(--inset-x) * var(--in)), calc(1 - var(--inset-y) * var(--in)));
+}
+
+/* The widest slice carries the ink outline of the sides (the seals draw top and bottom). */
+.layer[data-rim='true'] {
+  box-shadow:
+    2px 0 0 var(--c-ink),
+    -2px 0 0 var(--c-ink);
+}
+
+/* ---- seals: flat crimped bands on the mid-plane ---- */
+.strip,
+.sealBottom {
+  left: 0;
+  right: 0;
+  transform: translateZ(0.5px);
+}
+
+/* Outline on the outer edges only: the inner edge runs straight into the bag. */
+.strip {
+  filter: drop-shadow(2px 0 0 var(--c-ink)) drop-shadow(-2px 0 0 var(--c-ink))
+    drop-shadow(0 -2px 0 var(--c-ink));
+}
+
+.sealBottom {
+  filter: drop-shadow(2px 0 0 var(--c-ink)) drop-shadow(-2px 0 0 var(--c-ink))
+    drop-shadow(0 2px 0 var(--c-ink));
+}
+
+/* Top seal, torn off when opening. */
+.strip {
+  top: 0;
+  height: var(--seal-top);
   transform-origin: 100% 100%;
   transition:
     transform var(--dur-slow) var(--ease-in),
     opacity var(--dur-slow);
 }
 
-.stripFoil {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, rgb(0 0 0 / 0.3) 0 2px, transparent 2px 7px);
+.sealBottom {
+  bottom: 0;
+  height: var(--seal-bottom);
 }
 
-.seam {
+/* Fine heat-seal ridges with a soft sheen; scalloped outer edge. */
+.stripFoil,
+.sealBottom::before {
+  content: '';
   position: absolute;
-  left: 5%;
-  right: 5%;
-  top: 13%;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.14),
+      transparent 40%,
+      rgb(30 0 0 / 0.2) 75%,
+      rgb(30 0 0 / 0.45)
+    ),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 4px), var(--c-primary);
+}
+
+.stripFoil {
+  -webkit-mask: radial-gradient(4px at 50% 0, #0000 98%, #000) 50% 0 / 8px 100%;
+  mask: radial-gradient(4px at 50% 0, #0000 98%, #000) 50% 0 / 8px 100%;
+}
+
+.sealBottom::before {
+  background:
+    linear-gradient(
+      0deg,
+      rgb(255 255 255 / 0.1),
+      transparent 40%,
+      rgb(30 0 0 / 0.25) 75%,
+      rgb(30 0 0 / 0.5)
+    ),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 4px), var(--c-primary);
+  -webkit-mask: radial-gradient(4px at 50% 100%, #0000 98%, #000) 50% 100% / 8px 100%;
+  mask: radial-gradient(4px at 50% 100%, #0000 98%, #000) 50% 100% / 8px 100%;
+}
+
+/* Tear line across the top seal. */
+.seam {
+  left: 6%;
+  right: 6%;
+  top: calc(var(--seal-top) * 0.62);
   height: 0;
-  border-top: 2px dashed var(--c-paper);
-  z-index: 2;
+  border-top: 2px dashed rgb(242 232 213 / 0.75);
+  transform: translateZ(1px);
 }
 
 .cut {
@@ -58,10 +186,8 @@
   opacity: min(1, calc(var(--tear) * 20));
 }
 
-/* The wrapper: card-red stock with diagonal stripes and a dotted print screen. */
-.body {
-  position: absolute;
-  inset: 13% 0 0 0;
+/* ---- the printed face, pushed forward ---- */
+.face {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -69,20 +195,41 @@
   gap: 5%;
   overflow: hidden;
   background:
+    linear-gradient(rgb(30 0 0 / 0.16), transparent) top / 100% 7% no-repeat,
+    var(--creases) top / 100% 4% no-repeat,
     var(--tex-dots),
-    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.1) 0 14px, transparent 14px 28px), var(--wrap);
-  -webkit-mask: radial-gradient(5px at 50% 100%, #0000 98%, #000) 50% 100% / 10px 100%;
-  mask: radial-gradient(5px at 50% 100%, #0000 98%, #000) 50% 100% / 10px 100%;
-  transition: transform var(--dur-slow) var(--ease-in);
+    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.1) 0 14px, transparent 14px 28px),
+    var(--wrap);
+  border-radius: 9% / 5%;
+  transform: translateZ(var(--depth)) scale(calc(1 - var(--inset-x)), calc(1 - var(--inset-y)));
 }
 
 /* Metallised sheen sliding with the pointer (subtle). */
 .holo {
   position: absolute;
   inset: -20%;
-  background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / 0.32) 48%, transparent 56%)
+  background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / 0.28) 48%, transparent 56%)
     var(--mx, 50%) var(--my, 50%) / 250% 250%;
   pointer-events: none;
+}
+
+/* Light pooling on the belly of the bag, in two flat steps, plus a hard glint. */
+.gloss {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      8% 4.5% at calc(66% - var(--mx, 50%) * 0.4) calc(52% - var(--my, 50%) * 0.4),
+      rgb(255 255 255 / 0.5) 0 60%,
+      transparent 62%
+    ),
+    radial-gradient(
+      50% 38% at calc(68% - var(--mx, 50%) * 0.36) calc(62% - var(--my, 50%) * 0.36),
+      rgb(255 244 228 / 0.16) 0 40%,
+      rgb(255 244 228 / 0.07) 40% 68%,
+      transparent 68%
+    );
 }
 
 /* Brass sunburst behind the label. */
@@ -104,7 +251,7 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 50%;
+  width: 54%;
   aspect-ratio: 0.72;
   border: 3px solid var(--c-ink);
   border-radius: var(--r-md);
@@ -143,7 +290,7 @@
   position: relative;
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: clamp(1.25rem, 7vw, 2rem);
+  font-size: clamp(1.15rem, 6.5vw, 1.85rem);
   color: var(--c-paper);
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -188,9 +335,8 @@
 
 /* Light beam escaping from the opening (rarity hint colour). */
 .light {
-  position: absolute;
   left: 50%;
-  top: 13%;
+  top: var(--seal-top);
   width: 160%;
   height: 120%;
   translate: -50% -100%;
@@ -205,6 +351,7 @@
   -webkit-mask: radial-gradient(70% 100% at 50% 100%, #000, transparent 75%);
   mask: radial-gradient(70% 100% at 50% 100%, #000, transparent 75%);
   opacity: 0;
+  transform: translateZ(calc(var(--depth) * 0.5));
   transition: opacity var(--dur-slow);
   pointer-events: none;
 }
@@ -214,7 +361,7 @@
 }
 
 .pack[data-open='true'] .strip {
-  transform: translate(30%, -160%) rotate(28deg);
+  transform: translateZ(0.5px) translate(30%, -160%) rotate(28deg);
   opacity: 0;
 }
 

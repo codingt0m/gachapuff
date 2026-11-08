@@ -38,14 +38,66 @@ export interface Catalog {
 
 // ----------------------------------------------------------------- axes ---
 
-export const FINISH_IDS = ['normal', 'shiny', 'golden', 'chromatic', 'crystal', 'cosmic'] as const;
+export const FINISH_IDS = [
+  'normal',
+  'shiny',
+  'glitch',
+  'silver',
+  'golden',
+  'bronze',
+  'chrome',
+  'chromatic',
+  'crystal',
+  'ruby',
+  'emerald',
+  'amethyst',
+  'frost',
+  'cosmic',
+  'lava',
+] as const;
 export type FinishId = (typeof FINISH_IDS)[number];
 
-export const SMOKE_KINDS = ['white', 'solid', 'gradient'] as const;
+/** Smoke colouring. */
+export const SMOKE_KINDS = [
+  'white',
+  'solid',
+  'gradient',
+  'halo',
+  'swirl',
+  'alternate',
+  'glitter',
+  'rainbow',
+] as const;
 export type SmokeKind = (typeof SMOKE_KINDS)[number];
 
-export type Smoke =
-  { kind: 'white' } | { kind: 'solid'; color: string } | { kind: 'gradient'; colors: string[] };
+/** Smoke kinds drawn with exactly one colour. */
+export type MonoSmokeKind = 'solid' | 'glitter';
+/** Smoke kinds drawn with 2-3 colours: along the plume, core/edge, marbled, one colour per puff. */
+export type MultiSmokeKind = 'gradient' | 'halo' | 'swirl' | 'alternate';
+
+/** Shape of the exhaled smoke. */
+export const SMOKE_SHAPES = ['cloud', 'rings', 'spiral', 'hearts', 'stars'] as const;
+export type SmokeShape = (typeof SMOKE_SHAPES)[number];
+
+export type Smoke = (
+  | { kind: 'white' }
+  | { kind: 'rainbow' }
+  | { kind: MonoSmokeKind; color: string }
+  | { kind: MultiSmokeKind; colors: string[] }
+) & {
+  /** Absent = 'cloud'. */
+  shape?: SmokeShape;
+};
+
+export const ENGRAVING_KINDS = ['none', 'signature', 'serial'] as const;
+export type EngravingKind = (typeof ENGRAVING_KINDS)[number];
+
+/** A mark printed on the puff. A serial number is drawn out of `serialEdition`. */
+export type Engraving =
+  | { kind: 'none' }
+  /** `by`: the player who pulled it signed it (absent = the house signature). */
+  | { kind: 'signature'; by?: string }
+  | { kind: 'serial'; serial: number };
 
 export const RARITY_IDS = [
   'common',
@@ -85,6 +137,19 @@ export interface SmokeDef {
   colorCount: { min: number; max: number };
 }
 
+export interface SmokeShapeDef {
+  shape: SmokeShape;
+  name: string;
+  points: number;
+}
+
+export interface EngravingDef {
+  kind: EngravingKind;
+  name: string;
+  description: string;
+  points: number;
+}
+
 /** How dramatic the reveal of a tier is. Times in ms. */
 export interface RevealChoreography {
   /** Build-up between tearing the pack and showing the puff. */
@@ -120,6 +185,8 @@ export interface BoosterType {
   baseTierWeights: number[];
   finishWeights: Record<FinishId, number>;
   smokeWeights: Record<SmokeKind, number>;
+  smokeShapeWeights: Record<SmokeShape, number>;
+  engravingWeights: Record<EngravingKind, number>;
 }
 
 export interface GameConfig {
@@ -133,6 +200,12 @@ export interface GameConfig {
   };
   finishes: FinishDef[];
   smokes: SmokeDef[];
+  smokeShapes: SmokeShapeDef[];
+  engravings: EngravingDef[];
+  /** Size of the numbered edition: serials are drawn in [1, serialEdition]. */
+  serialEdition: number;
+  /** Chance that a signed puff bears the pseudo of the player who pulled it. */
+  ownSignatureChance: number;
   smokeColor: { saturation: [number, number]; lightness: [number, number] };
   rarities: RarityTier[];
   boosterTypes: BoosterType[];
@@ -149,6 +222,7 @@ export interface PuffInstance {
   puffId: string;
   finish: FinishId;
   smoke: Smoke;
+  engraving: Engraving;
   rarity: RarityId;
   points: number;
   obtainedAt: number;
@@ -167,6 +241,8 @@ export interface Settings {
   sound: boolean;
   haptics: boolean;
   motion: MotionPreference;
+  /** Player name, used for "signed by you" puffs. */
+  pseudo?: string;
 }
 
 export interface SaveState {
