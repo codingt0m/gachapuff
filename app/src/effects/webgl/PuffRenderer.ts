@@ -306,6 +306,11 @@ export class PuffRenderer {
     this.engraveTexture = uploadTexture(this.gl, canvas);
   }
 
+  /** Press and hold: the puff blows a big cloud until released. */
+  setHolding(holding: boolean): void {
+    this.particles.holding = holding;
+  }
+
   /** White silhouette flooding into colour, after `delay` ms. */
   animateReveal(duration: number, delay = 0): void {
     this.reveal = 0;

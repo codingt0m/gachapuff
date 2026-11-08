@@ -34,15 +34,16 @@ export function PackIntro({
   const tilt = usePointerTilt(phase === 'intro');
   const torn = phase !== 'intro';
 
-  // Sparkles shot out of the seam when the pack opens (the smoke is CSS, below).
+  // Sparkles shot out of the seam when the pack opens (the light itself is CSS, below).
   useEffect(() => {
     const canvas = fxCanvas.current;
     if (!torn || !canvas || !fxColors) return;
     return burstConfetti(canvas, {
-      count: 50,
+      count: 45,
       colors: fxColors,
       origin: { x: 0.5, y: 0.4 },
       power: 0.9,
+      shape: 'spark',
     });
     // fxColors is stable for the lifetime of a round.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,21 +100,17 @@ export function PackIntro({
       >
         <BoosterPack name={name} tear={tear} open={torn} charge={charge} glow={hintColor} />
         {!torn && <span className={styles.swipeHint} aria-hidden="true" />}
+        {/* Only a special puff makes the pack shine, in its own colour. */}
         {fxColors && (
-          <div className={styles.openFx} data-on={torn} aria-hidden="true">
-            {Array.from({ length: 9 }, (_, i) => (
-              <span
-                key={i}
-                className={styles.openPlume}
-                style={
-                  {
-                    '--c': fxColors[i % fxColors.length],
-                    '--i': i,
-                    '--dx': `${(i - 4) * 9}%`,
-                  } as CSSProperties
-                }
-              />
-            ))}
+          <div
+            className={styles.openFx}
+            data-on={torn}
+            style={{ '--light': fxColors[0] } as CSSProperties}
+            aria-hidden="true"
+          >
+            <span className={styles.openHalo} />
+            <span className={styles.openBeams} />
+            <span className={styles.openSeam} />
             <canvas ref={fxCanvas} className={styles.openSparks} />
           </div>
         )}

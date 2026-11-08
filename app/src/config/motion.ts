@@ -88,7 +88,8 @@ export const render = {
  * rates in particles per second, times in seconds.
  */
 export const smoke = {
-  maxParticles: 90,
+  /** Room for the normal plume (~50 alive) plus a held cloud. */
+  maxParticles: 200,
   life: [2.8, 4.2],
   /** Constant thin stream. */
   trickleRate: 7,
@@ -113,4 +114,27 @@ export const smoke = {
   opacity: 0.6,
   /** Emission multiplier with reduced motion. */
   reducedRate: 0.5,
+  /**
+   * Press and hold on the puff: a big cloud billows out of the mouthpiece, hangs above it
+   * and swells, then drifts up and fades once released.
+   */
+  hold: {
+    /** Seconds to reach full output once pressed / to stop once released. */
+    rampUp: 0.3,
+    rampDown: 0.45,
+    /** Particles per second at full output. */
+    rate: 32,
+    life: [3, 4.6],
+    startSize: 0.06,
+    endSize: [0.32, 0.6],
+    /** Half-angle of the emission cone around the vertical (rad). */
+    cone: 1.1,
+    /** How far the cloud billows out before slowing, share of the headroom. */
+    reach: 0.55,
+    /** How fast billowing particles slow down (1/s). */
+    drag: 1.6,
+    /** Slow rise afterwards: share of the headroom climbed over a particle's life. */
+    lift: 0.4,
+    opacity: 0.42,
+  },
 } as const;

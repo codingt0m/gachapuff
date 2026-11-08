@@ -172,6 +172,30 @@
   animation: rise 3.6s ease-out infinite;
 }
 
+/* Press and hold (see PuffStage): a bigger, wider billowing cloud. */
+[data-holding] .smoke span {
+  animation: billow 2.2s ease-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.25s) !important;
+}
+
+[data-holding] .smoke span:nth-child(odd) {
+  --dx: -1;
+}
+
+@keyframes billow {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  15% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dx, 1) * 60px), -120px) scale(6);
+  }
+}
+
 @keyframes rise {
   0% {
     opacity: 0;

@@ -3,6 +3,7 @@ import { motion } from '../../config/motion.ts';
 import type { Engraving, FinishId, PuffDefinition, Smoke } from '../../domain/types.ts';
 import { assetUrl } from '../../data/manifest.ts';
 import { engravingLabel } from '../../effects/engraving.ts';
+import { haptic } from '../../effects/haptics.ts';
 import { TiltController } from '../../effects/tilt.ts';
 import { PuffRenderer } from '../../effects/webgl/PuffRenderer.ts';
 import { seedFrom, webglAvailable } from '../../effects/webglSupport.ts';
@@ -54,6 +55,7 @@ export function PuffStage({
   const hostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<PuffRenderer | null>(null);
   const tiltRef = useRef(new TiltController());
+  const holdingRef = useRef(false);
   const [fallback, setFallback] = useState(() => !webglAvailable());
   const reduced = useReducedMotion();
 
@@ -61,6 +63,40 @@ export function PuffStage({
   useEffect(() => {
     const wrapper = wrapperRef.current;
     return wrapper ? tiltRef.current.attach(wrapper) : undefined;
+  }, []);
+
+  // Press and hold on the puff: it blows a big cloud of its smoke until released.
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const setHolding = (holding: boolean) => {
+      if (holdingRef.current === holding) return;
+      holdingRef.current = holding;
+      rendererRef.current?.setHolding(holding);
+      wrapper.toggleAttribute('data-holding', holding);
+      if (holding) haptic('tap');
+    };
+    const press = (event: PointerEvent) => {
+      if (event.button === 0) setHolding(true);
+    };
+    const release = () => setHolding(false);
+    // A long press would otherwise open the context menu on touch screens.
+    const noMenu = (event: Event) => event.preventDefault();
+    wrapper.addEventListener('pointerdown', press);
+    wrapper.addEventListener('pointerleave', release);
+    wrapper.addEventListener('pointercancel', release);
+    wrapper.addEventListener('contextmenu', noMenu);
+    window.addEventListener('pointerup', release);
+    window.addEventListener('blur', release);
+    return () => {
+      wrapper.removeEventListener('pointerdown', press);
+      wrapper.removeEventListener('pointerleave', release);
+      wrapper.removeEventListener('pointercancel', release);
+      wrapper.removeEventListener('contextmenu', noMenu);
+      window.removeEventListener('pointerup', release);
+      window.removeEventListener('blur', release);
+      release();
+    };
   }, []);
 
   useEffect(() => {
@@ -95,6 +131,7 @@ export function PuffStage({
       return;
     }
     rendererRef.current = renderer;
+    renderer.setHolding(holdingRef.current);
     renderer.onContextLost = () => setFallback(true);
     renderer.onFrame = (dt) => {
       const t = tiltRef.current.update(dt);

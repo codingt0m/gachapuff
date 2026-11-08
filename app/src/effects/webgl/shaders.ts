@@ -495,9 +495,11 @@ attribute vec2 aUv;     // -1..1 inside the sprite (already rotated)
 attribute vec4 aData;   // alpha, seed, gradient position, shape (1 = ring)
 varying vec2 vUv;
 varying vec4 vData;
+varying vec2 vClip;
 void main() {
   vUv = aUv;
   vData = aData;
+  vClip = aPos;
   gl_Position = vec4(aPos, 0.0, 1.0);
 }
 `;
@@ -506,6 +508,7 @@ export const SMOKE_FRAGMENT = /* glsl */ `
 ${PRECISION}
 varying vec2 vUv;
 varying vec4 vData;       // alpha, seed, position along the plume, sprite (0 cloud, 1 ring, 2 heart, 3 star)
+varying vec2 vClip;       // clip-space position, to fade out before the canvas edges
 // 0 white, 1 solid, 2 gradient (along the plume), 3 rainbow, 4 glitter,
 // 5 halo (core -> edge), 6 swirl (marbled), 7 alternate (one colour per puff)
 uniform float uKind;
@@ -606,6 +609,8 @@ void main() {
     col += vec3(1.0) * speck;
     a = min(1.0, a + speck);
   }
-  gl_FragColor = vec4(col, a);
+  // Thin out towards the canvas edges instead of being sliced by them.
+  float edge = (1.0 - smoothstep(0.45, 1.0, vClip.y)) * (1.0 - smoothstep(0.8, 1.0, abs(vClip.x)));
+  gl_FragColor = vec4(col, a) * edge;
 }
 `;

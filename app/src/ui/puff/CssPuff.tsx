@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, type CSSProperties, type RefObject } from 'react';
 import { tilt as tiltConfig } from '../../config/motion.ts';
 import type { Engraving, FinishId, PuffDefinition, Smoke } from '../../domain/types.ts';
 import { assetUrl } from '../../data/manifest.ts';
@@ -56,7 +56,13 @@ export function CssPuff({
         {Array.from({ length: SMOKE_PUFFS }, (_, i) => (
           <span
             key={i}
-            style={{ background: smokeBackground(smoke), animationDelay: `${i * 0.6}s` }}
+            style={
+              {
+                background: smokeBackground(smoke),
+                animationDelay: `${i * 0.6}s`,
+                '--i': i,
+              } as CSSProperties
+            }
           />
         ))}
       </div>

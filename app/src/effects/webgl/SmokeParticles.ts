@@ -3,6 +3,9 @@ import type { SmokeShape } from '../../domain/types.ts';
 
 /** Sprite shapes drawn by SMOKE_FRAGMENT. */
 const SPRITE = { cloud: 0, ring: 1, heart: 2, star: 3 } as const;
+const H = S.hold;
+/** Vertical slowdown of the normal plume (1/s). */
+const PLUME_DRAG = 0.15;
 
 interface Particle {
   x: number;
@@ -22,6 +25,10 @@ interface Particle {
   /** Spiral: horizontal orbit radius growth (px/s), 0 = none, and starting angle. */
   orbit: number;
   phase0: number;
+  /** Rate (1/s) at which the vertical speed settles to `lift` (px/s). */
+  drag: number;
+  lift: number;
+  opacity: number;
 }
 
 /** Floats per vertex: clip x, clip y, u, v, alpha, seed, gradient position, sprite. */
@@ -47,12 +54,19 @@ const FIRST_EXHALE = 0.17;
  *
  * Shapes: cloud (plain), rings / hearts / stars (one shaped puff blown at each exhale,
  * with a lighter cloud around it), spiral (the stream twists in a double helix).
+ *
+ * While `holding`, a big cloud billows out of the mouthpiece on top of the normal plume.
  */
 export class SmokeParticles {
   readonly vertices = new Float32Array(S.maxParticles * VERTS_PER_PARTICLE * SMOKE_STRIDE);
   shape: SmokeShape = 'cloud';
+  /** The puff is pressed: blow a big cloud. */
+  holding = false;
   private particles: Particle[] = [];
   private pending = 0;
+  /** Held-cloud output, 0..1, ramping with `holding`. */
+  private hold = 0;
+  private holdPending = 0;
   /** Starts just before an exhale peak, so a puff appears with a cloud right away. */
   private clock = S.burstEvery * FIRST_EXHALE;
   private strand = 0;
@@ -60,6 +74,8 @@ export class SmokeParticles {
   reset(): void {
     this.particles = [];
     this.pending = 0;
+    this.hold = 0;
+    this.holdPending = 0;
     this.clock = S.burstEvery * FIRST_EXHALE;
   }
 
@@ -94,13 +110,24 @@ export class SmokeParticles {
     // Shaped puffs at each exhale peak (phase 0.25 = top of the sine).
     if (shaped && phaseBefore < 0.25 && phase >= 0.25) this.blowShapes(origin, unit, headroom);
 
+    this.hold = this.holding
+      ? Math.min(1, this.hold + dt / H.rampUp)
+      : Math.max(0, this.hold - dt / H.rampDown);
+    this.holdPending += H.rate * this.hold * (reduced ? S.reducedRate : 1) * dt;
+    if (this.hold === 0) this.holdPending = 0;
+    while (this.holdPending >= 1) {
+      this.holdPending -= 1;
+      if (this.particles.length < S.maxParticles) this.billow(origin, unit, headroom);
+    }
+
     const wind = -tiltX * S.wind * unit;
     for (const p of this.particles) {
       p.age += dt;
       const wander = p.sprite === SPRITE.cloud && p.orbit === 0 ? 1 : 0.2;
       p.vx += Math.sin(p.age * 1.7 + p.seed * 10) * S.drift * unit * dt * wander;
-      p.vx += (wind - p.vx) * dt * 0.6 * Math.min(1, p.age);
-      p.vy *= 1 - dt * 0.15;
+      // Sideways speed settles to the wind; billowing puffs brake as hard as they rise.
+      p.vx += (wind - p.vx) * Math.min(1, dt * Math.max(0.6 * Math.min(1, p.age), p.drag));
+      p.vy += (p.lift - p.vy) * Math.min(1, dt * p.drag);
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.rot += p.vrot * dt;
@@ -116,7 +143,7 @@ export class SmokeParticles {
       const t = p.age / p.life;
       let size = p.size0 + (p.size1 - p.size0) * (1 - (1 - t) ** 2);
       const fadeIn = Math.min(1, t / 0.08);
-      let alpha = fadeIn * (1 - t) ** 1.3 * S.opacity * intensity;
+      let alpha = fadeIn * (1 - t) ** 1.3 * p.opacity * intensity;
       let x = p.x;
       if (p.orbit > 0) {
         // Helix: orbit around the column, nearer side bigger and denser.
@@ -173,6 +200,38 @@ export class SmokeParticles {
       sprite: SPRITE.cloud,
       orbit: spiral ? S.spiral.radius * unit : 0,
       phase0: spiral ? this.clock * S.spiral.spin + this.strand * Math.PI : 0,
+      drag: PLUME_DRAG,
+      lift: 0,
+      opacity: S.opacity,
+    });
+  }
+
+  /** One puff of the held cloud: shot out in a wide cone, braking, then hanging and swelling. */
+  private billow(origin: { x: number; y: number }, unit: number, headroom: number): void {
+    const life = rand(H.life[0], H.life[1]);
+    // Biased towards the vertical, so the cloud stacks up rather than spreading flat.
+    const angle = rand(-1, 1) * Math.abs(rand(-1, 1)) * H.cone;
+    // Distance before stopping = speed / drag.
+    const speed = headroom * H.reach * H.drag * rand(0.45, 1.1);
+    this.particles.push({
+      x: origin.x + rand(-0.02, 0.02) * unit,
+      y: origin.y,
+      vx: Math.sin(angle) * speed,
+      vy: Math.cos(angle) * speed,
+      age: 0,
+      life,
+      size0: H.startSize * unit,
+      size1: rand(H.endSize[0], H.endSize[1]) * unit,
+      rot: rand(0, Math.PI * 2),
+      vrot: rand(-0.4, 0.4),
+      seed: Math.random(),
+      k0: rand(0, 0.35),
+      sprite: SPRITE.cloud,
+      orbit: 0,
+      phase0: 0,
+      drag: H.drag,
+      lift: ((headroom * H.lift) / life) * rand(0.7, 1.2),
+      opacity: H.opacity,
     });
   }
 
@@ -220,6 +279,9 @@ export class SmokeParticles {
       sprite,
       orbit: 0,
       phase0: 0,
+      drag: PLUME_DRAG,
+      lift: 0,
+      opacity: S.opacity,
     });
   }
 }

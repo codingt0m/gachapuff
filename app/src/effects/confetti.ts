@@ -6,6 +6,8 @@ export interface ConfettiOptions {
   origin?: { x: number; y: number };
   /** Initial speed, as a share of the canvas height per second. */
   power?: number;
+  /** 'spark': glowing, twinkling dots that float down slowly instead of paper confetti. */
+  shape?: 'confetti' | 'spark';
 }
 
 interface Piece {
@@ -34,6 +36,8 @@ export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): ()
   const H = canvas.height;
   const origin = o.origin ?? { x: 0.5, y: 0.45 };
   const power = o.power ?? 1.6;
+  const spark = o.shape === 'spark';
+  const gravity = spark ? GRAVITY * 0.35 : GRAVITY;
   const pieces: Piece[] = Array.from({ length: o.count }, (_, i) => {
     const angle = Math.random() * Math.PI * 2;
     const speed = (0.3 + Math.random() * 0.7) * power * H;
@@ -60,7 +64,7 @@ export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): ()
     ctx.clearRect(0, 0, canvas.width, H);
     let alive = 0;
     for (const p of pieces) {
-      p.vy += GRAVITY * H * dt;
+      p.vy += gravity * H * dt;
       p.vx *= DRAG;
       p.vy *= DRAG;
       p.x += p.vx * dt;
@@ -69,6 +73,10 @@ export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): ()
       p.wobble += dt * 10;
       if (p.y > H + p.w) continue;
       alive++;
+      if (spark) {
+        drawSpark(ctx, p);
+        continue;
+      }
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
@@ -85,4 +93,20 @@ export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): ()
     cancelAnimationFrame(raf);
     ctx.clearRect(0, 0, canvas.width, H);
   };
+}
+
+/** A glowing dot: white-hot core, coloured halo, twinkling radius. */
+function drawSpark(ctx: CanvasRenderingContext2D, p: Piece): void {
+  const r = p.w * (0.5 + 0.5 * Math.abs(Math.sin(p.wobble * 0.6)));
+  const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 1.5);
+  halo.addColorStop(0, '#ffffff');
+  halo.addColorStop(0.3, p.color);
+  halo.addColorStop(1, 'transparent');
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r * 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }

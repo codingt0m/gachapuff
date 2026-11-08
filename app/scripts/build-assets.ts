@@ -17,10 +17,13 @@ import { analysePixels, type PixelAnalysis } from './lib/analyse.ts';
 import { parseCsv } from './lib/csv.ts';
 import { parsePuffCount, slugify } from './lib/naming.ts';
 
-const PIPELINE_VERSION = 3; // bump when the encoding or the analysis changes
+const PIPELINE_VERSION = 4; // bump when the encoding or the analysis changes
 const SIZES = { detail: 512, thumb: 256 } as const;
 const ANALYSIS_SIZE = 128;
 const WEBP = { quality: 82, alphaQuality: 90, effort: 4 } as const;
+
+/** Models whose source images are stored upside down: rotated 180° before encoding and analysis. */
+const UPSIDE_DOWN_MODELS = new Set(['mega-shisha-hookah-100k']);
 
 const APP_DIR = path.resolve(import.meta.dirname, '..');
 const DATASET_DIR = path.resolve(APP_DIR, '..', 'dataset');
@@ -84,15 +87,16 @@ async function processOne(
   src: string,
   outBase: string,
   cached: CacheEntry | undefined,
+  flip: boolean,
 ): Promise<{ entry: CacheEntry; built: boolean }> {
   const s = await stat(src);
-  const signature = `${s.size}:${Math.round(s.mtimeMs)}`;
+  const signature = `${s.size}:${Math.round(s.mtimeMs)}${flip ? ':flip' : ''}`;
   const outputs = Object.values(SIZES).map((size) => `${outBase}-${size}.webp`);
   if (cached?.signature === signature && outputs.every((o) => existsSync(o))) {
     return { entry: cached, built: false };
   }
   await mkdir(path.dirname(outBase), { recursive: true });
-  const input = sharp(src).ensureAlpha();
+  const input = (flip ? sharp(src).rotate(180) : sharp(src)).ensureAlpha();
   await Promise.all(
     Object.values(SIZES).map((size) =>
       input
@@ -148,6 +152,7 @@ async function main() {
         path.join(DATASET_DIR, n.file),
         path.join(OUT_DIR, rel),
         cache.entries[id],
+        UPSIDE_DOWN_MODELS.has(modelSlug),
       );
       cache.entries[id] = result.entry;
       if (result.built) built++;

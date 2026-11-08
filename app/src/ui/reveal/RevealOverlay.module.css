@@ -158,46 +158,147 @@
   }
 }
 
-/* Effects of the drawn puff escaping from the torn seam: coloured smoke + sparkles. */
+/*
+ * Light pouring out of the torn seam (TCG-pack style): a white-hot slit, a fan of
+ * beams and a halo over the pack, all growing with the suspense (--charge) in the
+ * hint colour; sparkles on top. The burst flash then takes over.
+ */
 .openFx {
+  --seam-y: 5.6%;
+  --hint: var(--light);
   position: absolute;
   inset: 0;
   pointer-events: none;
   visibility: hidden;
+  mix-blend-mode: screen;
 }
 
 .openFx[data-on='true'] {
   visibility: visible;
 }
 
-.openPlume {
+.openSeam {
   position: absolute;
-  left: calc(50% + var(--dx));
-  top: 14%;
-  width: 46%;
-  aspect-ratio: 1;
-  margin-left: -23%;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--c), transparent 68%);
-  filter: blur(6px);
-  opacity: 0;
+  left: 4%;
+  right: 4%;
+  top: var(--seam-y);
+  height: calc(3px + var(--charge) * 5px);
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow:
+    0 0 calc(6px + var(--charge) * 14px) calc(1px + var(--charge) * 4px) #fff,
+    0 0 calc(18px + var(--charge) * 50px) calc(4px + var(--charge) * 14px) var(--hint),
+    0 0 calc(40px + var(--charge) * 120px) calc(8px + var(--charge) * 30px)
+      color-mix(in srgb, var(--hint) 55%, transparent);
+  transition:
+    height var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out);
 }
 
-.openFx[data-on='true'] .openPlume {
-  animation: plume 1.6s var(--ease-out) calc(var(--i) * 70ms) both;
+.openFx[data-on='true'] .openSeam {
+  animation: seam-open 260ms var(--ease-out) both;
 }
 
-@keyframes plume {
-  0% {
+@keyframes seam-open {
+  from {
+    transform: scaleX(0);
     opacity: 0;
-    transform: translateY(20%) scale(0.3);
   }
-  25% {
-    opacity: 0.9;
+  to {
+    transform: scaleX(1);
+    opacity: 1;
   }
-  100% {
-    opacity: 0;
-    transform: translateY(-170%) scale(1.7);
+}
+
+/* Fan of beams rising from the slit (the cone's apex sits on the seam). */
+.openBeams {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - var(--seam-y));
+  width: 320%;
+  height: 160%;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  background: repeating-conic-gradient(
+    from -90deg at 50% 100%,
+    color-mix(in srgb, var(--hint) 30%, #fff) 0deg 3deg,
+    transparent 3deg 9deg,
+    color-mix(in srgb, var(--hint) 75%, transparent) 9deg 11deg,
+    transparent 11deg 17deg
+  );
+  -webkit-mask: radial-gradient(
+    60% 100% at 50% 100%,
+    #000 0%,
+    rgb(0 0 0 / 0.6) 35%,
+    transparent 75%
+  );
+  mask: radial-gradient(60% 100% at 50% 100%, #000 0%, rgb(0 0 0 / 0.6) 35%, transparent 75%);
+  opacity: calc(0.35 + var(--charge) * 0.65);
+  scale: 1 calc(0.55 + var(--charge) * 0.6);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    scale var(--dur-slow) var(--ease-out);
+}
+
+.openFx[data-on='true'] .openBeams {
+  animation:
+    beams-in 420ms var(--ease-out) both,
+    beams-sway 2.4s ease-in-out 420ms infinite alternate;
+}
+
+@keyframes beams-in {
+  from {
+    transform: scaleY(0);
+    filter: brightness(2);
+  }
+  to {
+    transform: scaleY(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes beams-sway {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+/* Glow washing over the pack from the opening. */
+.openHalo {
+  position: absolute;
+  left: 50%;
+  top: var(--seam-y);
+  width: 190%;
+  aspect-ratio: 1.6;
+  translate: -50% -50%;
+  background: radial-gradient(
+    closest-side,
+    #fff 0%,
+    color-mix(in srgb, var(--hint) 70%, #fff) 18%,
+    color-mix(in srgb, var(--hint) 35%, transparent) 50%,
+    transparent 100%
+  );
+  opacity: calc(0.35 + var(--charge) * 0.65);
+  scale: calc(0.6 + var(--charge) * 0.7);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    scale var(--dur-slow) var(--ease-out);
+}
+
+.openFx[data-on='true'] .openHalo {
+  animation: halo-pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes halo-pulse {
+  from {
+    filter: brightness(0.85);
+  }
+  to {
+    filter: brightness(1.15);
   }
 }
 
@@ -209,9 +310,8 @@
   height: 150%;
 }
 
-.overlay[data-reduced='true'] .openPlume {
-  animation-duration: 0.01ms;
-  animation-delay: 0s;
+.overlay[data-reduced='true'] .openFx * {
+  animation: none !important;
 }
 
 .instruction {

@@ -117,6 +117,8 @@ function RevealRound({
 
   const showPuff = phase === 'burst' || phase === 'revealed';
   const burstFx = phase === 'burst' && !timeline.skipped;
+  // Colours of a special puff (smoke, finish, engraving…); null for a plain one.
+  const fxColors = reduced ? null : openingColors(instance);
   const stretch = reduced ? 1 : tier.reveal.slowMotion;
   const engraving = engravingLabel(instance.engraving, config.serialEdition);
   const announce = `${puff.flavor}, ${puff.model}. Rareté ${tier.name}, finition ${finishDef(config, instance.finish).name}, ${smokeLabel(config, instance.smoke).toLowerCase()}${engraving ? `, gravure ${engraving}` : ''}.`;
@@ -178,7 +180,7 @@ function RevealRound({
                 phase={phase === 'intro' ? 'intro' : 'charging'}
                 hintColor={timeline.hintColor}
                 charge={timeline.charge}
-                fxColors={reduced ? null : openingColors(instance)}
+                fxColors={fxColors}
                 onTorn={timeline.startCharging}
               />
             ) : (
@@ -223,7 +225,8 @@ function RevealRound({
         )}
       </div>
 
-      {burstFx && tier.reveal.flash && !reduced && (
+      {/* A special puff's light pouring out of the pack ends in a flash. */}
+      {burstFx && (tier.reveal.flash || (request.intro === 'pack' && fxColors)) && !reduced && (
         <span className={styles.flash} aria-hidden="true" />
       )}
       <canvas ref={confettiRef} className={styles.confetti} aria-hidden="true" />
