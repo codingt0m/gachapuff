@@ -88,8 +88,8 @@ export const render = {
  * rates in particles per second, times in seconds.
  */
 export const smoke = {
-  /** Room for the normal plume (~50 alive) plus a held cloud. */
-  maxParticles: 260,
+  /** Room for the normal plume (~50 alive, ~130 for a helix) plus a held cloud / boosted shape. */
+  maxParticles: 360,
   life: [2.8, 4.2],
   /** Constant thin stream. */
   trickleRate: 7,
@@ -114,10 +114,13 @@ export const smoke = {
    * rungs (base pairs), rising, slowly turning, then fraying apart into cloud at the top.
    */
   spiral: {
-    /** Phase advance per second of emission (rad/s): sets the pitch of the helix. */
-    twist: 6.5,
+    /**
+     * Phase advance per second of emission (rad/s): sets the pitch of the helix, and how fast
+     * it seems to turn at a given height.
+     */
+    twist: 3.8,
     /** Slow rotation of the whole helix (rad/s). */
-    spin: 0.7,
+    spin: 0.35,
     /** Helix radius (units). */
     radius: 0.075,
     /** Radius growth towards the end of life: the strands fray apart. */
@@ -159,5 +162,16 @@ export const smoke = {
     /** Slow rise afterwards: share of the headroom climbed over a particle's life. */
     lift: 0.4,
     opacity: 0.62,
+    /**
+     * Shaped smoke (spiral, rings, hearts, stars): holding also boosts the shape, and the
+     * plain held cloud is cut down to this share so the shape stays readable.
+     */
+    shapedCloudShare: 0.3,
+    /** Spiral at full hold: extra emission (x rate) and size / radius factor. */
+    spiralBoost: 0.7,
+    spiralScale: 1.6,
+    /** Rings / hearts / stars at full hold: seconds between two shaped puffs, size factor. */
+    shapeEvery: 0.45,
+    shapeScale: 1.5,
   },
 } as const;

@@ -1,17 +1,25 @@
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
 import { burstConfetti } from '../../effects/confetti.ts';
 import { haptic } from '../../effects/haptics.ts';
 import { sound } from '../../effects/sound.ts';
 import { BoosterPack } from '../booster/BoosterPack.tsx';
 import { usePointerTilt } from '../booster/usePointerTilt.ts';
-import { Button } from '../components/Button.tsx';
 import styles from './RevealOverlay.module.css';
 
 /** Share of the pack width to swipe across to tear it open. */
 const TEAR_DONE = 0.25;
 const TICK_EVERY = 0.15;
+/** Below this travel (px) a press counts as a tap, which tears the pack too. */
+const TAP_SLOP = 10;
 
-/** The pack, torn open with a swipe along its seam (or a button / Enter for accessibility). */
+/** The pack, torn open with a swipe along its seam, a simple tap, or Enter / Space. */
 export function PackIntro({
   name,
   phase,
@@ -30,7 +38,14 @@ export function PackIntro({
 }) {
   const [tear, setTear] = useState(0);
   const fxCanvas = useRef<HTMLCanvasElement>(null);
-  const drag = useRef<{ startX: number; width: number; lastTick: number } | null>(null);
+  const drag = useRef<{
+    startX: number;
+    width: number;
+    lastTick: number;
+    travel: number;
+  } | null>(null);
+  /** When a pointer tore the pack: the click that follows must not skip the animation. */
+  const toreAt = useRef(0);
   const tilt = usePointerTilt(phase === 'intro');
   const torn = phase !== 'intro';
 
@@ -64,6 +79,7 @@ export function PackIntro({
       startX: event.clientX,
       width: event.currentTarget.getBoundingClientRect().width,
       lastTick: 0,
+      travel: 0,
     };
   };
 
@@ -71,6 +87,7 @@ export function PackIntro({
     tilt.onPointerMove(event);
     const d = drag.current;
     if (!d || torn) return;
+    d.travel = Math.max(d.travel, Math.abs(event.clientX - d.startX));
     // Normalised so the tear line reaches 1 exactly when the swipe is long enough.
     const progress = Math.min(1, Math.abs(event.clientX - d.startX) / (d.width * TEAR_DONE));
     setTear((t) => Math.max(t, progress));
@@ -79,23 +96,52 @@ export function PackIntro({
       sound.play('tick');
       haptic('tick');
     }
-    if (progress >= 1) complete();
+    if (progress >= 1) {
+      toreAt.current = performance.now();
+      complete();
+    }
   };
 
   const onPointerUp = () => {
+    const d = drag.current;
+    if (!d) return;
+    if (!torn && d.travel < TAP_SLOP) {
+      toreAt.current = performance.now();
+      complete();
+      return;
+    }
+    drag.current = null;
+    if (!torn) setTear(0);
+  };
+
+  const onPointerCancel = () => {
     if (!drag.current) return;
     drag.current = null;
     if (!torn) setTear(0);
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (torn || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    complete();
   };
 
   return (
     <div className={styles.packIntro}>
       <div
         className={styles.packTouch}
+        role={torn ? undefined : 'button'}
+        tabIndex={torn ? undefined : 0}
+        aria-label={torn ? undefined : 'Déchirer le booster'}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
+        onKeyDown={onKeyDown}
+        onClick={(event) => {
+          // The overlay skips the animation on click: the gesture that tore the pack must not.
+          if (performance.now() - toreAt.current < 500) event.stopPropagation();
+        }}
         onPointerLeave={tilt.onPointerLeave}
       >
         <BoosterPack name={name} tear={tear} open={torn} charge={charge} glow={hintColor} />
@@ -118,19 +164,6 @@ export function PackIntro({
       <p className={styles.instruction} aria-live="polite">
         {torn ? 'Ça vient…' : 'Glisse le long des pointillés pour déchirer'}
       </p>
-      {!torn && (
-        <Button
-          variant="secondary"
-          onClick={(event) => {
-            // The overlay skips the animation on click: this one must not reach it.
-            event.stopPropagation();
-            complete();
-          }}
-          withFeedback={false}
-        >
-          Déchirer
-        </Button>
-      )}
     </div>
   );
 }

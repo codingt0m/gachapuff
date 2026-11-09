@@ -61,6 +61,8 @@ const FIRST_EXHALE = 0.17;
  * with a lighter cloud around it), spiral (a DNA double helix: two strands joined by rungs).
  *
  * While `holding`, a big cloud billows out of the mouthpiece on top of the normal plume.
+ * With a shaped smoke, holding boosts the shape instead (denser, wider helix; bigger shaped
+ * puffs coming one after another) and the held cloud is thinner.
  */
 export class SmokeParticles {
   readonly vertices = new Float32Array(S.maxParticles * VERTS_PER_PARTICLE * SMOKE_STRIDE);
@@ -72,6 +74,7 @@ export class SmokeParticles {
   /** Held-cloud output, 0..1, ramping with `holding`. */
   private hold = 0;
   private holdPending = 0;
+  private holdShapePending = 0.9;
   /** Starts just before an exhale peak, so a puff appears with a cloud right away. */
   private clock = S.burstEvery * FIRST_EXHALE;
   private strandPending = 0;
@@ -84,6 +87,7 @@ export class SmokeParticles {
     this.rungPending = 0;
     this.hold = 0;
     this.holdPending = 0;
+    this.holdShapePending = 0.9;
     this.clock = S.burstEvery * FIRST_EXHALE;
   }
 
@@ -118,12 +122,24 @@ export class SmokeParticles {
     }
     // Shaped puffs at each exhale peak (phase 0.25 = top of the sine).
     if (shaped && phaseBefore < 0.25 && phase >= 0.25) this.blowShapes(origin, unit, headroom);
-    if (spiral) this.emitHelix(dt, origin, unit, headroom, reduced);
 
     this.hold = this.holding
       ? Math.min(1, this.hold + dt / H.rampUp)
       : Math.max(0, this.hold - dt / H.rampDown);
-    this.holdPending += H.rate * this.hold * (reduced ? S.reducedRate : 1) * dt;
+    if (spiral) this.emitHelix(dt, origin, unit, headroom, reduced);
+    // Held shaped smoke: shaped puffs keep coming, bigger, while pressed.
+    if (shaped && this.hold > 0) {
+      this.holdShapePending += (this.hold * (reduced ? S.reducedRate : 1) * dt) / H.shapeEvery;
+      while (this.holdShapePending >= 1) {
+        this.holdShapePending -= 1;
+        this.blowShapes(origin, unit, headroom, 1 + (H.shapeScale - 1) * this.hold);
+      }
+    } else {
+      // Ready for the first held puff as soon as the press starts.
+      this.holdShapePending = 0.9;
+    }
+    const cloudShare = this.shape === 'cloud' ? 1 : H.shapedCloudShare;
+    this.holdPending += H.rate * cloudShare * this.hold * (reduced ? S.reducedRate : 1) * dt;
     if (this.hold === 0) this.holdPending = 0;
     while (this.holdPending >= 1) {
       this.holdPending -= 1;
@@ -216,7 +232,10 @@ export class SmokeParticles {
     });
   }
 
-  /** Spiral: strand pairs and rungs, all at the current phase, so they stay lined up. */
+  /**
+   * Spiral: strand pairs and rungs, all at the current phase, so they stay lined up.
+   * Holding the puff makes the helix denser and wider.
+   */
   private emitHelix(
     dt: number,
     origin: { x: number; y: number },
@@ -224,20 +243,21 @@ export class SmokeParticles {
     headroom: number,
     reduced: boolean,
   ): void {
-    const factor = reduced ? S.reducedRate : 1;
+    const factor = (reduced ? S.reducedRate : 1) * (1 + H.spiralBoost * this.hold);
+    const scale = 1 + (H.spiralScale - 1) * this.hold;
     const phase = this.clock * D.twist;
     this.strandPending += D.strandRate * factor * dt;
     while (this.strandPending >= 1) {
       this.strandPending -= 1;
-      this.helixDot(origin, unit, headroom, phase, 1, D.strandSize, S.opacity);
-      this.helixDot(origin, unit, headroom, phase, -1, D.strandSize, S.opacity);
+      this.helixDot(origin, unit, headroom, phase, 1, D.strandSize, S.opacity, scale);
+      this.helixDot(origin, unit, headroom, phase, -1, D.strandSize, S.opacity, scale);
     }
     this.rungPending += (factor * dt) / D.rungEvery;
     while (this.rungPending >= 1) {
       this.rungPending -= 1;
       for (let i = 1; i <= D.rungDots; i++) {
         const across = 1 - (2 * i) / (D.rungDots + 1);
-        this.helixDot(origin, unit, headroom, phase, across, D.rungSize, D.rungOpacity);
+        this.helixDot(origin, unit, headroom, phase, across, D.rungSize, D.rungOpacity, scale);
       }
     }
   }
@@ -250,6 +270,7 @@ export class SmokeParticles {
     across: number,
     size: readonly [number, number],
     opacity: number,
+    scale = 1,
   ): void {
     if (this.particles.length >= S.maxParticles) return;
     const life = rand(D.life[0], D.life[1]);
@@ -262,14 +283,14 @@ export class SmokeParticles {
       vy: (headroom * 0.85) / meanLife,
       age: 0,
       life,
-      size0: size[0] * unit,
-      size1: size[1] * unit * rand(0.85, 1.15),
+      size0: size[0] * unit * scale,
+      size1: size[1] * unit * scale * rand(0.85, 1.15),
       rot: rand(0, Math.PI * 2),
       vrot: rand(-0.6, 0.6),
       seed: Math.random(),
       k0: rand(0, 0.25),
       sprite: SPRITE.cloud,
-      orbit: D.radius * unit,
+      orbit: D.radius * unit * scale,
       phase0: phase,
       across,
       drag: PLUME_DRAG,
@@ -308,17 +329,29 @@ export class SmokeParticles {
     });
   }
 
-  private blowShapes(origin: { x: number; y: number }, unit: number, headroom: number): void {
+  /** @param scale size factor (> 1 while the puff is held, which also scatters the puffs) */
+  private blowShapes(
+    origin: { x: number; y: number },
+    unit: number,
+    headroom: number,
+    scale = 1,
+  ): void {
+    const scaled = (s: readonly [number, number], k = 1): [number, number] => [
+      s[0] * scale * k,
+      s[1] * scale * k,
+    ];
+    // Held puffs lean a little left or right, so they don't stack on one line.
+    const lean = scale > 1 ? rand(-0.12, 0.12) : 0;
     if (this.shape === 'rings') {
-      this.push(origin, unit, headroom, SPRITE.ring, S.ringSize, 0, 0, rand(-0.15, 0.15));
+      this.push(origin, unit, headroom, SPRITE.ring, scaled(S.ringSize), lean, 0, rand(-0.15, 0.15));
     } else if (this.shape === 'hearts') {
-      this.push(origin, unit, headroom, SPRITE.heart, S.heartSize, 0, rand(-0.15, 0.15), 0);
+      const rot = rand(-0.15, 0.15);
+      this.push(origin, unit, headroom, SPRITE.heart, scaled(S.heartSize), lean, rot, 0);
     } else {
       // A little cluster of stars of different sizes, slowly spinning.
       for (let i = 0; i < 3; i++) {
-        const scale = i === 0 ? 1 : rand(0.5, 0.65);
-        const size: [number, number] = [S.starSize[0] * scale, S.starSize[1] * scale];
-        const dx = i === 0 ? 0 : (i === 1 ? -1 : 1) * rand(0.12, 0.18);
+        const size = scaled(S.starSize, i === 0 ? 1 : rand(0.5, 0.65));
+        const dx = lean + (i === 0 ? 0 : (i === 1 ? -1 : 1) * rand(0.12, 0.18));
         this.push(origin, unit, headroom, SPRITE.star, size, dx, rand(-0.3, 0.3), rand(-0.8, 0.8));
       }
     }

@@ -8,8 +8,10 @@ async function openWithSkip(page: Page) {
     .getByRole('button', { name: /^Ouvrir/ })
     .first()
     .click();
-  await page.getByRole('button', { name: 'Passer' }).click();
-  await page.getByRole('button', { name: 'Ajouter à la collection' }).click();
+  await page.getByRole('button', { name: 'Déchirer le booster' }).click();
+  // Escape (or a tap anywhere) skips the animation.
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Terminé' }).click();
 }
 
 async function ownedCount(page: Page): Promise<number> {
@@ -21,14 +23,14 @@ async function ownedCount(page: Page): Promise<number> {
 test('open a booster, find it in the album, recycle three puffs', async ({ page }) => {
   await page.goto(START);
 
-  // 1. Open a booster the full way: tear, wait for the reveal.
+  // 1. Open a booster the full way: tap the pack to tear it, wait for the reveal.
   await page
     .getByRole('button', { name: /^Ouvrir/ })
     .first()
     .click();
-  await page.getByRole('button', { name: 'Déchirer' }).click();
+  await page.getByRole('button', { name: 'Déchirer le booster' }).click();
   const dialog = page.getByRole('dialog');
-  const add = dialog.getByRole('button', { name: 'Ajouter à la collection' });
+  const add = dialog.getByRole('button', { name: 'Terminé' });
   await expect(add).toBeVisible();
   const flavor = (await dialog.getByRole('heading', { level: 2 }).textContent())?.trim() ?? '';
   expect(flavor).not.toBe('');
@@ -37,7 +39,6 @@ test('open a booster, find it in the album, recycle three puffs', async ({ page 
 
   // 2. It is in the album.
   await page.getByRole('link', { name: 'Album' }).click();
-  await page.getByRole('button', { name: /Filtres/ }).click();
   await page.getByRole('radio', { name: 'Obtenues' }).check();
   await expect(page.getByRole('link', { name: `${flavor}, ` }).first()).toBeVisible();
 
@@ -48,7 +49,7 @@ test('open a booster, find it in the album, recycle three puffs', async ({ page 
   expect(before).toBe(12);
 
   await page.getByRole('link', { name: 'Recyclage' }).click();
-  await page.getByRole('button', { name: /Choisir pour moi/ }).click();
+  // The machine is pre-filled (duplicates first): one tap to fuse.
   await page.getByRole('button', { name: 'Fusionner', exact: true }).click();
   const confirm = page.getByRole('button', { name: 'Fusionner quand même' });
   if (await confirm.isVisible()) await confirm.click();

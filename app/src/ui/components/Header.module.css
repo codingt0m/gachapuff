@@ -41,30 +41,3 @@
   letter-spacing: 0.04em;
   transform: rotate(-4deg);
 }
-
-.sound {
-  display: grid;
-  place-items: center;
-  width: var(--tap-min);
-  height: var(--tap-min);
-  margin-left: auto;
-  border: 2px solid var(--c-cyan);
-  border-radius: var(--r-md);
-  background: rgb(34 224 230 / 0.08);
-  color: var(--c-cyan);
-  box-shadow:
-    var(--glow-cyan),
-    inset 0 0 10px rgb(34 224 230 / 0.25);
-  transition: transform var(--dur-fast) var(--ease-bounce);
-}
-
-.sound:active {
-  transform: scale(0.9);
-}
-
-.sound[aria-pressed='false'] {
-  border-color: var(--c-line);
-  background: transparent;
-  color: var(--c-text-faint);
-  box-shadow: none;
-}

@@ -7,23 +7,20 @@ import { SmokeBadge } from '../components/SmokeSwatch.tsx';
 import { formatPuffs } from '../format.ts';
 import styles from './RevealOverlay.module.css';
 
-/** The card under the revealed puff: what it is, and what to do next. */
+/** The card under the revealed puff: what it is, and one obvious next step. */
 export function RevealResult({
   puff,
   instance,
   copies,
-  primaryLabel,
-  onPrimary,
-  onDetails,
+  onClose,
   onAgain,
 }: {
   puff: PuffDefinition;
   instance: PuffInstance;
   /** Number of copies of this puff now owned (including this one). */
   copies: number;
-  primaryLabel: string;
-  onPrimary: () => void;
-  onDetails: () => void;
+  onClose: () => void;
+  /** Opens the next booster; null when none is left (or after a fusion). */
   onAgain: (() => void) | null;
 }) {
   const isNew = copies <= 1;
@@ -45,19 +42,22 @@ export function RevealResult({
         <EngravingBadge engraving={instance.engraving} />
       </div>
       <div className={styles.actions}>
-        <Button variant="jackpot" size="lg" block onClick={onPrimary} autoFocus>
-          {primaryLabel}
-        </Button>
-        <div className={styles.secondary}>
-          <Button variant="secondary" onClick={onDetails}>
-            Contempler
-          </Button>
-          {onAgain && (
-            <Button variant="primary" onClick={onAgain}>
+        {onAgain ? (
+          <>
+            <Button variant="jackpot" size="lg" block onClick={onAgain} autoFocus>
               Encore un !
             </Button>
-          )}
-        </div>
+            <div className={styles.secondary}>
+              <Button variant="ghost" onClick={onClose}>
+                Terminé
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Button variant="jackpot" size="lg" block onClick={onClose} autoFocus>
+            Trop bien !
+          </Button>
+        )}
       </div>
     </div>
   );

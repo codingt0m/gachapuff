@@ -10,7 +10,6 @@ import { RarityBadge } from '../components/RarityBadge.tsx';
 import { RarityIcon } from '../components/RarityIcon.tsx';
 import { feedback } from '../feedback.ts';
 import { useStartReveal } from '../reveal/RevealContext.tsx';
-import { paths } from '../router.ts';
 import styles from './RecycleScreen.module.css';
 
 export default function RecycleScreen() {
@@ -36,7 +35,8 @@ export default function RecycleScreen() {
 
   const firstReady = recyclable.find((t) => (byTier.get(t.id)?.length ?? 0) >= need)?.id;
   const [tierId, setTierId] = useState<RarityId>(firstReady ?? recyclable[0]?.id ?? 'common');
-  const [selected, setSelected] = useState<string[]>([]);
+  /** null = automatic pick (duplicates first); a list once the player swaps a slot. */
+  const [manual, setManual] = useState<string[] | null>(null);
   const [confirming, setConfirming] = useState(false);
 
   const tierIndex = config.rarities.findIndex((r) => r.id === tierId);
@@ -52,6 +52,7 @@ export default function RecycleScreen() {
       ),
     [byTier, tierId, copiesOf, config],
   );
+  const selected = manual ?? (pool.length >= need ? pool.slice(0, need).map((i) => i.uid) : []);
   const chosen = selected
     .map((uid) => pool.find((i) => i.uid === uid))
     .filter(Boolean) as PuffInstance[];
@@ -67,45 +68,36 @@ export default function RecycleScreen() {
   const switchTier = (id: RarityId) => {
     feedback('tick');
     setTierId(id);
-    setSelected([]);
+    setManual(null);
   };
 
   const toggle = (uid: string) => {
-    setSelected((list) => {
-      if (list.includes(uid)) {
-        feedback('tick');
-        return list.filter((u) => u !== uid);
-      }
-      if (list.length >= need) {
-        feedback('error');
-        return list;
-      }
+    if (selected.includes(uid)) {
+      feedback('tick');
+      setManual(selected.filter((u) => u !== uid));
+    } else if (selected.length >= need) {
+      feedback('error');
+    } else {
       feedback('tap');
-      return [...list, uid];
-    });
-  };
-
-  const autoPick = () => {
-    feedback('toggle');
-    setSelected(pool.slice(0, need).map((i) => i.uid));
+      setManual([...selected, uid]);
+    }
   };
 
   const fuse = () => {
     setConfirming(false);
     const inputs = chosen;
     const instance = store.recycle(selected);
-    setSelected([]);
+    setManual(null);
     startReveal({ intro: 'fusion', instance, inputs });
   };
-
-  const totalReady = recyclable.filter((t) => (byTier.get(t.id)?.length ?? 0) >= need).length;
 
   return (
     <div className={styles.screen}>
       <header className={styles.head}>
         <h1 className={styles.title}>Recyclage</h1>
         <p className={styles.lead}>
-          Fusionne {need} puffs de même rareté pour en obtenir une de la rareté au-dessus.
+          Fusionne {need} puffs de même rareté pour en obtenir une de la rareté au-dessus. Les
+          doublons sont choisis d’abord : touche une puff pour l’échanger.
         </p>
       </header>
 
@@ -178,22 +170,12 @@ export default function RecycleScreen() {
           >
             Fusionner
           </Button>
-          {pool.length >= need && selected.length === 0 && (
-            <Button variant="ghost" size="sm" onClick={autoPick}>
-              Choisir pour moi (doublons d’abord)
-            </Button>
-          )}
         </div>
       </section>
 
       {pool.length === 0 ? (
         <div className={styles.empty}>
           <p>Aucune puff {config.rarities[tierIndex]?.name.toLowerCase()} pour l’instant.</p>
-          {totalReady === 0 && (
-            <Button variant="primary" onClick={() => (window.location.hash = paths.booster)}>
-              Ouvrir un booster
-            </Button>
-          )}
         </div>
       ) : (
         <section aria-label="Tes puffs de cette rareté">

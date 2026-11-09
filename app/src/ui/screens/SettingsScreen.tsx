@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { cleanPseudo, PSEUDO_MAX } from '../../domain/save.ts';
-import type { MotionPreference } from '../../domain/types.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { Button } from '../components/Button.tsx';
 import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
@@ -9,13 +8,8 @@ import { Switch } from '../components/Switch.tsx';
 import { useToast } from '../components/Toast.tsx';
 import { feedback } from '../feedback.ts';
 import { paths } from '../router.ts';
+import { isReducedMotion, systemPrefersReducedMotion } from '../theme.ts';
 import styles from './SettingsScreen.module.css';
-
-const MOTION_OPTIONS: { value: MotionPreference; label: string }[] = [
-  { value: 'system', label: 'Comme mon appareil' },
-  { value: 'full', label: 'Toutes' },
-  { value: 'reduced', label: 'Réduites' },
-];
 
 function download(fileName: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
@@ -90,35 +84,22 @@ export default function SettingsScreen() {
           Sensations
         </h2>
         <Switch
-          label="Sons"
-          description="Bruitages synthétisés, jamais avant ta première action."
-          checked={settings.sound}
-          onChange={(sound) => store.updateSettings({ sound })}
+          label="Sons et vibrations"
+          description="Bruitages et retours haptiques, jamais avant ta première action."
+          checked={settings.sound || settings.haptics}
+          onChange={(on) => store.updateSettings({ sound: on, haptics: on })}
         />
         <Switch
-          label="Vibrations"
-          description="Retours haptiques (si ton téléphone les gère)."
-          checked={settings.haptics}
-          onChange={(haptics) => store.updateSettings({ haptics })}
+          label="Animations réduites"
+          description="Moins de mouvements à l’écran."
+          checked={isReducedMotion(settings.motion)}
+          onChange={(reduced) =>
+            store.updateSettings({
+              // Back to the device setting unless that one asks for reduced motion.
+              motion: reduced ? 'reduced' : systemPrefersReducedMotion() ? 'full' : 'system',
+            })
+          }
         />
-        <fieldset className={styles.radios}>
-          <legend className={styles.label}>Animations</legend>
-          {MOTION_OPTIONS.map((o) => (
-            <label key={o.value} className={styles.radio}>
-              <input
-                type="radio"
-                name="motion"
-                value={o.value}
-                checked={settings.motion === o.value}
-                onChange={() => {
-                  feedback('tick');
-                  store.updateSettings({ motion: o.value });
-                }}
-              />
-              <span>{o.label}</span>
-            </label>
-          ))}
-        </fieldset>
       </section>
 
       <section className={styles.card} aria-labelledby="s-save">
@@ -186,21 +167,6 @@ export default function SettingsScreen() {
         </dl>
       </section>
 
-      <section className={styles.card} aria-labelledby="s-sort">
-        <h2 id="s-sort" className={styles.cardTitle}>
-          Tri du dataset
-        </h2>
-        <p className={styles.muted}>
-          Swipe à droite pour garder une puff, à gauche pour l’écarter. Le résultat s’affiche en
-          texte à la fin.
-        </p>
-        <ul className={styles.links}>
-          <li>
-            <a href={paths.sort}>Trier les puffs</a>
-          </li>
-        </ul>
-      </section>
-
       {store.dev && (
         <section className={styles.card} aria-labelledby="s-dev">
           <h2 id="s-dev" className={styles.cardTitle}>
@@ -215,6 +181,9 @@ export default function SettingsScreen() {
             </li>
             <li>
               <a href={paths.simulator}>Simulateur de probabilités</a>
+            </li>
+            <li>
+              <a href={paths.sort}>Tri du dataset (swipe)</a>
             </li>
           </ul>
           <Button

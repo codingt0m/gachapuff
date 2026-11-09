@@ -9,13 +9,10 @@ import { openingColors } from '../../effects/openingFx.ts';
 import { sound } from '../../effects/sound.ts';
 import { preloadImage } from '../../effects/webgl/gl.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
-import { Button } from '../components/Button.tsx';
-import { Icon } from '../components/Icons.tsx';
 import { smokeLabel } from '../components/SmokeSwatch.tsx';
 import { feedback } from '../feedback.ts';
 import { useReducedMotion } from '../hooks.ts';
 import { PuffStage } from '../puff/PuffStage.tsx';
-import { navigate, paths } from '../router.ts';
 import { FusionIntro } from './FusionIntro.tsx';
 import { PackIntro } from './PackIntro.tsx';
 import type { RevealRequest } from './RevealContext.tsx';
@@ -160,24 +157,8 @@ function RevealRound({
         <span className={styles.rays} aria-hidden="true" />
       )}
 
-      <div className={styles.topBar}>
-        {phase !== 'revealed' ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(event) => {
-              event.stopPropagation();
-              skip();
-            }}
-          >
-            Passer
-          </Button>
-        ) : (
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Fermer">
-            <Icon name="close" />
-          </button>
-        )}
-      </div>
+      {/* Keeps the stage clear of the header area; tapping anywhere skips the animation. */}
+      <div className={styles.topBar} aria-hidden="true" />
 
       <div className={styles.content} data-shake={burstFx && tier.reveal.shakePx > 0 && !reduced}>
         <div className={styles.stageArea}>
@@ -222,12 +203,7 @@ function RevealRound({
             puff={puff}
             instance={instance}
             copies={copies}
-            primaryLabel={request.intro === 'pack' ? 'Ajouter à la collection' : 'Trop bien !'}
-            onPrimary={close}
-            onDetails={() => {
-              onClose();
-              navigate(paths.puff(puff.id, instance.uid));
-            }}
+            onClose={close}
             onAgain={canAgain ? again : null}
           />
         )}

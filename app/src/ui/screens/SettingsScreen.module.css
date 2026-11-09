@@ -53,28 +53,6 @@
   outline-offset: 2px;
 }
 
-.radios {
-  display: grid;
-  gap: var(--sp-1);
-  margin: var(--sp-2) 0 0;
-  padding: 0;
-  border: 0;
-}
-
-.radio {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  min-height: var(--tap-min);
-  cursor: pointer;
-}
-
-.radio input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--c-primary);
-}
-
 .muted {
   color: var(--c-text-muted);
   font-size: var(--fs-sm);
