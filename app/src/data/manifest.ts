@@ -1,24 +1,24 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import type { PuffDefinition } from '../domain/types.ts';
 
-const unit = z.number().min(0).max(1);
+const unit = z.number().check(z.gte(0), z.lte(1));
 
 const puffSchema = z.object({
-  id: z.string().min(1),
-  model: z.string().min(1),
-  modelSlug: z.string().min(1),
-  flavor: z.string().min(1),
-  puffs: z.number().int().positive().nullable(),
+  id: z.string().check(z.minLength(1)),
+  model: z.string().check(z.minLength(1)),
+  modelSlug: z.string().check(z.minLength(1)),
+  flavor: z.string().check(z.minLength(1)),
+  puffs: z.nullable(z.int().check(z.positive())),
   images: z.object({ thumb: z.string(), detail: z.string() }),
   quality: z.object({ integrity: z.number(), resolution: z.number() }),
-  color: z.string().regex(/^#[0-9a-f]{6}$/i),
+  color: z.string().check(z.regex(/^#[0-9a-f]{6}$/i)),
   nozzle: z.object({ x: unit, y: unit }),
   bbox: z.object({ x: unit, y: unit, w: unit, h: unit }),
 });
 
 const manifestSchema = z.object({
   version: z.literal(1),
-  count: z.number().int(),
+  count: z.int(),
   puffs: z.array(puffSchema),
 });
 

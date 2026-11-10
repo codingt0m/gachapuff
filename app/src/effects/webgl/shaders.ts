@@ -92,7 +92,10 @@ void main() {
 }
 `;
 
-export const PUFF_FRAGMENT = /* glsl */ `
+// One program per finish: FINISH (see FINISH_INDEX in PuffRenderer.ts) selects its branch at
+// compile time. A single program holding every finish took ~0.7 s to compile and link, which
+// froze the reveal; one finish alone takes ~40-140 ms.
+const PUFF_FRAGMENT_BODY = /* glsl */ `
 ${PRECISION}
 varying vec2 vUv;
 uniform sampler2D uTex;
@@ -100,8 +103,6 @@ uniform vec2 uTexel;
 uniform mat3 uRot;
 uniform vec2 uTilt;
 uniform float uTime;
-// Finish index: see FINISH_INDEX in PuffRenderer.ts.
-uniform float uFinish;
 uniform float uReveal;   // 0 = white silhouette, 1 = full colour
 uniform float uSeed;
 uniform float uMotion;   // 1 = full motion, lower = calmer
@@ -166,8 +167,6 @@ vec3 voronoi(vec2 x) {
 }
 
 float blurredAlpha(vec2 uv) { return texture2D(uTex, uv, 3.0).a; }
-
-bool isFinish(float id) { return abs(uFinish - id) < 0.5; }
 
 // Brushed metal: the print re-tinted along a dark -> mid -> light ramp (details kept
 // through luminance), fine brush lines, and a sheen stretched across the brushing.
@@ -274,12 +273,14 @@ void main() {
   vec2 uv = vUv;
   float glitchSlot = floor(uTime * mix(1.0, 3.0, uMotion));
   float glitchBurst = 0.0;
-  if (isFinish(16.0)) {
+#if FINISH == 16
+  {
     glitchBurst = step(0.6, hash(vec2(glitchSlot, uSeed))) + step(0.2, length(uTilt)) * 0.5;
     float row = floor(vUv.y * 28.0 + hash(vec2(glitchSlot, 1.0)) * 5.0);
     float torn = step(0.7, hash(vec2(row * 1.7, glitchSlot + 3.0)));
     uv.x += (hash(vec2(row, glitchSlot)) - 0.5) * 0.09 * torn * min(glitchBurst, 1.0);
   }
+#endif
 
   vec4 tex = texture2D(uTex, uv);
   float a = tex.a;
@@ -306,14 +307,19 @@ void main() {
   float rim = a * smoothstep(0.97, 0.55, blurredAlpha(uv));
   vec3 col = base * diff;
 
-  if (uFinish < 0.5) {
+#if FINISH == 0
+  {
     // Normal: a discreet plastic sheen.
     col += glare * 0.08 + spec * 0.22;
-  } else if (isFinish(2.0)) {
+  }
+#elif FINISH == 2
+  {
     // Golden: brushed gold leaf.
     col = brushedMetal(base, lum, diff, spec, rim,
       vec3(0.22, 0.11, 0.02), vec3(0.86, 0.58, 0.13), vec3(1.0, 0.95, 0.72), vec3(1.0, 0.88, 0.55));
-  } else if (isFinish(3.0)) {
+  }
+#elif FINISH == 3
+  {
     // Chromatic: holographic foil, rainbow bands sliding with the viewing angle.
     float ang = vUv.x * 2.4 + vUv.y * 1.2 + uTilt.x * 2.6 - uTilt.y * 2.0 + lum * 0.3 + uTime * 0.03 * uMotion;
     vec3 rainbow = hsv2rgb(vec3(fract(ang), 0.85, 1.0));
@@ -325,19 +331,25 @@ void main() {
     col += rainbow * glare * 0.6 + spec * 0.8;
     col += sparkles(vUv + uTilt * 0.05, 40.0, 0.12, 2.6) * hsv2rgb(vec3(fract(ang + 0.5), 0.4, 1.0)) * 1.4;
     col += rim * hsv2rgb(vec3(fract(ang + 0.25), 0.7, 1.0)) * 0.8;
-  } else if (isFinish(4.0)) {
+  }
+#elif FINISH == 4
+  {
     // Crystal: clear brilliant cut, strong rainbow fire.
     vec4 g = gem(spec, glare, rim,
       vec3(0.86, 0.95, 1.05), vec3(0.08, 0.13, 0.22), 0.6, 1.0, vec2(11.0, 11.0));
     col = g.rgb;
     a *= g.a;
-  } else if (isFinish(8.0)) {
+  }
+#elif FINISH == 8
+  {
     // Ruby: deep red body, pinkish flashes, a slow red fluorescence.
     vec4 g = gem(spec, glare, rim,
       vec3(1.0, 0.1, 0.2), vec3(0.18, 0.0, 0.03), 0.12, 0.35, vec2(10.0, 10.0));
     col = g.rgb + vec3(1.0, 0.08, 0.2) * 0.12 * (0.6 + 0.4 * sin(uTime * 1.3 * uMotion));
     a *= g.a;
-  } else if (isFinish(12.0)) {
+  }
+#elif FINISH == 12
+  {
     // Frost: hoarfrost on the surface. Feathery ice fronds
     // grow from the silhouette's edges towards the middle over a misty film (paled,
     // softened print, fine droplets); thin ice ridges and grains of rime glitter as it
@@ -390,7 +402,9 @@ void main() {
     col += sparkles(vUv + 5.0 - uTilt * 0.03, 34.0, 0.12, 2.0) * 1.2 * ice;
     col += spec * 0.4 * ice;
     col += rim * vec3(0.78, 0.92, 1.0) * 0.8;
-  } else if (isFinish(16.0)) {
+  }
+#elif FINISH == 16
+  {
     // Glitch: VHS tape gone wrong. Colour split, scan lines, torn rows and noise
     // blocks in bursts (at most 3 changes per second), worse when tilted.
     float burst = min(glitchBurst, 1.0);
@@ -402,14 +416,18 @@ void main() {
     col = mix(col, vec3(hash(blk + 1.0), hash(blk + 2.0), hash(blk + 3.0)) * vec3(0.3, 1.0, 1.0), blockOn * 0.8);
     col += vec3(0.0, 0.04, 0.07) + (hash(vUv * 512.0 + glitchSlot) - 0.5) * 0.08;
     col += spec * 0.3 + glare * 0.1;
-  } else if (isFinish(17.0)) {
+  }
+#elif FINISH == 17
+  {
     // Liquid chrome: a rippling mirror reflecting a studio.
     vec2 rip = vec2(noise(vUv * 3.5 + vec2(t * 0.3, 0.0)), noise(vUv * 3.5 + vec2(0.0, t * 0.25) + 5.0)) - 0.5;
     rip += (vec2(noise(vUv * 19.0 - t * 0.5), noise(vUv * 19.0 + 9.0 + t * 0.45)) - 0.5) * 0.35;
     vec3 Nc = normalize(uRot * normalize(nLocal + vec3(rip * 1.7, 0.0)));
     col = chromeEnv(reflect(vec3(0.0, 0.0, -1.0), Nc)) * (0.85 + 0.3 * lum) + base * 0.06;
     col += rim * 0.3;
-  } else {
+  }
+#else
+  {
     // Cosmic: a nebula inside the silhouette, parallax stars.
     vec2 p = vUv * vec2(6.0, 8.0);
     float n1 = fbm(p * 1.3 + vec2(t * 0.04, -t * 0.03) + uTilt * 0.8);
@@ -422,6 +440,7 @@ void main() {
     col += spec * 0.6 + glare * 0.15;
     col += rim * mix(vec3(0.3, 0.9, 1.0), vec3(1.0, 0.35, 0.8), n1) * 0.9;
   }
+#endif
 
   // Engraving laid over the finish: gold foil signature.
   if (uEngraveKind > 0.5) {
@@ -437,6 +456,12 @@ void main() {
   gl_FragColor = vec4(col * a, a);
 }
 `;
+
+/** Fragment shader of the puff body for one finish index. */
+export function puffFragment(finish: number): string {
+  return `#define FINISH ${finish}
+${PUFF_FRAGMENT_BODY}`;
+}
 
 // ------------------------------------------------------------------ smoke ---
 // Smoke = soft particle sprites simulated on the CPU (see SmokeParticles.ts).

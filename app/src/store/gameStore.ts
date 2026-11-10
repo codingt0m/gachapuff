@@ -22,6 +22,14 @@ export interface GameStoreOptions {
 type Listener = () => void;
 
 /**
+ * Longest wait before a change is written. Writing clones the whole save synchronously
+ * (≈ 6 ms for 3 000 copies on a fast CPU, 4× that on a phone): done right in the tap on
+ * "Ouvrir", it delayed the opening's first frames. Writes now wait for an idle moment
+ * (consecutive changes are coalesced) and are forced when the page is hidden.
+ */
+const SAVE_IDLE_TIMEOUT = 1000;
+
+/**
  * Glue between the pure domain, persistence and the UI.
  * Holds the current SaveState, applies domain transitions and saves after each one.
  */
@@ -39,6 +47,9 @@ export class GameStore {
   private readonly clock: () => number;
   private saving: Promise<void> = Promise.resolve();
   private saveFailed = false;
+  /** State waiting to be written (latest one only), and its scheduled write. */
+  private unsaved: SaveState | null = null;
+  private cancelScheduled: (() => void) | null = null;
 
   constructor(o: GameStoreOptions) {
     this.config = o.config;
@@ -51,6 +62,13 @@ export class GameStore {
     this.unlimitedBoosters = o.unlimitedBoosters ?? false;
     this.dev = o.dev ?? false;
     this.state = o.initialState;
+    if (typeof document !== 'undefined') {
+      // Leaving / backgrounding the page: write now, the idle moment may never come.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') this.writeNow();
+      });
+      window.addEventListener('pagehide', () => this.writeNow());
+    }
   }
 
   getState = (): SaveState => this.state;
@@ -138,8 +156,9 @@ export class GameStore {
     return { ok: true };
   }
 
-  /** Resolves once every pending write reached the storage. */
+  /** Writes any pending change now; resolves once every write reached the storage. */
   flush(): Promise<void> {
+    this.writeNow();
     return this.saving;
   }
 
@@ -157,6 +176,16 @@ export class GameStore {
   private commit(next: SaveState): void {
     this.state = next;
     this.listeners.forEach((l) => l());
+    this.unsaved = next;
+    this.cancelScheduled ??= scheduleIdle(() => this.writeNow());
+  }
+
+  private writeNow(): void {
+    this.cancelScheduled?.();
+    this.cancelScheduled = null;
+    const next = this.unsaved;
+    if (!next) return;
+    this.unsaved = null;
     // Writes are chained so they reach the storage in order.
     this.saving = this.saving
       .then(() => this.saveStore.save(next))
@@ -174,4 +203,14 @@ export class GameStore {
     this.saveFailed = failed;
     this.listeners.forEach((l) => l());
   }
+}
+
+/** Runs `fn` when the browser is idle (at most SAVE_IDLE_TIMEOUT ms later); returns a canceller. */
+function scheduleIdle(fn: () => void): () => void {
+  if (typeof requestIdleCallback === 'function') {
+    const id = requestIdleCallback(fn, { timeout: SAVE_IDLE_TIMEOUT });
+    return () => cancelIdleCallback(id);
+  }
+  const id = setTimeout(fn, 0);
+  return () => clearTimeout(id);
 }

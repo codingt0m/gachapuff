@@ -1,17 +1,16 @@
-let cached: boolean | null = null;
+let unavailable = false;
 
-/** Whether WebGL can be used at all (tested once with a throwaway canvas). */
+/**
+ * Whether WebGL is worth trying. No throwaway probe context (it cost a context creation):
+ * true until a real renderer failed to get one, then the CSS fallback is used directly.
+ */
 export function webglAvailable(): boolean {
-  if (cached !== null) return cached;
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl');
-    cached = Boolean(gl);
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-  } catch {
-    cached = false;
-  }
-  return cached;
+  return !unavailable;
+}
+
+/** Called when creating a WebGL context failed: later stages go straight to the fallback. */
+export function markWebglUnavailable(): void {
+  unavailable = true;
 }
 
 /** Stable numeric seed from a string (FNV-1a), in [0, 1000). */

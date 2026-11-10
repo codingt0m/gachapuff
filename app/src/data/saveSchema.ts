@@ -1,4 +1,5 @@
-import { z } from 'zod';
+// zod/mini: same validation core as zod, a fraction of its size in the startup bundle.
+import { z } from 'zod/mini';
 import { createInitialState, DEFAULT_SETTINGS, PSEUDO_MAX, SAVE_VERSION } from '../domain/save.ts';
 import {
   FINISH_IDS,
@@ -9,16 +10,16 @@ import {
   type SaveState,
 } from '../domain/types.ts';
 
-const hex = z.string().regex(/^#[0-9a-f]{6}$/i);
+const hex = z.string().check(z.regex(/^#[0-9a-f]{6}$/i));
 
-const shape = { shape: z.enum(SMOKE_SHAPES).optional() };
+const shape = { shape: z.optional(z.enum(SMOKE_SHAPES)) };
 const smokeSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('white'), ...shape }),
   z.object({ kind: z.literal('rainbow'), ...shape }),
   z.object({ kind: z.literal('solid'), color: hex, ...shape }),
   z.object({ kind: z.literal('glitter'), color: hex, ...shape }),
-  z.object({ kind: z.literal('duo'), colors: z.array(hex).length(2), ...shape }),
-  z.object({ kind: z.literal('gachapuff'), colors: z.array(hex).min(1), ...shape }),
+  z.object({ kind: z.literal('duo'), colors: z.array(hex).check(z.length(2)), ...shape }),
+  z.object({ kind: z.literal('gachapuff'), colors: z.array(hex).check(z.minLength(1)), ...shape }),
 ]);
 
 /** Finishes dropped during development, mapped to one worth the same points. */
@@ -30,7 +31,10 @@ const REMOVED_FINISHES: Record<string, string> = {
 
 const engravingSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('none') }),
-  z.object({ kind: z.literal('signature'), by: z.string().min(1).max(PSEUDO_MAX) }),
+  z.object({
+    kind: z.literal('signature'),
+    by: z.string().check(z.minLength(1), z.maxLength(PSEUDO_MAX)),
+  }),
 ]);
 
 type RawInstance = Record<string, unknown>;
@@ -71,37 +75,38 @@ const mapCollection = (s: Record<string, unknown>, fn: (i: RawInstance) => RawIn
   Array.isArray(s.collection) ? s.collection.map((i: RawInstance) => fn(i)) : s.collection;
 
 const instanceSchema = z.object({
-  uid: z.string().min(1),
-  puffId: z.string().min(1),
+  uid: z.string().check(z.minLength(1)),
+  puffId: z.string().check(z.minLength(1)),
   finish: z.enum(FINISH_IDS),
   smoke: smokeSchema,
   engraving: engravingSchema,
   rarity: z.enum(RARITY_IDS),
-  points: z.number().int().nonnegative(),
-  obtainedAt: z.number().nonnegative(),
+  points: z.int().check(z.nonnegative()),
+  obtainedAt: z.number().check(z.nonnegative()),
   origin: z.enum(['booster', 'recycle']),
 });
 
 export const saveStateSchema = z.object({
   version: z.literal(SAVE_VERSION),
-  createdAt: z.number().nonnegative(),
+  createdAt: z.number().check(z.nonnegative()),
   boosters: z.object({
-    stock: z.number().int().nonnegative(),
-    lastRegenAt: z.number().nonnegative(),
+    stock: z.int().check(z.nonnegative()),
+    lastRegenAt: z.number().check(z.nonnegative()),
   }),
   collection: z.array(instanceSchema),
   stats: z.object({
-    opened: z.number().int().nonnegative(),
-    recycled: z.number().int().nonnegative(),
+    opened: z.int().check(z.nonnegative()),
+    recycled: z.int().check(z.nonnegative()),
   }),
-  settings: z
-    .object({
+  settings: z.catch(
+    z.object({
       sound: z.boolean(),
       haptics: z.boolean(),
       motion: z.enum(['system', 'reduced', 'full']),
-      pseudo: z.string().max(PSEUDO_MAX).optional(),
-    })
-    .catch(DEFAULT_SETTINGS),
+      pseudo: z.optional(z.string().check(z.maxLength(PSEUDO_MAX))),
+    }),
+    DEFAULT_SETTINGS,
+  ),
 });
 
 /**

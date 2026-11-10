@@ -13,7 +13,7 @@ import { useGame, useGameState } from '../../store/GameProvider.tsx';
 import { smokeLabel } from '../components/SmokeSwatch.tsx';
 import { feedback } from '../feedback.ts';
 import { useReducedMotion } from '../hooks.ts';
-import { PuffStage } from '../puff/PuffStage.tsx';
+import { prewarmPuffStage, PuffStage, puffLook } from '../puff/PuffStage.tsx';
 import { FusionIntro } from './FusionIntro.tsx';
 import { PackIntro } from './PackIntro.tsx';
 import type { RevealRequest } from './RevealContext.tsx';
@@ -73,11 +73,21 @@ function RevealRound({
     rootRef.current?.focus();
   }, []);
 
-  // Fetch the puff while the pack opens, so it is ready when it bursts out.
-  const detailImage = puff?.images.detail;
+  // Build the puff's WebGL rendering (shaders, image, relief) while the pack is still
+  // closed, so it is ready when it bursts out: done at the burst, it froze the climax.
   useEffect(() => {
-    if (detailImage) preloadImage(assetUrl(detailImage));
-  }, [detailImage]);
+    if (!puff) return;
+    preloadImage(assetUrl(puff.images.detail));
+    return prewarmPuffStage(
+      puffLook({
+        puff,
+        finish: instance.finish,
+        smoke: instance.smoke,
+        engraving: instance.engraving,
+        seedKey: instance.uid,
+      }),
+    );
+  }, [puff, instance]);
 
   // Confetti at the burst (not when skipped, not with reduced motion).
   useEffect(() => {

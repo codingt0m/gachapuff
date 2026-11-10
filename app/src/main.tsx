@@ -1,6 +1,5 @@
 import '@fontsource/bowlby-one/latin-400.css';
 import '@fontsource/mr-dafoe/latin-400.css';
-import '@fontsource-variable/pixelify-sans/wght.css';
 import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
 import './ui/styles/tokens.css';
 import './ui/styles/base.css';

@@ -19,6 +19,15 @@ import styles from './BoosterScreen.module.css';
 
 const RECENT_COUNT = 6;
 
+/**
+ * Time left until `until`, ticking every second. Kept in its own component so the tick
+ * re-renders this text only, not the whole screen (pack, odds, recent finds).
+ */
+function Countdown({ until }: { until: number | null }) {
+  const now = useNow();
+  return <>{formatCountdown(until === null ? 0 : Math.max(0, until - now))}</>;
+}
+
 export function BoosterScreen() {
   const store = useGame();
   const { config, catalog } = store;
@@ -26,7 +35,6 @@ export function BoosterScreen() {
   const collection = useGameState((s) => s.collection);
   const pseudo = useGameState((s) => s.settings.pseudo);
   const startReveal = useStartReveal();
-  const now = useNow();
   const tilt = usePointerTilt();
   const [typeId, setTypeId] = useState(config.defaultBoosterType);
   const [oddsOpen, setOddsOpen] = useState(false);
@@ -35,10 +43,8 @@ export function BoosterScreen() {
   const unlimited = store.unlimitedBoosters;
   const canOpen = unlimited || boosters.stock >= type.cost;
   const next = nextBoosterAt(boosters, config.regen);
-  const remaining = next === null ? 0 : Math.max(0, next - now);
-  // Time left until the stock covers the chosen booster.
+  // When the stock covers the chosen booster.
   const readyAt = boostersReadyAt(boosters, config.regen, type.cost);
-  const waiting = readyAt === null ? 0 : Math.max(0, readyAt - now);
 
   const owned = useMemo(() => new Set(collection.map((i) => i.puffId)), [collection]);
   const progress = globalProgress(catalog, owned);
@@ -101,13 +107,16 @@ export function BoosterScreen() {
             </div>
           </div>
           <p className={styles.timer} aria-live="polite">
-            {unlimited
-              ? 'Mode dev : ouvre autant que tu veux.'
-              : next === null
-                ? 'Stock plein ! Ouvre-les sans modération.'
-                : boosters.stock > 0
-                  ? `+1 booster dans ${formatCountdown(remaining)}`
-                  : `Prochain booster dans ${formatCountdown(remaining)}`}
+            {unlimited ? (
+              'Mode dev : ouvre autant que tu veux.'
+            ) : next === null ? (
+              'Stock plein ! Ouvre-les sans modération.'
+            ) : (
+              <>
+                {boosters.stock > 0 ? '+1 booster dans ' : 'Prochain booster dans '}
+                <Countdown until={next} />
+              </>
+            )}
           </p>
         </section>
 
@@ -154,7 +163,7 @@ export function BoosterScreen() {
             disabled={!canOpen}
             withFeedback={false}
           >
-            {canOpen ? 'Ouvrir !' : formatCountdown(waiting)}
+            {canOpen ? 'Ouvrir !' : <Countdown until={readyAt} />}
           </Button>
         </div>
       </div>

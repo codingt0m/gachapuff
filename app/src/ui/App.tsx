@@ -113,9 +113,13 @@ export function App({ notices }: { notices: BootNotice[] }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [reveal]);
 
-  // The opening overlay (WebGL renderer included) is fetched ahead of the first booster.
+  // The opening overlay (WebGL renderer included) is fetched ahead of the first booster,
+  // and the audio engine is built while idle rather than inside the first tap.
   useEffect(() => {
-    const id = window.setTimeout(() => void loadRevealOverlay().catch(() => {}), 500);
+    const id = window.setTimeout(() => {
+      void loadRevealOverlay().catch(() => {});
+      sound.prepare();
+    }, 500);
     return () => window.clearTimeout(id);
   }, []);
 

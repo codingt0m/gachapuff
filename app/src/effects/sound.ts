@@ -32,18 +32,28 @@ class SoundEngine {
     this.enabled = enabled;
   }
 
-  /** Call from a user gesture: creates / resumes the audio context. */
+  /**
+   * Creates the (suspended) audio context and the noise buffer ahead of time, when the app
+   * is idle: built inside the first tap, they delayed that tap's frame. Still silent until
+   * `unlock()` resumes it from a gesture.
+   */
+  prepare(): void {
+    if (this.ctx) return;
+    const Ctor =
+      globalThis.AudioContext ??
+      (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return;
+    this.ctx = new Ctor();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = MASTER_GAIN;
+    this.master.connect(this.ctx.destination);
+    this.noiseBuffer = makeNoise(this.ctx);
+  }
+
+  /** Call from a user gesture: creates (if not prepared yet) / resumes the audio context. */
   unlock(): void {
-    if (!this.ctx) {
-      const Ctor =
-        globalThis.AudioContext ??
-        (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctor) return;
-      this.ctx = new Ctor();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = MASTER_GAIN;
-      this.master.connect(this.ctx.destination);
-    }
+    this.prepare();
+    if (!this.ctx) return;
     // iOS can leave the context "interrupted" (after a call, backgrounding...), not just "suspended".
     if (this.ctx.state !== 'running') {
       void this.ctx.resume();
@@ -177,12 +187,7 @@ class SoundEngine {
     raw: { dur: number; from: number; to: number; q: number; gain: number; at?: number },
   ): void {
     const o = { ...raw, at: (raw.at ?? 0) * this.stretch, dur: raw.dur * this.stretch };
-    if (!this.noiseBuffer) {
-      const length = ctx.sampleRate;
-      this.noiseBuffer = ctx.createBuffer(1, length, ctx.sampleRate);
-      const data = this.noiseBuffer.getChannelData(0);
-      for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
-    }
+    this.noiseBuffer ??= makeNoise(ctx);
     const start = ctx.currentTime + o.at;
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
@@ -203,6 +208,15 @@ class SoundEngine {
     src.start(start);
     src.stop(start + o.dur + 0.02);
   }
+}
+
+/** One second of white noise (looped by the noise voices). */
+function makeNoise(ctx: AudioContext): AudioBuffer {
+  const length = ctx.sampleRate;
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+  return buffer;
 }
 
 export const sound = new SoundEngine();

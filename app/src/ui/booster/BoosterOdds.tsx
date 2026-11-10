@@ -7,14 +7,16 @@ import { Button } from '../components/Button.tsx';
 import { RarityIcon } from '../components/RarityIcon.tsx';
 import styles from './BoosterOdds.module.css';
 
+// Built once: toLocaleString() builds a new formatter on every call.
+const PERCENT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
+const INTEGER = new Intl.NumberFormat('fr-FR');
+
 const percent = (ratio: number) =>
-  ratio > 0 && ratio < 0.0001
-    ? '< 0,01 %'
-    : `${(ratio * 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
+  ratio > 0 && ratio < 0.0001 ? '< 0,01 %' : `${PERCENT.format(ratio * 100)} %`;
 
 /** "1 sur 260" for the rare ones, where a percentage says little. */
 const oneIn = (ratio: number) =>
-  ratio > 0 && ratio < 0.01 ? `1 sur ${Math.round(1 / ratio).toLocaleString('fr-FR')}` : '';
+  ratio > 0 && ratio < 0.01 ? `1 sur ${INTEGER.format(Math.round(1 / ratio))}` : '';
 
 interface Row {
   key: string;
@@ -79,14 +81,6 @@ export function BoosterOdds({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  // The player's real odds: without a pseudo, no signed puff.
-  const rarity = useMemo(
-    () => exactRarityDistribution(catalog, forPlayer(type, pseudo), config),
-    [catalog, type, pseudo, config],
-  );
-  const tiers = config.baseTiers.tiers.map((t, i) => ({ id: String(i), name: t.name }));
-  const baseWeights = Object.fromEntries(type.baseTierWeights.map((w, i) => [String(i), w]));
-
   return (
     <dialog
       ref={ref}
@@ -101,68 +95,103 @@ export function BoosterOdds({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className={styles.sheet}>
-        <h2 id="odds-title" className={styles.title}>
-          Probabilités
-          <span className={styles.subtitle}>{type.name}</span>
-        </h2>
-
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Rareté de la puff</h3>
-          <dl className={styles.rows}>
-            {config.rarities.map((r) => (
-              <div key={r.id} className={styles.row} style={{ '--tier': r.color } as CSSProperties}>
-                <dt className={styles.tier}>
-                  <RarityIcon icon={r.icon} size={14} /> {r.name}
-                </dt>
-                <dd>
-                  {percent(rarity[r.id])}
-                  <small>{oneIn(rarity[r.id])}</small>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-
-        <div className={styles.columns}>
-          <Table
-            title="Finition"
-            items={rows(
-              config.finishes.map((f) => ({ id: f.id, name: f.name })),
-              type.finishWeights,
-            )}
-          />
-          <Table
-            title="Fumée"
-            items={rows(
-              config.smokes.map((s) => ({ id: s.kind, name: s.name })),
-              type.smokeWeights,
-            )}
-          />
-          <Table
-            title="Forme de fumée"
-            items={rows(
-              config.smokeShapes.map((s) => ({ id: s.shape, name: s.name })),
-              type.smokeShapeWeights,
-            )}
-          />
-          <Table title="Format" items={rows(tiers, baseWeights)} />
-          <Table
-            title="Puff signée"
-            items={rows(
-              config.engravings
-                .filter((e) => e.kind !== 'none')
-                .map((e) => ({ id: e.kind, name: e.name })),
-              type.engravingWeights,
-            )}
-            note={pseudo ? undefined : 'Seulement avec un pseudo (Réglages).'}
-          />
-        </div>
-
-        <Button variant="secondary" block onClick={onClose}>
-          Fermer
-        </Button>
-      </div>
+      {/* Built only while open: the exact distribution is not computed for a closed sheet. */}
+      {open && (
+        <OddsSheet
+          type={type}
+          config={config}
+          catalog={catalog}
+          pseudo={pseudo}
+          onClose={onClose}
+        />
+      )}
     </dialog>
+  );
+}
+
+function OddsSheet({
+  type,
+  config,
+  catalog,
+  pseudo,
+  onClose,
+}: {
+  type: BoosterType;
+  config: GameConfig;
+  catalog: Catalog;
+  pseudo: string | undefined;
+  onClose: () => void;
+}) {
+  // The player's real odds: without a pseudo, no signed puff.
+  const rarity = useMemo(
+    () => exactRarityDistribution(catalog, forPlayer(type, pseudo), config),
+    [catalog, type, pseudo, config],
+  );
+  const tiers = config.baseTiers.tiers.map((t, i) => ({ id: String(i), name: t.name }));
+  const baseWeights = Object.fromEntries(type.baseTierWeights.map((w, i) => [String(i), w]));
+
+  return (
+    <div className={styles.sheet}>
+      <h2 id="odds-title" className={styles.title}>
+        Probabilités
+        <span className={styles.subtitle}>{type.name}</span>
+      </h2>
+
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>Rareté de la puff</h3>
+        <dl className={styles.rows}>
+          {config.rarities.map((r) => (
+            <div key={r.id} className={styles.row} style={{ '--tier': r.color } as CSSProperties}>
+              <dt className={styles.tier}>
+                <RarityIcon icon={r.icon} size={14} /> {r.name}
+              </dt>
+              <dd>
+                {percent(rarity[r.id])}
+                <small>{oneIn(rarity[r.id])}</small>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <div className={styles.columns}>
+        <Table
+          title="Finition"
+          items={rows(
+            config.finishes.map((f) => ({ id: f.id, name: f.name })),
+            type.finishWeights,
+          )}
+        />
+        <Table
+          title="Fumée"
+          items={rows(
+            config.smokes.map((s) => ({ id: s.kind, name: s.name })),
+            type.smokeWeights,
+          )}
+        />
+        <Table
+          title="Forme de fumée"
+          items={rows(
+            config.smokeShapes.map((s) => ({ id: s.shape, name: s.name })),
+            type.smokeShapeWeights,
+          )}
+        />
+        <Table title="Format" items={rows(tiers, baseWeights)} />
+        <Table
+          title="Puff signée"
+          items={rows(
+            config.engravings
+              .filter((e) => e.kind !== 'none')
+              .map((e) => ({ id: e.kind, name: e.name })),
+            type.engravingWeights,
+          )}
+          note={pseudo ? undefined : 'Seulement avec un pseudo (Réglages).'}
+        />
+      </div>
+
+      <Button variant="secondary" block onClick={onClose}>
+        Fermer
+      </Button>
+    </div>
   );
 }

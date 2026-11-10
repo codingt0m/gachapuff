@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type RefObject } from 'react';
+import { memo, useMemo, type CSSProperties, type RefObject } from 'react';
 import type { layout } from '../../../config/layout.ts';
 import { baseTierFor } from '../../../domain/catalog.ts';
 import type { GameConfig } from '../../../domain/types.ts';
@@ -13,6 +13,43 @@ import styles from './AlbumGrid.module.css';
 type Row =
   | { kind: 'header'; key: string; section: AlbumSection }
   | { kind: 'items'; key: string; entries: AlbumEntry[] };
+
+/**
+ * One row of thumbnails. Memoised: scrolling changes the rendered range, and without it
+ * every visible row (and its thumbnails) re-rendered at each step.
+ */
+const ItemsRow = memo(function ItemsRow({
+  entries,
+  offset,
+  cols,
+  gap,
+}: {
+  entries: AlbumEntry[];
+  offset: number;
+  cols: number;
+  gap: number;
+}) {
+  return (
+    <div
+      className={styles.row}
+      style={{
+        transform: `translateY(${offset}px)`,
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gap,
+      }}
+    >
+      {entries.map((entry) => (
+        <PuffThumb
+          key={entry.puff.id}
+          puff={entry.puff}
+          instance={entry.instances[0]}
+          count={entry.count}
+          href={paths.puff(entry.puff.id)}
+        />
+      ))}
+    </div>
+  );
+});
 
 export function AlbumGrid({
   containerRef,
@@ -88,21 +125,13 @@ export function AlbumGrid({
           );
         }
         return (
-          <div
+          <ItemsRow
             key={row.key}
-            className={styles.row}
-            style={{ ...style, gridTemplateColumns: `repeat(${cols}, 1fr)`, gap }}
-          >
-            {row.entries.map((entry) => (
-              <PuffThumb
-                key={entry.puff.id}
-                puff={entry.puff}
-                instance={entry.instances[0]}
-                count={entry.count}
-                href={paths.puff(entry.puff.id)}
-              />
-            ))}
-          </div>
+            entries={row.entries}
+            offset={offsets[index] ?? 0}
+            cols={cols}
+            gap={gap}
+          />
         );
       })}
     </div>

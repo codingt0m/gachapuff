@@ -1,31 +1,74 @@
 /** Small WebGL 1 helpers (WebGL 1 for the widest device support). */
 
-export function compileProgram(
+/** KHR_parallel_shader_compile: asks whether a link finished, without waiting for it. */
+const COMPLETION_STATUS_KHR = 0x91b1;
+
+/**
+ * A program whose compile + link may still be running on the GPU side. Querying
+ * COMPILE_STATUS / LINK_STATUS right away blocks the main thread until the driver is done
+ * (seconds for a big shader on some GPUs), so the status is only read once `ready()`.
+ */
+export class PendingProgram {
+  readonly program: WebGLProgram;
+  private readonly gl: WebGLRenderingContext;
+  private readonly shaders: readonly WebGLShader[];
+  /** Without the extension, the first `ready()` waits like a plain link would. */
+  private readonly parallel: boolean;
+  private checked = false;
+
+  constructor(
+    gl: WebGLRenderingContext,
+    program: WebGLProgram,
+    shaders: readonly WebGLShader[],
+    parallel: boolean,
+  ) {
+    this.gl = gl;
+    this.program = program;
+    this.shaders = shaders;
+    this.parallel = parallel;
+  }
+
+  /** True once linked (throws on a compile / link error). Never blocks with the extension. */
+  ready(): boolean {
+    if (this.checked) return true;
+    const gl = this.gl;
+    if (this.parallel && !gl.getProgramParameter(this.program, COMPLETION_STATUS_KHR)) {
+      return false;
+    }
+    if (!gl.getProgramParameter(this.program, gl.LINK_STATUS) && !gl.isContextLost()) {
+      const logs = this.shaders.map((s) => gl.getShaderInfoLog(s) ?? '').join('\n');
+      throw new Error(`Program link error: ${gl.getProgramInfoLog(this.program) ?? ''}\n${logs}`);
+    }
+    this.checked = true;
+    return true;
+  }
+}
+
+/** Starts compiling and linking a program; see PendingProgram. */
+export function startProgram(
   gl: WebGLRenderingContext,
   vertexSource: string,
   fragmentSource: string,
   attributes: readonly string[] = ['aPos'],
-): WebGLProgram {
+): PendingProgram {
+  const parallel = Boolean(gl.getExtension('KHR_parallel_shader_compile'));
   const shader = (type: number, source: string) => {
     const s = gl.createShader(type);
     if (!s) throw new Error('createShader failed');
     gl.shaderSource(s, source);
     gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS) && !gl.isContextLost()) {
-      throw new Error(`Shader compile error: ${gl.getShaderInfoLog(s) ?? ''}`);
-    }
     return s;
   };
   const program = gl.createProgram();
   if (!program) throw new Error('createProgram failed');
-  gl.attachShader(program, shader(gl.VERTEX_SHADER, vertexSource));
-  gl.attachShader(program, shader(gl.FRAGMENT_SHADER, fragmentSource));
+  const shaders = [
+    shader(gl.VERTEX_SHADER, vertexSource),
+    shader(gl.FRAGMENT_SHADER, fragmentSource),
+  ];
+  shaders.forEach((s) => gl.attachShader(program, s));
   attributes.forEach((name, index) => gl.bindAttribLocation(program, index, name));
   gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS) && !gl.isContextLost()) {
-    throw new Error(`Program link error: ${gl.getProgramInfoLog(program) ?? ''}`);
-  }
-  return program;
+  return new PendingProgram(gl, program, shaders, parallel);
 }
 
 /** A unit quad (-1..1) as a triangle strip. */

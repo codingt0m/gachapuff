@@ -1,6 +1,9 @@
+/*
+ * The halo and the shadow follow the tilt: PuffStage writes their `transform` inline each
+ * frame (no inherited custom property, so only these two elements restyle). The values
+ * below are the resting pose.
+ */
 .stage {
-  --tx: 0;
-  --ty: 0;
   position: relative;
   width: 100%;
   height: 100%;
@@ -37,7 +40,7 @@
     color-mix(in srgb, var(--glow) 30%, rgb(255 110 200 / 0.16)),
     transparent
   );
-  transform: translate(calc(-50% + var(--tx) * -30px), calc(var(--ty) * -20px));
+  transform: translate(-50%, 0);
   opacity: 0.85;
   animation: halo 5s ease-in-out infinite;
   pointer-events: none;
@@ -52,7 +55,9 @@
   height: 5%;
   border-radius: 50%;
   background: radial-gradient(closest-side, rgb(10 2 30 / 0.6), transparent);
-  transform: translateX(calc(-50% + var(--tx) * 40px)) scaleX(calc(1 + var(--tx) * 0.2));
+  transform: translateX(-50%);
+  /* Own layer: moving it with the tilt must not repaint the stage every frame. */
+  will-change: transform;
   pointer-events: none;
 }
 

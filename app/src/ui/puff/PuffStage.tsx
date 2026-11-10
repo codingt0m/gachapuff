@@ -5,13 +5,41 @@ import { assetUrl } from '../../data/manifest.ts';
 import { engravingLabel } from '../../effects/engraving.ts';
 import { haptic } from '../../effects/haptics.ts';
 import { TiltController } from '../../effects/tilt.ts';
-import { PuffRenderer } from '../../effects/webgl/PuffRenderer.ts';
-import { seedFrom, webglAvailable } from '../../effects/webglSupport.ts';
+import { PuffRenderer, type PuffLook } from '../../effects/webgl/PuffRenderer.ts';
+import { markWebglUnavailable, seedFrom, webglAvailable } from '../../effects/webglSupport.ts';
 import { useReducedMotion } from '../hooks.ts';
 import { CssPuff } from './CssPuff.tsx';
 import styles from './PuffStage.module.css';
 
 const NO_ENGRAVING: Engraving = { kind: 'none' };
+
+/** What the WebGL renderer draws for these props (also used to prewarm a reveal). */
+export function puffLook(o: {
+  puff: PuffDefinition;
+  finish: FinishId;
+  smoke: Smoke;
+  engraving?: Engraving;
+  seedKey: string;
+}): PuffLook {
+  return {
+    imageUrl: assetUrl(o.puff.images.detail),
+    finish: o.finish,
+    smoke: o.smoke,
+    engraving: o.engraving ?? NO_ENGRAVING,
+    nozzle: o.puff.nozzle,
+    bbox: o.puff.bbox,
+    seed: seedFrom(o.seedKey),
+  };
+}
+
+/**
+ * Starts building the WebGL rendering of a puff before it is shown (shaders, image,
+ * relief): the next PuffStage mounted with the same puff and finish adopts it at once.
+ */
+export function prewarmPuffStage(look: PuffLook): () => void {
+  if (webglAvailable()) PuffRenderer.prewarm(look);
+  return () => PuffRenderer.discardPrewarmed();
+}
 
 export interface PuffStageProps {
   puff: PuffDefinition;
@@ -54,11 +82,16 @@ export function PuffStage({
 }: PuffStageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+  const haloRef = useRef<HTMLSpanElement>(null);
+  const shadowRef = useRef<HTMLSpanElement>(null);
   const rendererRef = useRef<PuffRenderer | null>(null);
   const tiltRef = useRef(new TiltController());
   const holdingRef = useRef(false);
   const [fallback, setFallback] = useState(() => !webglAvailable());
   const reduced = useReducedMotion();
+  // Look at mount time, to adopt a renderer prewarmed for it.
+  const initialLook = useRef<PuffLook | null>(null);
+  initialLook.current ??= puffLook({ puff, finish, smoke, engraving, seedKey });
 
   // Pointer / touch tilt, shared by the WebGL and the CSS renderings.
   useEffect(() => {
@@ -122,23 +155,33 @@ export function PuffStage({
     const host = hostRef.current;
     const wrapper = wrapperRef.current;
     if (fallback || !host || !wrapper) return;
-    const canvas = document.createElement('canvas');
+    // A renderer prewarmed during the pack opening already has its shaders and relief.
+    const prewarmed = initialLook.current ? PuffRenderer.takePrewarmed(initialLook.current) : null;
+    const canvas = prewarmed?.canvas ?? document.createElement('canvas');
     canvas.className = styles.canvas ?? '';
     host.appendChild(canvas);
-    const renderer = PuffRenderer.create(canvas);
+    const renderer = prewarmed?.renderer ?? PuffRenderer.create(canvas);
     if (!renderer) {
       canvas.remove();
+      markWebglUnavailable();
       queueMicrotask(() => setFallback(true));
       return;
     }
     rendererRef.current = renderer;
     renderer.setHolding(holdingRef.current);
     renderer.onContextLost = () => setFallback(true);
+    const halo = haloRef.current;
+    const shadow = shadowRef.current;
     renderer.onFrame = (dt) => {
       const t = tiltRef.current.update(dt);
       renderer.tilt = t;
-      wrapper.style.setProperty('--tx', t.x.toFixed(3));
-      wrapper.style.setProperty('--ty', t.y.toFixed(3));
+      // Halo and contact shadow slide with the tilt (resting pose in PuffStage.module.css).
+      const x = Number(t.x.toFixed(3));
+      const y = Number(t.y.toFixed(3));
+      if (halo) halo.style.transform = `translate(calc(-50% + ${x * -30}px), ${y * -20}px)`;
+      if (shadow) {
+        shadow.style.transform = `translateX(calc(-50% + ${x * 40}px)) scaleX(${1 + x * 0.2})`;
+      }
     };
     let visible = true;
     const sync = () => (visible && !document.hidden ? renderer.start() : renderer.stop());
@@ -165,15 +208,15 @@ export function PuffStage({
     if (!renderer) return;
     renderer.reducedMotion = reduced;
     renderer
-      .setLook({
-        imageUrl: assetUrl(puff.images.detail),
-        finish,
-        smoke: JSON.parse(smokeKey) as Smoke,
-        engraving: JSON.parse(engravingKey) as Engraving,
-        nozzle: puff.nozzle,
-        bbox: puff.bbox,
-        seed: seedFrom(seedKey),
-      })
+      .setLook(
+        puffLook({
+          puff,
+          finish,
+          smoke: JSON.parse(smokeKey) as Smoke,
+          engraving: JSON.parse(engravingKey) as Engraving,
+          seedKey,
+        }),
+      )
       .catch((error: unknown) => console.warn(error));
     // `reduced` is synced by its own effect; re-running here would reload the look.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -195,8 +238,8 @@ export function PuffStage({
       data-finish={finish}
       style={{ '--glow': glow } as CSSProperties}
     >
-      <span className={styles.halo} aria-hidden="true" />
-      <span className={styles.shadow} aria-hidden="true" />
+      <span ref={haloRef} className={styles.halo} aria-hidden="true" />
+      <span ref={shadowRef} className={styles.shadow} aria-hidden="true" />
       {fallback ? (
         <CssPuff
           puff={puff}
