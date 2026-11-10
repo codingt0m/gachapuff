@@ -107,7 +107,7 @@ uniform float uSeed;
 uniform float uMotion;   // 1 = full motion, lower = calmer
 uniform sampler2D uEngrave;  // engraving mask, same layout as uTex
 uniform float uEngraveKind;  // 0 none, 1 signature
-uniform sampler2D uNormal;   // relief normal map (volume.ts), same layout as uTex
+uniform sampler2D uNormal;   // rgb: relief normal (volume.ts), a: distance to the edge
 ${NOISE}
 
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
@@ -255,24 +255,6 @@ vec4 gem(float spec, float glare, float rim,
 
 const float MAX_TILT = 0.38; // tilt.maxAngle in config/motion.ts
 
-// Nearest cell: xy = vector from the point to the cell centre, z = cell id.
-vec3 cellVec(vec2 x) {
-  vec2 n = floor(x);
-  vec2 f = fract(x);
-  vec2 mr = vec2(0.0);
-  vec2 mg = vec2(0.0);
-  float md = 8.0;
-  for (int j = -1; j <= 1; j++) {
-    for (int i = -1; i <= 1; i++) {
-      vec2 g = vec2(float(i), float(j));
-      vec2 r = g + hash2(n + g) - f;
-      float d = dot(r, r);
-      if (d < md) { md = d; mr = r; mg = g; }
-    }
-  }
-  return vec3(mr, hash(n + mg));
-}
-
 // Studio seen in a mirror: dark floor, bright horizon, sky, two softboxes.
 vec3 chromeEnv(vec3 R) {
   float y = R.y;
@@ -308,7 +290,8 @@ void main() {
   // Inflated relief (normal map, see volume.ts) + print relief from luminance.
   float lx = luma(texture2D(uTex, uv - vec2(uTexel.x, 0.0)).rgb) - luma(texture2D(uTex, uv + vec2(uTexel.x, 0.0)).rgb);
   float ly = luma(texture2D(uTex, uv + vec2(0.0, uTexel.y)).rgb) - luma(texture2D(uTex, uv - vec2(0.0, uTexel.y)).rgb);
-  vec3 relief = texture2D(uNormal, uv).xyz * 2.0 - 1.0;
+  vec4 reliefTex = texture2D(uNormal, uv);  // a: distance to the edge (PuffRenderer)
+  vec3 relief = reliefTex.xyz * 2.0 - 1.0;
   vec3 nLocal = normalize(relief + vec3(lx, ly, 0.0) * 0.8);
   vec3 N = normalize(uRot * nLocal);
   vec3 L = normalize(vec3(-0.35, 0.55, 1.0));
@@ -355,39 +338,58 @@ void main() {
     col = g.rgb + vec3(1.0, 0.08, 0.2) * 0.12 * (0.6 + 0.4 * sin(uTime * 1.3 * uMotion));
     a *= g.a;
   } else if (isFinish(12.0)) {
-    // Frost: the puff behind frosted glass (blurred, cold print), fern-like ice crystals
-    // growing thick from the edges, snow settled on the top edges, glittering ice.
-    // Where the finger points (the tilt follows the pointer) the frost melts into a
-    // clear wet patch showing the sharp print.
+    // Frost: hoarfrost on the surface. Feathery ice fronds
+    // grow from the silhouette's edges towards the middle over a misty film (paled,
+    // softened print, fine droplets); thin ice ridges and grains of rime glitter as it
+    // turns; the middle stays clear and sharp. Where the finger points (the tilt follows
+    // the pointer) the frost melts back.
     vec2 ptr = vec2(0.5 + uTilt.x / MAX_TILT * 0.45, 0.5 + uTilt.y / MAX_TILT * 0.45);
-    float clear = 1.0 - smoothstep(0.07, 0.22, distance(vUv, ptr));
-    vec3 blurry = texture2D(uTex, uv, 3.0).rgb;
-    vec3 frosted = mix(vec3(luma(blurry)), blurry, 0.4) * vec3(0.8, 0.92, 1.1) * 0.75
-                 + vec3(0.16, 0.2, 0.26);
-    // One fern per cell: herringbone barbs off a spine, each cell its own direction.
-    vec3 c = cellVec(vUv * vec2(5.0, 6.5) + uSeed);
-    float ang = c.z * 6.2831;
-    vec2 q = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * (-c.xy);
-    float spine = exp(-pow(q.y / 0.035, 2.0));
-    float barbs = pow(0.5 + 0.5 * sin((q.x + abs(q.y) * 1.3) * 45.0), 5.0)
-                * smoothstep(0.42, 0.04, abs(q.y));
-    float fern = max(spine, barbs * 0.85) * smoothstep(0.75, 0.2, length(q));
-    // Coverage: thick near the edges, patchy inside, slowly breathing.
-    float n = fbm(vUv * 6.0 + uSeed);
-    float cover = clamp((1.0 - blurredAlpha(uv)) * 3.0 + n * 1.2 - 0.35 + 0.06 * sin(t * 0.3), 0.0, 1.0);
-    vec3 ice = frosted * (0.9 + 0.2 * diff);
-    ice = mix(ice, vec3(0.94, 0.97, 1.0), clamp(fern * (0.6 + 0.4 * cover) + cover * 0.4, 0.0, 0.95));
-    // Snow on the top edges (nothing above them).
-    float above = blurredAlpha(uv - vec2(0.0, uTexel.y * 8.0));
-    float snow = smoothstep(0.75, 0.3, above) * smoothstep(0.35, 0.65, noise(vUv * vec2(40.0, 10.0)) + 0.25);
-    ice = mix(ice, vec3(0.98, 0.99, 1.0), snow);
-    vec3 wet = base * diff + glare * 0.35 + spec * 1.3;
-    col = mix(ice, wet, clear * (1.0 - snow));
-    float iceMask = 1.0 - clear;
-    col += sparkles(vUv + uTilt * 0.05, 70.0, 0.08, 3.0) * 1.8 * iceMask;
-    col += sparkles(vUv + 5.0 - uTilt * 0.03, 32.0, 0.13, 2.0) * 1.3 * iceMask;
-    col += spec * 0.5 * iceMask;
-    col += rim * vec3(0.75, 0.9, 1.0) * 0.9;
+    float melt = 1.0 - smoothstep(0.05, 0.2, distance(vUv, ptr));
+    // How far inside the silhouette: 0 on its edge, 1 at its deepest point (distance to
+    // the edge, normalised per shape: see the alpha of uNormal).
+    vec2 inDir = vec2(-relief.x, relief.y);
+    float il = length(inDir);
+    inDir = il > 0.03 ? inDir / il : vec2(0.0, 1.0);
+    float inward = min(reliefTex.a * 1.6, smoothstep(0.5, 1.0, texture2D(uTex, uv, 3.0).a));
+    float n = fbm(vUv * 7.0 + uSeed);
+    float depth = inward + (n - 0.5) * 0.45 + melt * 0.8 + 0.03 * sin(t * 0.25);
+    float mist = 1.0 - smoothstep(0.55, 1.0, depth);
+    float cover = 1.0 - smoothstep(0.05, 0.32, depth);
+    // Fronds: spines running inwards (direction from the relief normal), herringbone
+    // barbs, each frond stopping at its own depth (ragged growth front).
+    vec2 P = vUv * 15.0 + (vec2(n, fbm(vUv * 5.0 + uSeed + 7.3)) - 0.5) * 2.0;
+    float along = dot(P, inDir);
+    float across = dot(P, vec2(-inDir.y, inDir.x));
+    float fa = fract(across) - 0.5;
+    float lh = hash(vec2(floor(across), uSeed));
+    float spine = exp(-pow(fa / 0.07, 2.0));
+    float barb = pow(0.5 + 0.5 * sin((along + abs(fa) * 1.3) * 18.0 + lh * 6.2831), 4.0)
+               * smoothstep(0.45, 0.04, abs(fa));
+    float reach = 0.4 + 0.45 * lh;
+    // Barbs shorten towards the frond's tip.
+    float tip = 1.0 - smoothstep(reach - 0.3, reach + 0.02, depth);
+    float frond = max(spine * smoothstep(0.0, 0.15, tip), barb * 0.85 * step(abs(fa), 0.12 + 0.36 * tip)) * tip;
+    // Thin ice ridges between rime cells, each catching the light at its own angle.
+    vec3 cell = voronoi(vUv * 22.0 + uSeed);
+    float ridge = smoothstep(0.022, 0.0, cell.y) * cover;
+    float ridgeGlint = pow(0.5 + 0.5 * sin(cell.z * 31.0 + uTilt.x * 24.0 - uTilt.y * 18.0 + t * 0.5), 6.0);
+    // Under the frost: a cold, sharp print; under the mist: paled and softened.
+    vec3 cold = mix(vec3(luma(base)), base, 0.8) * vec3(0.92, 0.98, 1.05);
+    vec3 sharp = cold * diff + glare * 0.12 + spec * (0.35 + 0.9 * melt);
+    vec3 hazy = mix(texture2D(uTex, uv, 2.5).rgb * vec3(0.9, 0.97, 1.06), vec3(0.84, 0.91, 1.0), 0.5)
+              * (0.9 + 0.15 * diff);
+    col = mix(sharp, hazy, mist * 0.8);
+    float drops = smoothstep(0.78, 0.95, noise(vUv * 130.0 + 3.0)) * mist * (1.0 - cover);
+    col += vec3(0.9, 0.96, 1.0) * drops * 0.35;
+    vec3 rime = vec3(0.86, 0.93, 1.0) * (0.8 + 0.25 * noise(vUv * 170.0)) * (0.88 + 0.14 * diff);
+    col = mix(col, rime, cover * 0.55);
+    col = mix(col, vec3(0.97, 0.99, 1.0) * (0.92 + 0.12 * diff), clamp(frond, 0.0, 0.95));
+    col += vec3(0.85, 0.95, 1.0) * ridge * (0.05 + 0.6 * ridgeGlint);
+    float ice = clamp(cover + frond * 0.6, 0.0, 1.0);
+    col += sparkles(vUv + uTilt * 0.05, 80.0, 0.07, 3.0) * 1.6 * ice;
+    col += sparkles(vUv + 5.0 - uTilt * 0.03, 34.0, 0.12, 2.0) * 1.2 * ice;
+    col += spec * 0.4 * ice;
+    col += rim * vec3(0.78, 0.92, 1.0) * 0.8;
   } else if (isFinish(16.0)) {
     // Glitch: VHS tape gone wrong. Colour split, scan lines, torn rows and noise
     // blocks in bursts (at most 3 changes per second), worse when tilted.

@@ -219,11 +219,40 @@
   opacity: 0.95;
 }
 
+/*
+ * Frost: hoarfrost growing in from the puff's edges (its opaque box, --bx/--by/--bw/--bh),
+ * fronds tiled down both sides, a light mist over the rest; the middle stays clear.
+ * Background positions in % align the image's own %, hence the divisions.
+ */
 .foil[data-finish='frost'] {
+  --rime: rgb(236 247 255 / 0.95);
+  --haze: rgb(225 242 255 / 0.25);
+  --fw: calc(var(--bw) * 0.42);
   background:
-    radial-gradient(circle, transparent 35%, rgb(235 248 255 / 0.9) 75%),
-    repeating-linear-gradient(35deg, rgb(255 255 255 / 0.4) 0 1px, transparent 1px 7px);
-  opacity: 0.9;
+    url('../assets/finishes/frost-left.svg') left calc(var(--bx) / (1 - var(--fw)) * 100%) top 0 /
+      calc(var(--fw) * 100%) auto repeat-y,
+    url('../assets/finishes/frost-right.svg') left
+      calc((var(--bx) + var(--bw) - var(--fw)) / (1 - var(--fw)) * 100%) top 9% /
+      calc(var(--fw) * 100%) auto repeat-y,
+    linear-gradient(
+      90deg,
+      var(--rime) calc(var(--bx) * 100%),
+      var(--haze) calc((var(--bx) + var(--bw) * 0.22) * 100%),
+      transparent calc((var(--bx) + var(--bw) * 0.36) * 100%),
+      transparent calc((var(--bx) + var(--bw) * 0.64) * 100%),
+      var(--haze) calc((var(--bx) + var(--bw) * 0.78) * 100%),
+      var(--rime) calc((var(--bx) + var(--bw)) * 100%)
+    ),
+    linear-gradient(
+      180deg,
+      var(--rime) calc(var(--by) * 100%),
+      transparent calc((var(--by) + 0.1) * 100%),
+      transparent calc((var(--by) + var(--bh) - 0.1) * 100%),
+      var(--rime) calc((var(--by) + var(--bh)) * 100%)
+    ),
+    linear-gradient(rgb(215 235 255 / 0.16), rgb(215 235 255 / 0.16));
+  mix-blend-mode: normal;
+  opacity: 1;
 }
 
 .foil[data-finish='glitch'] {

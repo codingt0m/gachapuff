@@ -68,7 +68,22 @@ export function CssPuff({
       </div>
       <div ref={bodyRef} className={styles.body}>
         <img className={styles.img} src={image} alt="" draggable={false} />
-        {finish !== 'normal' && <span className={styles.foil} data-finish={finish} style={mask} />}
+        {finish !== 'normal' && (
+          <span
+            className={styles.foil}
+            data-finish={finish}
+            style={
+              {
+                ...mask,
+                // Opaque box of the image, for effects laid along the puff's edges.
+                '--bx': puff.bbox.x,
+                '--by': puff.bbox.y,
+                '--bw': puff.bbox.w,
+                '--bh': puff.bbox.h,
+              } as CSSProperties
+            }
+          />
+        )}
         <span className={styles.gloss} style={mask} />
         {engravingText && (
           <span

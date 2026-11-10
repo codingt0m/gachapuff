@@ -12,6 +12,7 @@ import {
 import { SMOKE_STRIDE, SmokeParticles } from './SmokeParticles.ts';
 import {
   boxiness,
+  distanceToEdge,
   gridHeights,
   gridMesh,
   inflate,
@@ -116,6 +117,18 @@ interface Volume {
   thickness: number;
   /** Relief height under the mouthpiece (smoke origin), in units, depth applied. */
   nozzleHeight: number;
+  /** Distance to the silhouette edge per texel, 0 (edge, outside) to 255 (deepest point). */
+  inward: Uint8Array;
+}
+
+/** Distance to the edge, normalised by the shape's own deepest point (frost growth). */
+function inwardMap(mask: Uint8Array, size: number): Uint8Array {
+  const dist = distanceToEdge(mask, size);
+  let far = 1;
+  for (const d of dist) if (d > far) far = d;
+  const out = new Uint8Array(dist.length);
+  for (let i = 0; i < dist.length; i++) out[i] = Math.round(((dist[i] ?? 0) / far) * 255);
+  return out;
 }
 
 /** Inflates the image's silhouette (alpha > 50 %) into a relief. */
@@ -139,6 +152,7 @@ function buildVolume(image: HTMLImageElement, look: PuffLook): Volume {
     thickness: lerp(V.thickness) * field.maxDistance * 2,
     // A little below the tip, where the mouthpiece has some body.
     nozzleHeight: sampleHeight(field, look.nozzle.x, look.nozzle.y + 0.02) * V.depth,
+    inward: inwardMap(mask, size),
   };
 }
 
@@ -273,10 +287,17 @@ export class PuffRenderer {
     if (this.normalTexture) gl.deleteTexture(this.normalTexture);
     this.normalTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.normalTexture);
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    // RGB: relief normal; A: distance to the edge (frost growth, see PUFF_FRAGMENT).
     const normals = normalMap(volume.field, V.depth);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, normals);
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+    const texels = new Uint8Array(size * size * 4);
+    for (let i = 0; i < size * size; i++) {
+      texels[i * 4] = normals[i * 3] ?? 128;
+      texels[i * 4 + 1] = normals[i * 3 + 1] ?? 128;
+      texels[i * 4 + 2] = normals[i * 3 + 2] ?? 255;
+      texels[i * 4 + 3] = volume.inward[i] ?? 0;
+    }
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, texels);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);

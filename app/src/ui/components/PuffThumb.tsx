@@ -57,7 +57,17 @@ export function PuffThumb({
           <span
             className={styles.foil}
             data-finish={instance.finish}
-            style={{ maskImage: `url("${image}")`, WebkitMaskImage: `url("${image}")` }}
+            style={
+              {
+                maskImage: `url("${image}")`,
+                WebkitMaskImage: `url("${image}")`,
+                // Opaque box of the image, for effects laid along the puff's edges.
+                '--bx': puff.bbox.x,
+                '--by': puff.bbox.y,
+                '--bw': puff.bbox.w,
+                '--bh': puff.bbox.h,
+              } as CSSProperties
+            }
           />
         )}
         {tier && (

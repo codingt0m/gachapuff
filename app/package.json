@@ -11,6 +11,7 @@
     "assets": "node scripts/build-assets.ts",
     "icons": "node scripts/build-icons.ts",
     "decor": "node scripts/build-decor.ts",
+    "frost": "node scripts/build-frost.ts",
     "simulate": "node scripts/simulate.ts",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
