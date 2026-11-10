@@ -32,7 +32,7 @@ const REMOVED_FINISHES: Record<string, string> = {
 
 const engravingSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('none') }),
-  z.object({ kind: z.literal('signature'), by: z.string().min(1).max(PSEUDO_MAX).optional() }),
+  z.object({ kind: z.literal('signature'), by: z.string().min(1).max(PSEUDO_MAX) }),
 ]);
 
 type RawInstance = Record<string, unknown>;
@@ -113,7 +113,8 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
       : s.collection,
   }),
   // v4: smaller selection. Copies in a dropped finish (lava, amethyst, emerald, shiny,
-  // silver, bronze...) become plain ones; numbered copies lose their serial.
+  // silver, bronze...) become plain ones; numbered copies lose their serial, and so do
+  // copies with the house signature: a signature is now always the player's own.
   // Points and rarity are recomputed at boot (rescoreCollection).
   3: (s) => ({
     ...s,
@@ -123,7 +124,10 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
       return {
         ...i,
         finish: isOneOf(FINISH_IDS, i.finish) ? i.finish : 'normal',
-        engraving: engraving?.kind === 'serial' ? { kind: 'none' } : engraving,
+        engraving:
+          engraving?.kind === 'serial' || (engraving?.kind === 'signature' && !engraving.by)
+            ? { kind: 'none' }
+            : engraving,
       };
     }),
   }),

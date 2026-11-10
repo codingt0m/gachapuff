@@ -82,7 +82,7 @@ describe('parseSave', () => {
     });
   });
 
-  it('migrates a v3 save: dropped finishes and numbered copies become plain', () => {
+  it('migrates a v3 save: dropped finishes, numbered and house-signed copies become plain', () => {
     const state = playedState();
     const dropped = ['lava', 'amethyst', 'emerald', 'shiny', 'silver', 'bronze', 'unknown'];
     const v3 = structuredClone({
@@ -97,6 +97,7 @@ describe('parseSave', () => {
           engraving: { kind: 'serial', serial: 7 },
         },
         { ...state.collection[0], uid: 's', engraving: { kind: 'signature', by: 'Tom' } },
+        { ...state.collection[0], uid: 'h', engraving: { kind: 'signature' } },
       ],
     });
     const result = parseSave(v3, NOW, config);
@@ -106,11 +107,13 @@ describe('parseSave', () => {
       ...dropped.map(() => 'normal'),
       'golden',
       state.collection[0]?.finish,
+      state.collection[0]?.finish,
     ]);
     expect(result.state.collection.map((i) => i.engraving.kind)).toEqual([
       ...dropped.map(() => 'none'),
       'none',
       'signature',
+      'none',
     ]);
   });
 

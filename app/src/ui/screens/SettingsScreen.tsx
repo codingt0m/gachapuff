@@ -75,7 +75,8 @@ export default function SettingsScreen() {
           />
         </label>
         <p className={styles.muted}>
-          Une puff signée sur cinq porte la signature de celui qui l’a tirée : la tienne.
+          Les puffs signées, très rares, portent la signature de celui qui les tire : la tienne.
+          Sans pseudo, pas de puff signée.
         </p>
       </section>
 

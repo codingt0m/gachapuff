@@ -2,7 +2,14 @@ import { consumeBooster } from './boosters.ts';
 import { nextRarity, rarityForPoints, rarityPoints } from './rarity.ts';
 import { boosterType, rollBooster, rollForRarity, type Roll } from './roll.ts';
 import type { Rng } from './rng.ts';
-import type { Catalog, Engraving, GameConfig, PuffInstance, SaveState } from './types.ts';
+import type {
+  BoosterType,
+  Catalog,
+  Engraving,
+  GameConfig,
+  PuffInstance,
+  SaveState,
+} from './types.ts';
 
 /** Everything a state transition needs from the outside world, injected. */
 export interface GameContext {
@@ -20,13 +27,17 @@ export interface Pull {
   instance: PuffInstance;
 }
 
-/** A signed puff is sometimes signed by the player who pulled it. */
-function signEngraving(roll: Roll, ctx: GameContext, pseudo: string | undefined): Engraving {
-  const { engraving } = roll;
-  if (engraving.kind !== 'signature' || !pseudo) return engraving;
-  return ctx.rng.next() < ctx.config.ownSignatureChance
-    ? { kind: 'signature', by: pseudo }
-    : engraving;
+/** A player without a pseudo cannot sign: no signed puff for them. */
+function forPlayer(type: BoosterType, pseudo: string | undefined): BoosterType {
+  if (pseudo) return type;
+  return { ...type, engravingWeights: { ...type.engravingWeights, signature: 0 } };
+}
+
+/** A signed puff only ever bears the pseudo of the player who pulled it. */
+function sign(roll: Roll, pseudo: string | undefined): Engraving {
+  if (roll.engraving === 'none') return { kind: 'none' };
+  if (!pseudo) throw new Error('A signed puff needs the pseudo of its player');
+  return { kind: 'signature', by: pseudo };
 }
 
 function toInstance(
@@ -35,12 +46,13 @@ function toInstance(
   origin: PuffInstance['origin'],
   pseudo: string | undefined,
 ): PuffInstance {
+  const engraving = sign(roll, pseudo);
   return {
     uid: ctx.newId(),
     puffId: roll.puff.id,
     finish: roll.finish,
     smoke: roll.smoke,
-    engraving: signEngraving(roll, ctx, pseudo),
+    engraving,
     rarity: roll.rarity,
     points: roll.points,
     obtainedAt: ctx.now,
@@ -52,12 +64,13 @@ export function openBooster(state: SaveState, ctx: GameContext, typeId?: string)
   const boosters = ctx.unlimitedBoosters
     ? state.boosters
     : consumeBooster(state.boosters, ctx.now, ctx.config.regen);
-  const type = boosterType(ctx.config, typeId ?? ctx.config.defaultBoosterType);
+  const pseudo = state.settings.pseudo;
+  const type = forPlayer(boosterType(ctx.config, typeId ?? ctx.config.defaultBoosterType), pseudo);
   const instance = toInstance(
     rollBooster(ctx.catalog, type, ctx.config, ctx.rng),
     ctx,
     'booster',
-    state.settings.pseudo,
+    pseudo,
   );
   return {
     instance,
@@ -130,9 +143,10 @@ export function recycle(state: SaveState, uids: readonly string[], ctx: GameCont
   if (!check.ok) throw new Error(`Cannot recycle: ${check.reason}`);
   const target = nextRarity(ctx.config, (check.inputs[0] as PuffInstance).rarity);
   if (!target) throw new Error('Cannot recycle: max-tier');
-  const type = boosterType(ctx.config, ctx.config.recycle.boosterType);
+  const pseudo = state.settings.pseudo;
+  const type = forPlayer(boosterType(ctx.config, ctx.config.recycle.boosterType), pseudo);
   const roll = rollForRarity(ctx.catalog, type, ctx.config, target.id, ctx.rng);
-  const instance = toInstance(roll, ctx, 'recycle', state.settings.pseudo);
+  const instance = toInstance(roll, ctx, 'recycle', pseudo);
   const removed = new Set(uids);
   return {
     instance,

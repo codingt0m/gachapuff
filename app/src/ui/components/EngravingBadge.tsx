@@ -8,7 +8,7 @@ export function EngravingBadge({ engraving }: { engraving: Engraving }) {
   const { config } = useGame();
   if (engraving.kind === 'none') return null;
   const def = engravingDef(config, engraving.kind);
-  const text = engraving.by ? `Signée par ${engraving.by}` : def.name;
+  const text = `${def.name} par ${engraving.by}`;
   return (
     <span className={styles.chip} data-engraving={engraving.kind}>
       <span className={styles.engraveMark} data-engraving={engraving.kind} aria-hidden="true" />

@@ -89,8 +89,8 @@ export type EngravingKind = (typeof ENGRAVING_KINDS)[number];
 /** A mark printed on the puff. */
 export type Engraving =
   | { kind: 'none' }
-  /** `by`: the player who pulled it signed it (absent = the house signature). */
-  | { kind: 'signature'; by?: string };
+  /** Signed by the player who pulled it: `by` is always their own pseudo. */
+  | { kind: 'signature'; by: string };
 
 export const RARITY_IDS = [
   'common',
@@ -195,8 +195,6 @@ export interface GameConfig {
   smokes: SmokeDef[];
   smokeShapes: SmokeShapeDef[];
   engravings: EngravingDef[];
-  /** Chance that a signed puff bears the pseudo of the player who pulled it. */
-  ownSignatureChance: number;
   smokeColor: { saturation: [number, number]; lightness: [number, number] };
   rarities: RarityTier[];
   boosterTypes: BoosterType[];
@@ -232,7 +230,7 @@ export interface Settings {
   sound: boolean;
   haptics: boolean;
   motion: MotionPreference;
-  /** Player name, used for "signed by you" puffs. */
+  /** Player name, signed on the signed puffs they pull (none without a pseudo). */
   pseudo?: string;
 }
 

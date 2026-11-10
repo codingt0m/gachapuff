@@ -6,7 +6,7 @@ import { finishDef } from '../domain/rarity.ts';
 import { createSeededRng } from '../domain/rng.ts';
 import { boosterType } from '../domain/roll.ts';
 import { definitions } from '../domain/testing/fixtures.ts';
-import { FINISH_IDS } from '../domain/types.ts';
+import { ENGRAVING_KINDS, FINISH_IDS } from '../domain/types.ts';
 import { dropRates, gameConfig as config } from './gameConfig.ts';
 
 const classic = boosterType(config, 'classic');
@@ -55,7 +55,17 @@ describe('drop rates', () => {
     }
   });
 
+  it('keeps signed puffs very rare: between rubis and galaxie, and 100 % in total', () => {
+    expect(sumsTo100(classic.engravingWeights)).toBe(true);
+    expect(classic.engravingWeights.signature).toBeLessThanOrEqual(classic.finishWeights.ruby);
+    expect(classic.engravingWeights.signature).toBeGreaterThanOrEqual(classic.finishWeights.cosmic);
+  });
+
   it(`follows the finish rates over ${DRAWS.toLocaleString('en')} openings`, () => {
     for (const id of FINISH_IDS) expectNear(sim.finish[id], classic.finishWeights[id]);
+  });
+
+  it('follows the signed puff rate', () => {
+    for (const id of ENGRAVING_KINDS) expectNear(sim.engraving[id], classic.engravingWeights[id]);
   });
 });

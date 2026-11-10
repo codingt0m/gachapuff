@@ -1,12 +1,11 @@
 import type { Engraving } from '../domain/types.ts';
 
-const SIGNATURE_TEXT = 'Gachapuff';
 const SIGNATURE_FONT =
   "'Segoe Script', 'Brush Script MT', 'Snell Roundhand', 'Apple Chancery', cursive";
 
 /** Text shown for an engraving (null when there is none). */
 export function engravingLabel(engraving: Engraving): string | null {
-  if (engraving.kind === 'signature') return engraving.by ?? SIGNATURE_TEXT;
+  if (engraving.kind === 'signature') return engraving.by;
   return null;
 }
 

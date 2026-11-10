@@ -11,7 +11,7 @@
  *   b) finish: 7 rarity tiers, the finishes of a tier share its points;
  *   c) smoke colours (white; solid; the gradients, glitter and rainbow);
  *   d) smoke shape (cloud; rings / spiral; hearts / stars);
- *   e) engraving (none, signature).
+ *   e) engraving (none, signature: the pseudo of the player who pulled it).
  * points = baseTier + finish + smoke + smoke shape + engraving points
  * The global rarity is the highest tier whose `minPoints` <= points.
  * That global rarity is what recycling (and, later, trading) uses.
@@ -34,7 +34,7 @@
  *   Légendaire 4.7% · Mythique 1.53% · Divine 0.33% (≈ 1 in 302)
  */
 import { splitTiers, type WeightTier } from '../domain/dropRates.ts';
-import type { FinishId, GameConfig, RevealChoreography } from '../domain/types.ts';
+import type { EngravingKind, FinishId, GameConfig, RevealChoreography } from '../domain/types.ts';
 
 const HOUR = 60 * 60 * 1000;
 
@@ -56,6 +56,11 @@ export const dropRates = {
     { weight: 2.5, ids: ['ruby'] }, // 6 · très rare
     { weight: 0.5, ids: ['cosmic'] }, // 7 · le graal
   ] satisfies WeightTier<FinishId>[],
+  /**
+   * Signed puffs: very rare, between rubis and galaxie. Always signed with the pseudo of the
+   * player who pulls it; a player without a pseudo pulls no signed puff.
+   */
+  engravings: { none: 99, signature: 1 } satisfies Record<EngravingKind, number>,
 };
 
 const reveal = (r: Partial<RevealChoreography>): RevealChoreography => ({
@@ -126,10 +131,13 @@ export const gameConfig: GameConfig = {
   // A mark printed on the puff: 4th rarity axis.
   engravings: [
     { kind: 'none', name: 'Aucune', points: 0, description: 'Pas de gravure.' },
-    { kind: 'signature', name: 'Signée', points: 1, description: 'Signature à la feuille d’or.' },
+    {
+      kind: 'signature',
+      name: 'Signée',
+      points: 6,
+      description: 'Ta signature à la feuille d’or.',
+    },
   ],
-  // 1 signed puff in 5 is signed with the pseudo of the player who pulled it.
-  ownSignatureChance: 0.2,
 
   // Random smoke colours are vivid HSL colours within these ranges.
   smokeColor: { saturation: [0.75, 1], lightness: [0.55, 0.7] },
@@ -244,7 +252,7 @@ export const gameConfig: GameConfig = {
         rainbow: 0.5,
       },
       smokeShapeWeights: { cloud: 90, rings: 4, spiral: 3, hearts: 1.8, stars: 1.2 },
-      engravingWeights: { none: 94, signature: 4.5 },
+      engravingWeights: dropRates.engravings,
     },
   ],
   defaultBoosterType: 'classic',

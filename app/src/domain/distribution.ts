@@ -61,7 +61,7 @@ export function simulateBoosters(
     finish[roll.finish]++;
     smoke[roll.smoke.kind]++;
     shape[roll.smoke.shape ?? 'cloud']++;
-    engraving[roll.engraving.kind]++;
+    engraving[roll.engraving]++;
     const tier = catalog.baseTierOf.get(roll.puff.id) ?? 0;
     baseTier[tier] = (baseTier[tier] ?? 0) + 1;
     seen.add(roll.puff.id);

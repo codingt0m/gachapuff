@@ -8,7 +8,6 @@ import {
   SMOKE_SHAPES,
   type BoosterType,
   type Catalog,
-  type Engraving,
   type EngravingKind,
   type FinishId,
   type GameConfig,
@@ -24,7 +23,8 @@ export interface Roll {
   puff: PuffDefinition;
   finish: FinishId;
   smoke: Smoke;
-  engraving: Engraving;
+  /** A signature is signed by the player when the roll becomes their copy. */
+  engraving: EngravingKind;
   points: number;
   rarity: RarityId;
 }
@@ -114,7 +114,7 @@ function materialise(
     puff,
     finish,
     smoke: rollSmoke(rng, config, smokeKind, shape),
-    engraving: { kind: engravingKind },
+    engraving: engravingKind,
     points,
     rarity: rarityForPoints(config, points).id,
   };

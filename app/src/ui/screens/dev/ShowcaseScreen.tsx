@@ -6,7 +6,7 @@ import type {
   SmokeKind,
   SmokeShape,
 } from '../../../domain/types.ts';
-import { useGame } from '../../../store/GameProvider.tsx';
+import { useGame, useGameState } from '../../../store/GameProvider.tsx';
 import { Button } from '../../components/Button.tsx';
 import { PuffStage } from '../../puff/PuffStage.tsx';
 import styles from './DevScreens.module.css';
@@ -22,10 +22,10 @@ const SMOKES: Record<SmokeKind, Smoke> = {
   rainbow: { kind: 'rainbow' },
 };
 
-const ENGRAVINGS: Record<EngravingKind, Engraving> = {
-  none: { kind: 'none' },
-  signature: { kind: 'signature' },
-};
+/** A signature is only ever the player's own: without a pseudo, nothing to sign. */
+function engravingFor(kind: EngravingKind, pseudo: string | undefined): Engraving {
+  return kind === 'signature' && pseudo ? { kind, by: pseudo } : { kind: 'none' };
+}
 
 /**
  * Mounts its content only while near the viewport: each stage holds a WebGL context and
@@ -91,6 +91,7 @@ export default function ShowcaseScreen() {
   const [smokeKind, setSmokeKind] = useState<SmokeKind>('white');
   const [smokeShape, setSmokeShape] = useState<SmokeShape>('cloud');
   const [engravingKind, setEngravingKind] = useState<EngravingKind>('none');
+  const pseudo = useGameState((s) => s.settings.pseudo);
   const puff = catalog.byId.get(puffId);
 
   return (
@@ -134,7 +135,9 @@ export default function ShowcaseScreen() {
         />
         <Segment
           label="Gravure"
-          options={config.engravings.map((e) => ({ id: e.kind, name: e.name }))}
+          options={config.engravings
+            .filter((e) => e.kind !== 'signature' || pseudo)
+            .map((e) => ({ id: e.kind, name: e.name }))}
           value={engravingKind}
           onChange={setEngravingKind}
         />
@@ -148,7 +151,7 @@ export default function ShowcaseScreen() {
                   puff={puff}
                   finish={f.id}
                   smoke={{ ...SMOKES[smokeKind], shape: smokeShape }}
-                  engraving={ENGRAVINGS[engravingKind]}
+                  engraving={engravingFor(engravingKind, pseudo)}
                   seedKey={f.id}
                   glow={puff.color}
                   label={`${puff.flavor}, finition ${f.name}`}
