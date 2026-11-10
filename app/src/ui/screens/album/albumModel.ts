@@ -11,7 +11,8 @@ import type {
 } from '../../../domain/types.ts';
 
 export type Ownership = 'all' | 'owned' | 'missing';
-export type AlbumSort = 'model' | 'rarity' | 'recent' | 'name';
+/** 'copies': most copies owned first; 'copies-asc': the reverse (missing puffs stay last). */
+export type AlbumSort = 'model' | 'rarity' | 'recent' | 'name' | 'copies' | 'copies-asc';
 
 export interface AlbumFilters {
   model: string | 'all';
@@ -95,11 +96,17 @@ export function buildAlbum(
   }
 
   const best = (e: AlbumEntry) => e.instances[0];
+  const byName = (a: AlbumEntry, b: AlbumEntry) =>
+    a.puff.flavor.localeCompare(b.puff.flavor) || a.puff.model.localeCompare(b.puff.model);
   const sorted = [...entries].sort((a, b) => {
     const ia = best(a);
     const ib = best(b);
-    if (f.sort === 'name')
-      return a.puff.flavor.localeCompare(b.puff.flavor) || a.puff.model.localeCompare(b.puff.model);
+    if (f.sort === 'name') return byName(a, b);
+    if (f.sort === 'copies' || f.sort === 'copies-asc') {
+      if (a.count === 0 || b.count === 0) return b.count - a.count || byName(a, b);
+      const order = f.sort === 'copies' ? b.count - a.count : a.count - b.count;
+      return order || byName(a, b);
+    }
     if (!ia || !ib) return ia ? -1 : ib ? 1 : a.puff.flavor.localeCompare(b.puff.flavor);
     if (f.sort === 'rarity') {
       return (

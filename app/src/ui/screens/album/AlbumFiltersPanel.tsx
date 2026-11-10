@@ -12,6 +12,8 @@ const SORTS: { value: AlbumSort; label: string }[] = [
   { value: 'model', label: 'Par modèle' },
   { value: 'rarity', label: 'Par rareté' },
   { value: 'recent', label: 'Plus récentes' },
+  { value: 'copies', label: 'Plus d’exemplaires' },
+  { value: 'copies-asc', label: 'Moins d’exemplaires' },
   { value: 'name', label: 'Par saveur (A→Z)' },
 ];
 

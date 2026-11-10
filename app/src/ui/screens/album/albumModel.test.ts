@@ -63,6 +63,33 @@ describe('buildAlbum', () => {
     expect(section?.entries.at(-1)?.count).toBe(0);
   });
 
+  it('sorts by number of copies owned, most first, reversible, missing puffs last', () => {
+    const many = [
+      ...collection,
+      instance({ uid: '4', puffId: 'big-mac-100k--melon', obtainedAt: 4 }),
+      instance({ uid: '5', puffId: 'big-mac-100k--melon', obtainedAt: 5 }),
+      instance({ uid: '6', puffId: 'cruiser--mint', obtainedAt: 6 }),
+    ];
+    const ids = (sort: 'copies' | 'copies-asc') => {
+      const [section] = buildAlbum(catalog, many, config, { ...DEFAULT_FILTERS, sort });
+      return section?.entries.map((e) => [e.puff.id, e.count]) ?? [];
+    };
+    const desc = ids('copies');
+    expect(desc.slice(0, 3)).toEqual([
+      ['big-mac-100k--melon', 3],
+      ['alien-10k--mango', 2],
+      ['cruiser--mint', 1],
+    ]);
+    const asc = ids('copies-asc');
+    expect(asc.slice(0, 3)).toEqual([
+      ['cruiser--mint', 1],
+      ['alien-10k--mango', 2],
+      ['big-mac-100k--melon', 3],
+    ]);
+    expect(desc.at(-1)?.[1]).toBe(0);
+    expect(asc.at(-1)?.[1]).toBe(0);
+  });
+
   it('sorts by most recent', () => {
     const [section] = buildAlbum(catalog, collection, config, {
       ...DEFAULT_FILTERS,
