@@ -1,5 +1,5 @@
 import { applyRegen } from '../domain/boosters.ts';
-import { openBooster, recycle, type GameContext } from '../domain/game.ts';
+import { openBooster, recycle, rescoreCollection, type GameContext } from '../domain/game.ts';
 import { rarityForPoints, rarityPoints } from '../domain/rarity.ts';
 import { createInitialState } from '../domain/save.ts';
 import type { Rng } from '../domain/rng.ts';
@@ -96,7 +96,12 @@ export class GameStore {
     const added: PuffInstance[] = this.catalog.puffs
       .filter((p) => !owned.has(p.id))
       .map((p) => {
-        const points = rarityPoints(this.config, this.catalog.baseTierOf.get(p.id) ?? 0, 'normal', 'white');
+        const points = rarityPoints(
+          this.config,
+          this.catalog.baseTierOf.get(p.id) ?? 0,
+          'normal',
+          'white',
+        );
         return {
           uid: this.newId(),
           puffId: p.id,
@@ -129,7 +134,7 @@ export class GameStore {
   importSave(text: string): { ok: true } | { ok: false; error: string } {
     const result = importSave(text, this.clock(), this.config);
     if ('error' in result) return { ok: false, error: result.error };
-    this.commit(result.state);
+    this.commit(rescoreCollection(result.state, this.catalog, this.config));
     return { ok: true };
   }
 

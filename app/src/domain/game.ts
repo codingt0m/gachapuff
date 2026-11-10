@@ -1,5 +1,5 @@
 import { consumeBooster } from './boosters.ts';
-import { nextRarity } from './rarity.ts';
+import { nextRarity, rarityForPoints, rarityPoints } from './rarity.ts';
 import { boosterType, rollBooster, rollForRarity, type Roll } from './roll.ts';
 import type { Rng } from './rng.ts';
 import type { Catalog, Engraving, GameConfig, PuffInstance, SaveState } from './types.ts';
@@ -68,6 +68,35 @@ export function openBooster(state: SaveState, ctx: GameContext, typeId?: string)
       stats: { ...state.stats, opened: state.stats.opened + 1 },
     },
   };
+}
+
+/**
+ * Recomputes the points and rarity of every copy with the current rules (after a save
+ * migration or a tuning change). Copies of puffs no longer in the catalog are kept as is.
+ */
+export function rescoreCollection(
+  state: SaveState,
+  catalog: Catalog,
+  config: GameConfig,
+): SaveState {
+  let changed = false;
+  const collection = state.collection.map((i) => {
+    const baseTier = catalog.baseTierOf.get(i.puffId);
+    if (baseTier === undefined) return i;
+    const points = rarityPoints(
+      config,
+      baseTier,
+      i.finish,
+      i.smoke.kind,
+      i.engraving.kind,
+      i.smoke.shape ?? 'cloud',
+    );
+    const rarity = rarityForPoints(config, points).id;
+    if (points === i.points && rarity === i.rarity) return i;
+    changed = true;
+    return { ...i, points, rarity };
+  });
+  return changed ? { ...state, collection } : state;
 }
 
 export type RecycleError = 'count' | 'duplicate' | 'missing' | 'mixed' | 'max-tier';

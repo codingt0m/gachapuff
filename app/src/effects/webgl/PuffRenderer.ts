@@ -25,8 +25,6 @@ export interface PuffLook {
   finish: FinishId;
   smoke: Smoke;
   engraving: Engraving;
-  /** Size of the numbered edition, for the serial label. */
-  serialEdition: number;
   /** Mouthpiece position in the image, [0, 1]. */
   nozzle: { x: number; y: number };
   /** Opaque bounding box in the image, [0, 1]. */
@@ -38,17 +36,11 @@ export interface PuffLook {
 /** Must match the uFinish branches of PUFF_FRAGMENT. */
 const FINISH_INDEX: Record<FinishId, number> = {
   normal: 0,
-  shiny: 1,
   golden: 2,
   chromatic: 3,
   crystal: 4,
   cosmic: 5,
-  silver: 6,
-  bronze: 7,
   ruby: 8,
-  emerald: 9,
-  amethyst: 10,
-  lava: 11,
   frost: 12,
   glitch: 16,
   chrome: 17,
@@ -69,20 +61,15 @@ const SMOKE_INDEX: Record<Smoke['kind'], number> = {
 /** Side wall colour per finish (rgb, amount mixed over the print). */
 const SIDE_TINT: Partial<Record<FinishId, [number, number, number, number]>> = {
   golden: [0.86, 0.58, 0.13, 0.8],
-  silver: [0.62, 0.65, 0.7, 0.8],
-  bronze: [0.78, 0.45, 0.36, 0.8],
   chrome: [0.72, 0.76, 0.82, 0.85],
   ruby: [0.62, 0.04, 0.12, 0.7],
-  emerald: [0.05, 0.52, 0.26, 0.7],
-  amethyst: [0.45, 0.16, 0.75, 0.7],
   crystal: [0.82, 0.9, 1.0, 0.6],
   cosmic: [0.22, 0.08, 0.45, 0.75],
-  lava: [0.35, 0.08, 0.02, 0.75],
   frost: [0.82, 0.92, 1.0, 0.7],
 };
 const NO_TINT: [number, number, number, number] = [1, 1, 1, 0];
 
-const ENGRAVING_INDEX: Record<Engraving['kind'], number> = { none: 0, signature: 1, serial: 2 };
+const ENGRAVING_INDEX: Record<Engraving['kind'], number> = { none: 0, signature: 1 };
 
 const TIME_WRAP = 1000; // seconds; keeps shader time precise on mediump GPUs
 const TEXTURE_SIZE = 512;
@@ -299,13 +286,13 @@ export class PuffRenderer {
   }
 
   private async updateEngraving(look: PuffLook, token: number): Promise<void> {
-    const key = JSON.stringify([look.engraving, look.bbox, look.serialEdition]);
+    const key = JSON.stringify([look.engraving, look.bbox]);
     if (key === this.engraveKey) return;
     this.engraveKey = key;
     if (this.engraveTexture) this.gl.deleteTexture(this.engraveTexture);
     this.engraveTexture = null;
     if (look.engraving.kind === 'none') return;
-    const canvas = await drawEngraving(look.engraving, look.bbox, look.serialEdition, TEXTURE_SIZE);
+    const canvas = await drawEngraving(look.engraving, look.bbox, TEXTURE_SIZE);
     if (token !== this.lookToken || this.disposed) return;
     this.engraveTexture = uploadTexture(this.gl, canvas);
   }

@@ -125,7 +125,7 @@ function RevealRound({
   // Colours of a special puff (smoke, finish, engraving…); null for a plain one.
   const fxColors = reduced ? null : openingColors(instance);
   const stretch = reduced ? 1 : tier.reveal.slowMotion;
-  const engraving = engravingLabel(instance.engraving, config.serialEdition);
+  const engraving = engravingLabel(instance.engraving);
   const announce = `${puff.flavor}, ${puff.model}. Rareté ${tier.name}, finition ${finishDef(config, instance.finish).name}, ${smokeLabel(config, instance.smoke).toLowerCase()}${engraving ? `, gravure ${engraving}` : ''}.`;
 
   return (

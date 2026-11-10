@@ -106,7 +106,7 @@ uniform float uReveal;   // 0 = white silhouette, 1 = full colour
 uniform float uSeed;
 uniform float uMotion;   // 1 = full motion, lower = calmer
 uniform sampler2D uEngrave;  // engraving mask, same layout as uTex
-uniform float uEngraveKind;  // 0 none, 1 signature, 2 serial
+uniform float uEngraveKind;  // 0 none, 1 signature
 uniform sampler2D uNormal;   // relief normal map (volume.ts), same layout as uTex
 ${NOISE}
 
@@ -326,25 +326,10 @@ void main() {
   if (uFinish < 0.5) {
     // Normal: a discreet plastic sheen.
     col += glare * 0.08 + spec * 0.22;
-  } else if (uFinish < 1.5) {
-    // Shiny: strong sweep + glitter.
-    col = base * diff * 1.06;
-    col += glare * 0.42 + spec * 0.9;
-    col += sparkles(vUv + uTilt * 0.03, 28.0, 0.16, 3.0) * vec3(1.0, 0.97, 0.88) * 2.0;
-    col += sparkles(vUv + 7.3 - uTilt * 0.02, 46.0, 0.12, 4.2) * 1.4;
-    col += rim * vec3(1.0, 0.95, 0.8) * 0.35;
   } else if (isFinish(2.0)) {
     // Golden: brushed gold leaf.
     col = brushedMetal(base, lum, diff, spec, rim,
       vec3(0.22, 0.11, 0.02), vec3(0.86, 0.58, 0.13), vec3(1.0, 0.95, 0.72), vec3(1.0, 0.88, 0.55));
-  } else if (isFinish(6.0)) {
-    // Silver: cold brushed steel-silver.
-    col = brushedMetal(base, lum, diff, spec, rim,
-      vec3(0.07, 0.08, 0.1), vec3(0.46, 0.49, 0.54), vec3(0.9, 0.92, 0.95), vec3(0.85, 0.9, 1.0));
-  } else if (isFinish(7.0)) {
-    // Bronze: warm brushed bronze.
-    col = brushedMetal(base, lum, diff, spec, rim,
-      vec3(0.24, 0.09, 0.07), vec3(0.86, 0.52, 0.44), vec3(1.0, 0.89, 0.84), vec3(1.0, 0.8, 0.74));
   } else if (isFinish(3.0)) {
     // Chromatic: holographic foil, rainbow bands sliding with the viewing angle.
     float ang = vUv.x * 2.4 + vUv.y * 1.2 + uTilt.x * 2.6 - uTilt.y * 2.0 + lum * 0.3 + uTime * 0.03 * uMotion;
@@ -369,35 +354,6 @@ void main() {
       vec3(1.0, 0.1, 0.2), vec3(0.18, 0.0, 0.03), 0.12, 0.35, vec2(10.0, 10.0));
     col = g.rgb + vec3(1.0, 0.08, 0.2) * 0.12 * (0.6 + 0.4 * sin(uTime * 1.3 * uMotion));
     a *= g.a;
-  } else if (isFinish(9.0)) {
-    // Emerald: long step-cut facets, green body, mossy inclusions ("jardin").
-    vec4 g = gem(spec, glare, rim,
-      vec3(0.12, 0.85, 0.46), vec3(0.0, 0.12, 0.06), 0.12, 0.3, vec2(20.0, 5.0));
-    float inc = fbm(vUv * vec2(9.0, 12.0) + uSeed * 3.1);
-    col = g.rgb * mix(1.0, 0.6, smoothstep(0.55, 0.8, inc));
-    a *= g.a;
-  } else if (isFinish(10.0)) {
-    // Amethyst: violet body with colour zoning (darker and lighter bands), lilac flashes.
-    vec4 g = gem(spec, glare, rim,
-      vec3(0.74, 0.32, 1.0), vec3(0.12, 0.02, 0.22), 0.15, 0.4, vec2(10.0, 12.0));
-    float zone = smoothstep(0.3, 0.75, fbm(vec2(vUv.x * 2.0, vUv.y * 7.0) + uSeed));
-    col = g.rgb * mix(0.7, 1.2, zone);
-    a *= g.a;
-  } else if (isFinish(11.0)) {
-    // Lava: dark crust split by glowing cracks, magma pulsing and flowing, embers rising.
-    vec2 flow = vUv * vec2(7.0, 9.0) + vec2(0.0, t * 0.06);
-    float warp = fbm(flow * 0.8 + uSeed);
-    vec3 v = voronoi(flow + warp * 0.8);
-    float crack = smoothstep(0.1, 0.0, v.y);
-    float near = smoothstep(0.28, 0.0, v.y);
-    float heat = 0.65 + 0.35 * sin(t * 1.6 + v.z * 6.283);
-    float magma = fbm(vUv * 5.0 + vec2(0.0, -t * 0.15));
-    vec3 glow = mix(vec3(0.9, 0.12, 0.0), vec3(1.0, 0.78, 0.25), magma * heat);
-    col = (vec3(0.07, 0.035, 0.025) + base * 0.12) * diff;
-    col += glow * crack * heat * 1.8 + glow * near * heat * 0.3;
-    col += vec3(1.0, 0.45, 0.1) * rim * 0.7 * heat;
-    col += sparkles(vUv + vec2(0.0, t * 0.08), 34.0, 0.12, 2.0) * vec3(1.0, 0.6, 0.2) * 1.5;
-    col += spec * 0.15;
   } else if (isFinish(12.0)) {
     // Frost: the puff behind frosted glass (blurred, cold print), fern-like ice crystals
     // growing thick from the edges, snow settled on the top edges, glittering ice.
@@ -465,19 +421,13 @@ void main() {
     col += rim * mix(vec3(0.3, 0.9, 1.0), vec3(1.0, 0.35, 0.8), n1) * 0.9;
   }
 
-  // Engraving laid over the finish: gold foil signature or laser-etched serial.
+  // Engraving laid over the finish: gold foil signature.
   if (uEngraveKind > 0.5) {
     float m = texture2D(uEngrave, vUv).a;
     if (m > 0.01) {
-      if (uEngraveKind < 1.5) {
-        vec3 foil = vec3(1.0, 0.78, 0.3) * (0.7 + 0.7 * glare + 0.9 * spec)
-                  + sparkles(vUv + uTilt * 0.03, 60.0, 0.1, 3.0) * 1.5;
-        col = mix(col, foil, m * 0.95);
-      } else {
-        float shifted = texture2D(uEngrave, vUv + uTexel).a;
-        vec3 etched = col * 0.2 + vec3(0.9, 0.95, 1.0) * 0.7 * (0.7 + glare);
-        col = mix(col, etched, m) + vec3(1.0) * clamp(m - shifted, 0.0, 1.0) * 0.6;
-      }
+      vec3 foil = vec3(1.0, 0.78, 0.3) * (0.7 + 0.7 * glare + 0.9 * spec)
+                + sparkles(vUv + uTilt * 0.03, 60.0, 0.1, 3.0) * 1.5;
+      col = mix(col, foil, m * 0.95);
     }
   }
 

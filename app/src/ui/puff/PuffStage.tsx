@@ -7,7 +7,6 @@ import { haptic } from '../../effects/haptics.ts';
 import { TiltController } from '../../effects/tilt.ts';
 import { PuffRenderer } from '../../effects/webgl/PuffRenderer.ts';
 import { seedFrom, webglAvailable } from '../../effects/webglSupport.ts';
-import { useGame } from '../../store/GameProvider.tsx';
 import { useReducedMotion } from '../hooks.ts';
 import { CssPuff } from './CssPuff.tsx';
 import styles from './PuffStage.module.css';
@@ -50,7 +49,6 @@ export function PuffStage({
   gyro = false,
   className,
 }: PuffStageProps) {
-  const { config } = useGame();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<PuffRenderer | null>(null);
@@ -169,7 +167,6 @@ export function PuffStage({
         finish,
         smoke: JSON.parse(smokeKey) as Smoke,
         engraving: JSON.parse(engravingKey) as Engraving,
-        serialEdition: config.serialEdition,
         nozzle: puff.nozzle,
         bbox: puff.bbox,
         seed: seedFrom(seedKey),
@@ -177,7 +174,7 @@ export function PuffStage({
       .catch((error: unknown) => console.warn(error));
     // `reduced` is synced by its own effect; re-running here would reload the look.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [puff, finish, smokeKey, engravingKey, seedKey, fallback, config.serialEdition]);
+  }, [puff, finish, smokeKey, engravingKey, seedKey, fallback]);
 
   useEffect(() => {
     const renderer = rendererRef.current;
@@ -202,7 +199,7 @@ export function PuffStage({
           puff={puff}
           finish={finish}
           smoke={smoke}
-          engravingText={engravingLabel(engraving, config.serialEdition)}
+          engravingText={engravingLabel(engraving)}
           engravingKind={engraving.kind}
           tiltRef={tiltRef}
         />

@@ -49,10 +49,6 @@
   opacity: 0.75;
 }
 
-.foil[data-finish='shiny'] {
-  background: radial-gradient(circle, #fff 0 1.5px, transparent 2px) 0 0 / 22px 22px;
-}
-
 .foil[data-finish='golden'] {
   background: linear-gradient(160deg, #fff1a8, #e0a31c 40%, #8a5200 70%, #ffe27a);
   mix-blend-mode: color;
@@ -75,38 +71,9 @@
   opacity: 0.5;
 }
 
-.foil[data-finish='silver'],
-.foil[data-finish='bronze'] {
-  background:
-    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.12) 0 1px, transparent 1px 3px),
-    linear-gradient(160deg, var(--m-light), var(--m-mid) 40%, var(--m-dark) 70%, var(--m-light));
-  background-size:
-    100% 100%,
-    100% 260%;
-  background-position:
-    0 0,
-    50% var(--shine);
-  mix-blend-mode: color;
-  opacity: 0.9;
-}
-
-.foil[data-finish='silver'] {
-  --m-light: #f4f7fb;
-  --m-mid: #9aa3ae;
-  --m-dark: #3c424a;
-  mix-blend-mode: luminosity;
-}
-
-.foil[data-finish='bronze'] {
-  --m-light: #ffe3d8;
-  --m-mid: #dc8a74;
-  --m-dark: #6e2c22;
-}
-
 /* Gems: diagonal facets catching a highlight that moves with the tilt. */
 .foil[data-finish='crystal'],
-.foil[data-finish='ruby'],
-.foil[data-finish='emerald'] {
+.foil[data-finish='ruby'] {
   background:
     linear-gradient(
       115deg,
@@ -135,13 +102,6 @@
 .foil[data-finish='ruby'] {
   --g-a: #e0123a;
   --g-b: #5a0010;
-  mix-blend-mode: hard-light;
-  opacity: 0.85;
-}
-
-.foil[data-finish='emerald'] {
-  --g-a: #18c46e;
-  --g-b: #04401f;
   mix-blend-mode: hard-light;
   opacity: 0.85;
 }
@@ -210,21 +170,6 @@
   }
 }
 
-.foil[data-finish='amethyst'] {
-  background:
-    linear-gradient(
-      115deg,
-      transparent calc(var(--shine) - 8%),
-      rgb(255 255 255 / 0.8) var(--shine),
-      transparent calc(var(--shine) + 8%)
-    ),
-    conic-gradient(from 20deg at 40% 45%, #b057ff, #2f0a55, #b057ff, #2f0a55, #b057ff),
-    repeating-linear-gradient(60deg, rgb(255 255 255 / 0.35) 0 1.5px, transparent 1.5px 22px);
-  background-blend-mode: screen, normal, normal;
-  mix-blend-mode: hard-light;
-  opacity: 0.85;
-}
-
 .foil[data-finish='chrome'] {
   background: linear-gradient(180deg, #8fa6c4, #f4f8ff 46%, #1a1c22 50%, #50545e 75%, #c9d2de);
   background-size: 100% 220%;
@@ -241,15 +186,6 @@
   opacity: 0.9;
 }
 
-.foil[data-finish='lava'] {
-  background:
-    repeating-linear-gradient(70deg, transparent 0 18px, rgb(255 120 20) 18px 20px),
-    repeating-linear-gradient(-40deg, transparent 0 26px, rgb(255 200 60) 26px 27px), #1a0a05;
-  mix-blend-mode: hard-light;
-  opacity: 0.92;
-  animation: lava-pulse 2.4s ease-in-out infinite;
-}
-
 .foil[data-finish='glitch'] {
   background:
     repeating-linear-gradient(0deg, rgb(0 0 0 / 0.25) 0 1px, transparent 1px 3px),
@@ -261,12 +197,6 @@
       rgb(0 220 255 / 0.35)
     );
   opacity: 1;
-}
-
-@keyframes lava-pulse {
-  50% {
-    opacity: 0.75;
-  }
 }
 
 /* Engraving label, laid on the lower part of the puff. */
@@ -283,18 +213,4 @@
   font-family: 'Segoe Script', 'Brush Script MT', 'Snell Roundhand', cursive;
   color: #ffd56b;
   text-shadow: 0 1px 0 #6b4300;
-}
-
-.engraving[data-kind='serial'] {
-  font-family: var(--font-display);
-  transform: translateX(-50%);
-  color: #e9f1ff;
-  border: 1.5px solid currentcolor;
-  border-radius: 4px;
-  padding: 0 0.4em;
-  text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
-}
-
-html[data-motion='reduced'] .foil[data-finish='lava'] {
-  animation: none;
 }

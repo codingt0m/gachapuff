@@ -1,6 +1,7 @@
 import { gameConfig } from '../config/gameConfig.ts';
 import { applyRegen } from '../domain/boosters.ts';
 import { buildCatalog } from '../domain/catalog.ts';
+import { rescoreCollection } from '../domain/game.ts';
 import { createSeededRng, mathRandomRng } from '../domain/rng.ts';
 import { createIndexedDbStore } from '../data/indexedDbStore.ts';
 import { loadManifest } from '../data/manifest.ts';
@@ -45,9 +46,10 @@ export async function bootGame(): Promise<BootResult> {
     console.warn('Corrupted save replaced by a fresh one:', loaded.error);
     notices.push('save-corrupted');
   }
+  const rescored = rescoreCollection(loaded.state, catalog, gameConfig);
   const state = {
-    ...loaded.state,
-    boosters: applyRegen(loaded.state.boosters, now, gameConfig.regen),
+    ...rescored,
+    boosters: applyRegen(rescored.boosters, now, gameConfig.regen),
   };
 
   const store = new GameStore({

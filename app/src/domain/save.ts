@@ -1,7 +1,7 @@
 import type { GameConfig, SaveState, Settings } from './types.ts';
 
 /** Bump when SaveState changes shape, and add a migration in data/saveSchema.ts. */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** Longest player pseudo. */
 export const PSEUDO_MAX = 20;

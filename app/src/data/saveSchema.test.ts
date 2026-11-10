@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { openBooster } from '../domain/game.ts';
 import { createSeededRng } from '../domain/rng.ts';
-import { createInitialState } from '../domain/save.ts';
+import { createInitialState, SAVE_VERSION } from '../domain/save.ts';
 import { catalog, config, makeIdFactory, NOW } from '../domain/testing/fixtures.ts';
 import { createMemoryStore } from './persistence.ts';
 import { exportSave, importSave } from './saveFile.ts';
@@ -39,7 +39,7 @@ describe('parseSave', () => {
     expect(parseSave({ version: 0 }, NOW, config).status).toBe('corrupted');
   });
 
-  it('migrates a v1 save: no engraving, rose gold becomes bronze', () => {
+  it('migrates a v1 save: no engraving, rose gold (bronze, since dropped) becomes plain', () => {
     const state = playedState();
     const v1 = structuredClone({
       ...state,
@@ -53,12 +53,12 @@ describe('parseSave', () => {
     });
     const result = parseSave(v1, NOW, config);
     expect(result.status).toBe('ok');
-    expect(result.state.version).toBe(3);
+    expect(result.state.version).toBe(SAVE_VERSION);
     expect(result.state.collection.map((i) => i.engraving)).toEqual([
       { kind: 'none' },
       { kind: 'none' },
     ]);
-    expect(result.state.collection[0]?.finish).toBe('bronze');
+    expect(result.state.collection[0]?.finish).toBe('normal');
   });
 
   it('migrates a v2 save: ring smoke becomes a shape, dropped finishes are replaced', () => {
@@ -74,12 +74,44 @@ describe('parseSave', () => {
     });
     const result = parseSave(v2, NOW, config);
     expect(result.status).toBe('ok');
-    expect(result.state.collection.map((i) => i.finish)).toEqual(['chromatic', 'shiny']);
+    expect(result.state.collection.map((i) => i.finish)).toEqual(['chromatic', 'normal']);
     expect(result.state.collection[0]?.smoke).toEqual({
       kind: 'solid',
       color: '#ff0000',
       shape: 'rings',
     });
+  });
+
+  it('migrates a v3 save: dropped finishes and numbered copies become plain', () => {
+    const state = playedState();
+    const dropped = ['lava', 'amethyst', 'emerald', 'shiny', 'silver', 'bronze', 'unknown'];
+    const v3 = structuredClone({
+      ...state,
+      version: 3,
+      collection: [
+        ...dropped.map((finish, n) => ({ ...state.collection[0], uid: `d${n}`, finish })),
+        {
+          ...state.collection[0],
+          uid: 'g',
+          finish: 'golden',
+          engraving: { kind: 'serial', serial: 7 },
+        },
+        { ...state.collection[0], uid: 's', engraving: { kind: 'signature', by: 'Tom' } },
+      ],
+    });
+    const result = parseSave(v3, NOW, config);
+    expect(result.status).toBe('ok');
+    const finishes = result.state.collection.map((i) => i.finish);
+    expect(finishes).toEqual([
+      ...dropped.map(() => 'normal'),
+      'golden',
+      state.collection[0]?.finish,
+    ]);
+    expect(result.state.collection.map((i) => i.engraving.kind)).toEqual([
+      ...dropped.map(() => 'none'),
+      'none',
+      'signature',
+    ]);
   });
 
   it('repairs invalid settings without losing the collection', () => {

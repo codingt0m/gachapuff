@@ -40,20 +40,14 @@ export interface Catalog {
 
 export const FINISH_IDS = [
   'normal',
-  'shiny',
   'glitch',
-  'silver',
-  'golden',
-  'bronze',
+  'crystal',
+  'frost',
   'chrome',
   'chromatic',
-  'crystal',
+  'golden',
   'ruby',
-  'emerald',
-  'amethyst',
-  'frost',
   'cosmic',
-  'lava',
 ] as const;
 export type FinishId = (typeof FINISH_IDS)[number];
 
@@ -89,15 +83,14 @@ export type Smoke = (
   shape?: SmokeShape;
 };
 
-export const ENGRAVING_KINDS = ['none', 'signature', 'serial'] as const;
+export const ENGRAVING_KINDS = ['none', 'signature'] as const;
 export type EngravingKind = (typeof ENGRAVING_KINDS)[number];
 
-/** A mark printed on the puff. A serial number is drawn out of `serialEdition`. */
+/** A mark printed on the puff. */
 export type Engraving =
   | { kind: 'none' }
   /** `by`: the player who pulled it signed it (absent = the house signature). */
-  | { kind: 'signature'; by?: string }
-  | { kind: 'serial'; serial: number };
+  | { kind: 'signature'; by?: string };
 
 export const RARITY_IDS = [
   'common',
@@ -202,8 +195,6 @@ export interface GameConfig {
   smokes: SmokeDef[];
   smokeShapes: SmokeShapeDef[];
   engravings: EngravingDef[];
-  /** Size of the numbered edition: serials are drawn in [1, serialEdition]. */
-  serialEdition: number;
   /** Chance that a signed puff bears the pseudo of the player who pulled it. */
   ownSignatureChance: number;
   smokeColor: { saturation: [number, number]; lightness: [number, number] };

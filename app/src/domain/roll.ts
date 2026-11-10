@@ -1,4 +1,4 @@
-import { pickUniform, pickWeighted, randomInt, type Rng } from './rng.ts';
+import { pickUniform, pickWeighted, type Rng } from './rng.ts';
 import { rarityForPoints, rarityPoints } from './rarity.ts';
 import { rollSmoke } from './smoke.ts';
 import {
@@ -98,11 +98,6 @@ export function enumerateOutcomes(
   return outcomes;
 }
 
-function rollEngraving(rng: Rng, config: GameConfig, kind: EngravingKind): Engraving {
-  if (kind === 'serial') return { kind, serial: randomInt(rng, 1, config.serialEdition) };
-  return { kind };
-}
-
 function materialise(
   catalog: Catalog,
   config: GameConfig,
@@ -119,7 +114,7 @@ function materialise(
     puff,
     finish,
     smoke: rollSmoke(rng, config, smokeKind, shape),
-    engraving: rollEngraving(rng, config, engravingKind),
+    engraving: { kind: engravingKind },
     points,
     rarity: rarityForPoints(config, points).id,
   };

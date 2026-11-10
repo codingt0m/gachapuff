@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { groupByPuff, globalProgress, modelProgress } from './collection.ts';
-import { checkRecycle, openBooster, recycle, type GameContext } from './game.ts';
+import { checkRecycle, openBooster, recycle, rescoreCollection, type GameContext } from './game.ts';
+import { rarityForPoints, rarityPoints } from './rarity.ts';
 import { createSeededRng } from './rng.ts';
 import { createInitialState } from './save.ts';
 import { catalog, config, instance, makeIdFactory, NOW, stateWith } from './testing/fixtures.ts';
@@ -112,6 +113,21 @@ describe('recycle', () => {
       reason: 'max-tier',
     });
     expect(() => recycle(stateWith(divines), ['a', 'b', 'c'], ctx())).toThrow();
+  });
+});
+
+describe('rescoreCollection', () => {
+  it('recomputes stale points and rarity, keeps unknown puffs and unchanged states', () => {
+    const stale = instance({ uid: 's', puffId: 'big-mac-100k--melon', finish: 'cosmic' });
+    const gone = instance({ uid: 'g', puffId: 'gone--puff', rarity: 'divine', points: 99 });
+    const next = rescoreCollection(stateWith([stale, gone]), catalog, config);
+    const points = rarityPoints(config, 4, 'cosmic', 'white');
+    expect(next.collection[0]).toMatchObject({
+      points,
+      rarity: rarityForPoints(config, points).id,
+    });
+    expect(next.collection[1]).toBe(gone);
+    expect(rescoreCollection(next, catalog, config)).toBe(next);
   });
 });
 

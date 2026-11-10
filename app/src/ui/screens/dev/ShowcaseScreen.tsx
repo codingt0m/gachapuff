@@ -25,7 +25,6 @@ const SMOKES: Record<SmokeKind, Smoke> = {
 const ENGRAVINGS: Record<EngravingKind, Engraving> = {
   none: { kind: 'none' },
   signature: { kind: 'signature' },
-  serial: { kind: 'serial', serial: 7 },
 };
 
 /**

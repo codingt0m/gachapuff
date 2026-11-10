@@ -38,19 +38,6 @@ describe('rollBooster', () => {
     }
   });
 
-  it('draws serial numbers inside the edition', () => {
-    const rng = createSeededRng(7);
-    let serials = 0;
-    for (let i = 0; i < 5_000; i++) {
-      const { engraving } = rollBooster(catalog, classic, config, rng);
-      if (engraving.kind !== 'serial') continue;
-      serials++;
-      expect(engraving.serial).toBeGreaterThanOrEqual(1);
-      expect(engraving.serial).toBeLessThanOrEqual(config.serialEdition);
-    }
-    expect(serials).toBeGreaterThan(0);
-  });
-
   it('matches the exact distribution over 100 000 openings', () => {
     const sim = simulateBoosters(catalog, classic, config, createSeededRng(2026), 100_000);
     const exact = exactRarityDistribution(catalog, classic, config);
