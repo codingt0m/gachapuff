@@ -25,6 +25,8 @@ class SoundEngine {
   private master: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private enabled = true;
+  /** Time-stretch of the sound being scheduled (1 = as designed). */
+  private stretch = 1;
 
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
@@ -53,9 +55,14 @@ class SoundEngine {
     }
   }
 
-  play(id: SoundId): void {
+  /** @param stretch plays the sound `stretch` times slower (same pitch). */
+  play(id: SoundId, stretch = 1): void {
     const ctx = this.ready();
     if (!ctx) return;
+    this.stretched(stretch, () => this.playNow(ctx, id));
+  }
+
+  private playNow(ctx: AudioContext, id: SoundId): void {
     switch (id) {
       case 'tap':
         return this.voices(ctx, [{ type: 'square', from: 880, to: 660, dur: 0.05, gain: 0.12 }]);
@@ -86,20 +93,26 @@ class SoundEngine {
   }
 
   /** One step of the rising hint before a reveal; higher steps sound higher. */
-  riser(step: number): void {
+  riser(step: number, stretch = 1): void {
     const ctx = this.ready();
     if (!ctx) return;
     const note = semitone(SCALE[Math.min(step * 2, SCALE.length - 1)] ?? 0);
-    this.voices(ctx, [
-      { type: 'triangle', from: note, to: note * 1.02, dur: 0.22, gain: 0.18 },
-      { type: 'sine', from: note * 2, dur: 0.18, gain: 0.06 },
-    ]);
+    this.stretched(stretch, () =>
+      this.voices(ctx, [
+        { type: 'triangle', from: note, to: note * 1.02, dur: 0.22, gain: 0.18 },
+        { type: 'sine', from: note * 2, dur: 0.18, gain: 0.06 },
+      ]),
+    );
   }
 
   /** Reveal fanfare: richer and higher for rarer tiers. */
-  reveal(tierIndex: number, tierCount: number): void {
+  reveal(tierIndex: number, tierCount: number, stretch = 1): void {
     const ctx = this.ready();
     if (!ctx) return;
+    this.stretched(stretch, () => this.fanfare(ctx, tierIndex, tierCount));
+  }
+
+  private fanfare(ctx: AudioContext, tierIndex: number, tierCount: number): void {
     const notes = 2 + tierIndex;
     const step = tierIndex >= tierCount - 2 ? 0.07 : 0.09;
     const voices: Voice[] = [];
@@ -124,6 +137,16 @@ class SoundEngine {
     this.voices(ctx, voices);
   }
 
+  /** Runs `schedule` with every start time and duration multiplied by `stretch`. */
+  private stretched(stretch: number, schedule: () => void): void {
+    this.stretch = stretch;
+    try {
+      schedule();
+    } finally {
+      this.stretch = 1;
+    }
+  }
+
   private ready(): AudioContext | null {
     if (!this.enabled || !this.ctx || !this.master || this.ctx.state !== 'running') return null;
     return this.ctx;
@@ -131,8 +154,10 @@ class SoundEngine {
 
   private voices(ctx: AudioContext, voices: Voice[]): void {
     const t0 = ctx.currentTime;
-    for (const v of voices) {
-      const start = t0 + (v.at ?? 0);
+    const k = this.stretch;
+    for (const voice of voices) {
+      const v = { ...voice, at: (voice.at ?? 0) * k, dur: voice.dur * k };
+      const start = t0 + v.at;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = v.type;
@@ -149,15 +174,16 @@ class SoundEngine {
 
   private noise(
     ctx: AudioContext,
-    o: { dur: number; from: number; to: number; q: number; gain: number; at?: number },
+    raw: { dur: number; from: number; to: number; q: number; gain: number; at?: number },
   ): void {
+    const o = { ...raw, at: (raw.at ?? 0) * this.stretch, dur: raw.dur * this.stretch };
     if (!this.noiseBuffer) {
       const length = ctx.sampleRate;
       this.noiseBuffer = ctx.createBuffer(1, length, ctx.sampleRate);
       const data = this.noiseBuffer.getChannelData(0);
       for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
     }
-    const start = ctx.currentTime + (o.at ?? 0);
+    const start = ctx.currentTime + o.at;
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
     src.loop = true;

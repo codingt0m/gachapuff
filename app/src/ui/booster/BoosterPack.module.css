@@ -250,7 +250,7 @@
   background: repeating-conic-gradient(rgb(255 230 140 / 0.32) 0 9deg, transparent 9deg 18deg);
   -webkit-mask: radial-gradient(closest-side, #000 25%, transparent 70%);
   mask: radial-gradient(closest-side, #000 25%, transparent 70%);
-  animation: spin 40s linear infinite;
+  animation: spin calc(40s * var(--opening-slow, 1)) linear infinite;
 }
 
 /* Central label: a white die-cut sticker with the mystery puff. */
@@ -374,7 +374,7 @@
 }
 
 .pack[data-charging='true'] {
-  animation: charge-shake 90ms linear infinite;
+  animation: charge-shake calc(90ms * var(--opening-slow, 1)) linear infinite;
 }
 
 .pack[data-open='true'] .strip {

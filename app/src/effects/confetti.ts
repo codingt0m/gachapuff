@@ -8,6 +8,8 @@ export interface ConfettiOptions {
   power?: number;
   /** 'spark': glowing, twinkling dots that float down slowly instead of paper confetti. */
   shape?: 'confetti' | 'spark';
+  /** Plays the burst this many times slower (same trajectories); 1 by default. */
+  slowdown?: number;
 }
 
 interface Piece {
@@ -24,7 +26,7 @@ interface Piece {
 }
 
 const GRAVITY = 1.4; // canvas heights / s²
-const DRAG = 0.985;
+const DRAG = 0.985; // per 1/60 s
 const PIECE_SIZE = 0.012; // share of the canvas height
 
 export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): () => void {
@@ -38,6 +40,7 @@ export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): ()
   const power = o.power ?? 1.6;
   const spark = o.shape === 'spark';
   const gravity = spark ? GRAVITY * 0.35 : GRAVITY;
+  const slowdown = o.slowdown ?? 1;
   const pieces: Piece[] = Array.from({ length: o.count }, (_, i) => {
     const angle = Math.random() * Math.PI * 2;
     const speed = (0.3 + Math.random() * 0.7) * power * H;
@@ -59,14 +62,16 @@ export function burstConfetti(canvas: HTMLCanvasElement, o: ConfettiOptions): ()
   let raf = 0;
   let last = performance.now();
   const tick = (now: number) => {
-    const dt = Math.min(0.05, (now - last) / 1000);
+    const dt = Math.min(0.05, (now - last) / 1000) / slowdown;
     last = now;
     ctx.clearRect(0, 0, canvas.width, H);
+    // Time-based drag, so a slowed-down burst follows the same trajectories.
+    const drag = DRAG ** (dt * 60);
     let alive = 0;
     for (const p of pieces) {
       p.vy += gravity * H * dt;
-      p.vx *= DRAG;
-      p.vy *= DRAG;
+      p.vx *= drag;
+      p.vy *= drag;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.rot += p.vr * dt;

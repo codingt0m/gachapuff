@@ -25,10 +25,12 @@ export interface RevealTimeline {
   skip: () => void;
 }
 
+/** @param slowdown time-stretch of the whole reveal (OPENING_SLOWDOWN for a booster). */
 export function useRevealTimeline(
   tiers: readonly RarityTier[],
   tierIndex: number,
   reduced: boolean,
+  slowdown = 1,
 ): RevealTimeline {
   const tier = tiers[tierIndex] as RarityTier;
   const choreo = tier.reveal;
@@ -52,32 +54,34 @@ export function useRevealTimeline(
     // Climb from the lowest tier to the drawn one, never past it: the hint never lies.
     const steps = Math.min(choreo.hintSteps, tierIndex + 1);
     const first = tierIndex + 1 - steps;
-    const suspense = reduced ? choreo.suspenseMs / 2 : choreo.suspenseMs;
+    const suspense = (reduced ? choreo.suspenseMs / 2 : choreo.suspenseMs) * slowdown;
     const interval = suspense / steps;
     for (let i = 0; i < steps; i++) {
       at(i * interval, () => {
         setStep(first + i);
-        sound.riser(first + i);
+        sound.riser(first + i, slowdown);
         haptic('tick');
       });
     }
     at(suspense, () => {
       setPhase('burst');
-      sound.reveal(tierIndex, tiers.length);
+      sound.reveal(tierIndex, tiers.length, slowdown);
       hapticReveal(tierIndex);
     });
     const stretch = reduced ? 1 : choreo.slowMotion;
-    at(suspense + motion.burst * stretch, () => setPhase('revealed'));
-  }, [phase, choreo, tierIndex, reduced, tiers.length]);
+    at(suspense + motion.burst * stretch * slowdown, () => setPhase('revealed'));
+  }, [phase, choreo, tierIndex, reduced, tiers.length, slowdown]);
 
   const skip = useCallback(() => {
     if (phase === 'revealed') return;
     clear();
-    if (phase === 'intro' || phase === 'charging') sound.reveal(tierIndex, tiers.length);
+    if (phase === 'intro' || phase === 'charging') {
+      sound.reveal(tierIndex, tiers.length, slowdown);
+    }
     setSkipped(true);
     setStep(tierIndex);
     setPhase('revealed');
-  }, [phase, tierIndex, tiers.length]);
+  }, [phase, tierIndex, tiers.length, slowdown]);
 
   const shown = Math.max(0, step);
   return {

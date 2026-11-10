@@ -27,6 +27,8 @@ export interface PuffStageProps {
   turntable?: boolean;
   /** Delay (ms) before the white silhouette floods into colour; null = shown at once. */
   revealDelay?: number | null;
+  /** Duration (ms) of that colour flood. */
+  revealDuration?: number;
   /** Listen to the gyroscope (permission handled by the caller). */
   gyro?: boolean;
   className?: string;
@@ -46,6 +48,7 @@ export function PuffStage({
   label,
   turntable = false,
   revealDelay = null,
+  revealDuration = motion.colorFlood,
   gyro = false,
   className,
 }: PuffStageProps) {
@@ -180,8 +183,8 @@ export function PuffStage({
     const renderer = rendererRef.current;
     if (!renderer) return;
     if (revealDelay === null) renderer.showInstantly();
-    else renderer.animateReveal(motion.colorFlood, revealDelay);
-  }, [revealDelay, fallback]);
+    else renderer.animateReveal(revealDuration, revealDelay);
+  }, [revealDelay, revealDuration, fallback]);
 
   return (
     <div

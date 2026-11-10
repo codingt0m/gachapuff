@@ -54,7 +54,7 @@
   -webkit-mask: radial-gradient(closest-side, #000 8%, transparent 60%);
   mask: radial-gradient(closest-side, #000 8%, transparent 60%);
   opacity: calc(0.15 + var(--charge) * 0.6);
-  animation: spin 18s linear infinite;
+  animation: spin calc(18s * var(--opening-slow, 1)) linear infinite;
   pointer-events: none;
 }
 
@@ -92,7 +92,7 @@
 }
 
 .content[data-shake='true'] {
-  animation: shake 120ms linear 4;
+  animation: shake calc(120ms * var(--opening-slow, 1)) linear 4;
 }
 
 .stageArea {
@@ -129,7 +129,7 @@
   background: var(--c-paper);
   border: 3px solid var(--c-ink);
   box-shadow: var(--glow-pink);
-  animation: swipe 1.8s var(--ease-out) infinite;
+  animation: swipe calc(1.8s * var(--opening-slow, 1)) var(--ease-out) infinite;
   pointer-events: none;
 }
 
@@ -191,7 +191,7 @@
 }
 
 .openFx[data-on='true'] .openSeam {
-  animation: seam-open 260ms var(--ease-out) both;
+  animation: seam-open calc(260ms * var(--opening-slow, 1)) var(--ease-out) both;
 }
 
 @keyframes seam-open {
@@ -237,8 +237,9 @@
 
 .openFx[data-on='true'] .openBeams {
   animation:
-    beams-in 420ms var(--ease-out) both,
-    beams-sway 2.4s ease-in-out 420ms infinite alternate;
+    beams-in calc(420ms * var(--opening-slow, 1)) var(--ease-out) both,
+    beams-sway calc(2.4s * var(--opening-slow, 1)) ease-in-out calc(420ms * var(--opening-slow, 1))
+      infinite alternate;
 }
 
 @keyframes beams-in {
@@ -284,7 +285,7 @@
 }
 
 .openFx[data-on='true'] .openHalo {
-  animation: halo-pulse 900ms ease-in-out infinite alternate;
+  animation: halo-pulse calc(900ms * var(--opening-slow, 1)) ease-in-out infinite alternate;
 }
 
 @keyframes halo-pulse {

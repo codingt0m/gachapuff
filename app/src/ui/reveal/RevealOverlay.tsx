@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { motion } from '../../config/motion.ts';
+import { motion, OPENING_SLOWDOWN } from '../../config/motion.ts';
 import { assetUrl } from '../../data/manifest.ts';
 import { finishDef, rarityIndex } from '../../domain/rarity.ts';
 import { boosterType } from '../../domain/roll.ts';
@@ -60,7 +60,9 @@ function RevealRound({
   const puff = catalog.byId.get(instance.puffId);
   const tierIndex = rarityIndex(config, instance.rarity);
   const tier = config.rarities[tierIndex];
-  const timeline = useRevealTimeline(config.rarities, tierIndex, reduced);
+  // Opening a booster is played slower; the fusion keeps its pace.
+  const slow = request.intro === 'pack' ? OPENING_SLOWDOWN : 1;
+  const timeline = useRevealTimeline(config.rarities, tierIndex, reduced, slow);
   const { phase, skip } = timeline;
   const rootRef = useRef<HTMLDivElement>(null);
   const confettiRef = useRef<HTMLCanvasElement>(null);
@@ -83,8 +85,9 @@ function RevealRound({
     return burstConfetti(canvas, {
       count: tier.reveal.confetti,
       colors: [tier.color, '#fff8f3', '#ffd166', '#ff2d87', '#22e0e6', '#8b4dff'],
+      slowdown: slow,
     });
-  }, [phase, reduced, tier]);
+  }, [phase, reduced, tier, slow]);
 
   const close = () => {
     feedback('success');
@@ -145,7 +148,13 @@ function RevealRound({
           '--charge': timeline.charge,
           '--shake': `${tier.reveal.shakePx}px`,
           '--stretch': stretch,
-          '--burst': `${motion.burst * stretch}ms`,
+          '--burst': `${motion.burst * stretch * slow}ms`,
+          // Every timing of the opening, CSS included, is stretched by the same factor.
+          '--opening-slow': slow,
+          '--dur-base': `${motion.base * slow}ms`,
+          '--dur-slow': `${motion.slow * slow}ms`,
+          '--dur-reward': `${motion.reward * slow}ms`,
+          '--dur-flash': `${motion.flash * slow}ms`,
         } as CSSProperties
       }
       onClick={() => {
@@ -170,6 +179,7 @@ function RevealRound({
                 hintColor={timeline.hintColor}
                 charge={timeline.charge}
                 fxColors={fxColors}
+                slowdown={slow}
                 onTorn={timeline.startCharging}
               />
             ) : (
@@ -193,6 +203,7 @@ function RevealRound({
                 glow={tier.color}
                 label={announce}
                 revealDelay={timeline.skipped ? null : 0}
+                revealDuration={motion.colorFlood * slow}
               />
             </div>
           )}

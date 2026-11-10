@@ -2,6 +2,14 @@
  * Motion tokens (ms). Injected as CSS variables (--dur-*) by ui/theme.ts so CSS and
  * JS share the same timings. Reveal choreography per rarity lives in gameConfig.ts.
  */
+/**
+ * Booster opening played slower: every duration, delay and timing of the opening (tear,
+ * suspense, burst, colour flood, confetti, sounds, result card) is multiplied by this factor,
+ * the same for all, so the steps stay in sync. In CSS it is `--opening-slow` (set by the
+ * reveal overlay, 1 elsewhere). The fusion (recycling) intro is not affected.
+ */
+export const OPENING_SLOWDOWN = 2;
+
 export const motion = {
   instant: 80,
   fast: 140,

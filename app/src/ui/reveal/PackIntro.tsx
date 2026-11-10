@@ -26,6 +26,7 @@ export function PackIntro({
   hintColor,
   charge,
   fxColors,
+  slowdown,
   onTorn,
 }: {
   name: string;
@@ -34,6 +35,8 @@ export function PackIntro({
   charge: number;
   /** Colours of the drawn puff's effects: they escape from the torn seam. Null = plain puff. */
   fxColors: string[] | null;
+  /** Time-stretch of the opening (sparks, tear sound). */
+  slowdown: number;
   onTorn: () => void;
 }) {
   const [tear, setTear] = useState(0);
@@ -59,6 +62,7 @@ export function PackIntro({
       origin: { x: 0.5, y: 0.4 },
       power: 0.9,
       shape: 'spark',
+      slowdown,
     });
     // fxColors is stable for the lifetime of a round.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +71,7 @@ export function PackIntro({
   const complete = () => {
     drag.current = null;
     setTear(1);
-    sound.play('tear');
+    sound.play('tear', slowdown);
     haptic('tear');
     onTorn();
   };
