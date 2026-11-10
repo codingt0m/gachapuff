@@ -174,6 +174,10 @@ export interface RarityTier {
 export interface BoosterType {
   id: string;
   name: string;
+  /** One line shown under the booster's name when choosing it. */
+  tagline: string;
+  /** Boosters of the stock used to open one. */
+  cost: number;
   /** Weight of each base tier, indexed like `baseTiers.tiers`. */
   baseTierWeights: number[];
   finishWeights: Record<FinishId, number>;

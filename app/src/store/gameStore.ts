@@ -73,8 +73,8 @@ export class GameStore {
     if (boosters.stock !== this.state.boosters.stock) this.commit({ ...this.state, boosters });
   }
 
-  openBooster(): PuffInstance {
-    const pull = openBooster(this.state, this.context());
+  openBooster(typeId?: string): PuffInstance {
+    const pull = openBooster(this.state, this.context(), typeId);
     this.commit(pull.state);
     return pull.instance;
   }

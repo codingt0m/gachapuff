@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { nextBoosterAt } from '../../domain/boosters.ts';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { boostersReadyAt, nextBoosterAt } from '../../domain/boosters.ts';
 import { globalProgress } from '../../domain/collection.ts';
 import { boosterType } from '../../domain/roll.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
+import { BoosterOdds } from '../booster/BoosterOdds.tsx';
 import { BoosterPack } from '../booster/BoosterPack.tsx';
 import { usePointerTilt } from '../booster/usePointerTilt.ts';
 import { Button } from '../components/Button.tsx';
@@ -23,15 +24,21 @@ export function BoosterScreen() {
   const { config, catalog } = store;
   const boosters = useGameState((s) => s.boosters);
   const collection = useGameState((s) => s.collection);
+  const pseudo = useGameState((s) => s.settings.pseudo);
   const startReveal = useStartReveal();
   const now = useNow();
   const tilt = usePointerTilt();
-  const type = boosterType(config, config.defaultBoosterType);
+  const [typeId, setTypeId] = useState(config.defaultBoosterType);
+  const [oddsOpen, setOddsOpen] = useState(false);
+  const type = boosterType(config, typeId);
   const max = config.regen.maxStock;
   const unlimited = store.unlimitedBoosters;
-  const canOpen = unlimited || boosters.stock > 0;
+  const canOpen = unlimited || boosters.stock >= type.cost;
   const next = nextBoosterAt(boosters, config.regen);
   const remaining = next === null ? 0 : Math.max(0, next - now);
+  // Time left until the stock covers the chosen booster.
+  const readyAt = boostersReadyAt(boosters, config.regen, type.cost);
+  const waiting = readyAt === null ? 0 : Math.max(0, readyAt - now);
 
   const owned = useMemo(() => new Set(collection.map((i) => i.puffId)), [collection]);
   const progress = globalProgress(catalog, owned);
@@ -45,9 +52,9 @@ export function BoosterScreen() {
       feedback('error');
       return;
     }
-    const instance = store.openBooster();
-    startReveal({ intro: 'pack', instance });
-  }, [canOpen, store, startReveal]);
+    const instance = store.openBooster(type.id);
+    startReveal({ intro: 'pack', instance, boosterType: type.id });
+  }, [canOpen, store, startReveal, type.id]);
 
   // Space / Enter anywhere on the screen opens the booster (desktop).
   useEffect(() => {
@@ -88,6 +95,7 @@ export function BoosterScreen() {
             >
               <BoosterPack
                 name={type.name}
+                look={type.id}
                 className={canOpen ? styles.packReady : styles.packEmpty}
               />
             </div>
@@ -104,6 +112,40 @@ export function BoosterScreen() {
         </section>
 
         <div className={styles.cta}>
+          <div className={styles.types} role="radiogroup" aria-label="Choix du booster">
+            {config.boosterTypes.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="radio"
+                aria-checked={t.id === type.id}
+                aria-label={`${t.name}, ${t.cost} booster${t.cost > 1 ? 's' : ''}`}
+                className={styles.typeTab}
+                data-look={t.id}
+                onClick={() => {
+                  feedback('tap');
+                  setTypeId(t.id);
+                }}
+              >
+                <span className={styles.typeName}>{t.name}</span>
+                <span className={styles.cost} aria-hidden="true">
+                  {Array.from({ length: t.cost }, (_, i) => (
+                    <span
+                      key={i}
+                      className={styles.costPip}
+                      data-full={unlimited || i < boosters.stock}
+                    />
+                  ))}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className={styles.tagline}>
+            {type.tagline}{' '}
+            <button type="button" className={styles.oddsLink} onClick={() => setOddsOpen(true)}>
+              Probabilités
+            </button>
+          </p>
           <Button
             variant="jackpot"
             size="xl"
@@ -112,10 +154,19 @@ export function BoosterScreen() {
             disabled={!canOpen}
             withFeedback={false}
           >
-            {canOpen ? 'Ouvrir !' : formatCountdown(remaining)}
+            {canOpen ? 'Ouvrir !' : formatCountdown(waiting)}
           </Button>
         </div>
       </div>
+
+      <BoosterOdds
+        open={oddsOpen}
+        type={type}
+        config={config}
+        catalog={catalog}
+        pseudo={pseudo}
+        onClose={() => setOddsOpen(false)}
+      />
 
       <aside className={styles.side} aria-label="Ta collection">
         <div className={styles.progress}>

@@ -4,6 +4,8 @@ import styles from './BoosterPack.module.css';
 
 export interface BoosterPackProps {
   name: string;
+  /** Booster type id: picks the print of the bag (default: the classic sunset). */
+  look?: string;
   /** Tear progress along the top seam, 0..1. */
   tear?: number;
   /** The top strip is torn off and light pours out. */
@@ -41,6 +43,7 @@ function layerStyle(k: number, count: number, back: boolean): CSSProperties {
  */
 export function BoosterPack({
   name,
+  look,
   tear = 0,
   open = false,
   charge = 0,
@@ -56,6 +59,7 @@ export function BoosterPack({
     <div
       className={`${styles.pack} ${className ?? ''}`}
       style={style}
+      data-look={look}
       data-open={open}
       data-charging={charge > 0}
       aria-hidden="true"

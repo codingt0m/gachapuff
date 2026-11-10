@@ -100,8 +100,97 @@
   margin: 0 auto;
 }
 
-.cta button:not(:disabled) {
+.cta {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.cta > button:not(:disabled) {
   animation: cta-nudge 2.4s var(--ease-bounce) infinite;
+}
+
+/* Booster choice: three chips printed like their pack. */
+.types {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+
+.typeTab {
+  --look: var(--g-promo);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--sp-1);
+  min-height: var(--tap-min);
+  padding: var(--sp-2) var(--sp-1);
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-md);
+  background: var(--g-panel);
+  color: var(--c-text);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-xs);
+  line-height: 1.15;
+  text-align: center;
+  box-shadow: 2px 2px 0 var(--c-ink);
+  transition: transform var(--dur-fast) var(--ease-bounce);
+}
+
+.typeTab[data-look='nicotine'] {
+  --look: linear-gradient(160deg, #5cf2c0 0%, #22e0e6 30%, #2b6cff 70%, #8b4dff 100%);
+}
+
+.typeTab[data-look='dopamine'] {
+  --look: linear-gradient(160deg, #ffe07a 0%, #ffa82e 30%, #ff2d87 70%, #e040f0 100%);
+}
+
+.typeTab[aria-checked='true'] {
+  background: var(--look);
+  color: #fff;
+  text-shadow: var(--stroke-ink-thin);
+  box-shadow: 3px 3px 0 var(--c-ink);
+  transform: translateY(-2px);
+}
+
+.typeName {
+  text-wrap: balance;
+}
+
+/* Cost: one mini pack per booster used, lit when the stock covers it. */
+.cost {
+  display: flex;
+  gap: 3px;
+}
+
+.costPip {
+  width: 9px;
+  height: 12px;
+  border-radius: 2px;
+  border: 2px solid var(--c-ink);
+  background: rgb(0 0 0 / 0.3);
+}
+
+.costPip[data-full='true'] {
+  background: var(--c-gold-hi);
+}
+
+.tagline {
+  min-height: 1.5em;
+  color: var(--c-text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+  text-shadow: var(--sh-legible);
+}
+
+.oddsLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-gold-hi);
+  font-weight: var(--fw-bold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
 }
 
 /* A little jolt every few seconds, like a slot machine begging to be played. */

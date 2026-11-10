@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyRegen, consumeBooster, nextBoosterAt } from './boosters.ts';
+import { applyRegen, boostersReadyAt, consumeBooster, nextBoosterAt } from './boosters.ts';
 
 const regen = { intervalMs: 1000, maxStock: 2, initialStock: 2 };
 
@@ -40,6 +40,14 @@ describe('booster regeneration', () => {
   });
 });
 
+describe('boostersReadyAt', () => {
+  it('waits one interval per missing booster', () => {
+    expect(boostersReadyAt({ stock: 0, lastRegenAt: 500 }, regen, 2)).toBe(2500);
+    expect(boostersReadyAt({ stock: 1, lastRegenAt: 500 }, regen, 2)).toBe(1500);
+    expect(boostersReadyAt({ stock: 2, lastRegenAt: 500 }, regen, 2)).toBeNull();
+  });
+});
+
 describe('consumeBooster', () => {
   it('starts the timer when using a booster from a full stock', () => {
     expect(consumeBooster({ stock: 2, lastRegenAt: 0 }, 7000, regen)).toEqual({
@@ -64,5 +72,13 @@ describe('consumeBooster', () => {
 
   it('throws when no booster is available', () => {
     expect(() => consumeBooster({ stock: 0, lastRegenAt: 0 }, 10, regen)).toThrow();
+  });
+
+  it('uses as many boosters as the booster type costs, and no more than the stock', () => {
+    expect(consumeBooster({ stock: 2, lastRegenAt: 0 }, 7000, regen, 2)).toEqual({
+      stock: 0,
+      lastRegenAt: 7000,
+    });
+    expect(() => consumeBooster({ stock: 1, lastRegenAt: 500 }, 900, regen, 2)).toThrow();
   });
 });

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { gameConfig } from '../src/config/gameConfig.ts';
 
 /** Seeded draws + unlimited boosters: the run is deterministic. */
 const START = '/?dev=1&seed=42#/';
@@ -60,4 +61,32 @@ test('open a booster, find it in the album, recycle three puffs', async ({ page 
   // 4. The save survives a reload (IndexedDB).
   await page.reload();
   expect(await ownedCount(page)).toBe(before - 2);
+});
+
+test('choose each of the three boosters, read its odds, open it', async ({ page }) => {
+  await page.goto(START);
+  for (const type of gameConfig.boosterTypes) {
+    const choice = page.getByRole('radio', { name: new RegExp(`^${type.name}`) });
+    await choice.click();
+    await expect(choice).toHaveAttribute('aria-checked', 'true');
+
+    // The odds shown are the weights the booster is drawn with.
+    await page.getByRole('button', { name: 'Probabilités' }).click();
+    const sheet = page.getByRole('dialog', { name: /Probabilités/ });
+    await expect(sheet).toContainText(type.name);
+    for (const [name, weight] of [
+      ['Dorée', type.finishWeights.golden],
+      ['Galaxie', type.finishWeights.cosmic],
+      ['Gachapuff', type.smokeWeights.gachapuff],
+    ] as const) {
+      const value = sheet.getByText(name, { exact: true }).locator('xpath=following-sibling::dd');
+      await expect(value).toHaveText(
+        `${weight.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`,
+      );
+    }
+    await sheet.getByRole('button', { name: 'Fermer' }).click();
+    await expect(sheet).toBeHidden();
+
+    await openWithSkip(page);
+  }
 });

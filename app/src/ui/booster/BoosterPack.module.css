@@ -36,6 +36,21 @@
   transition: transform var(--dur-base) var(--ease-out);
 }
 
+/* Booster types: same bag, another sunset print. */
+.pack[data-look='nicotine'] {
+  /* Ocean night: turquoise -> ocean blue -> violet, a pink edge. */
+  --wrap: linear-gradient(170deg, #5cf2c0 0%, #22e0e6 22%, #2b6cff 54%, #8b4dff 84%, #ff2d87 100%);
+  --seal-top-c: #0aa6c9;
+  --seal-bottom-c: #8b4dff;
+}
+
+.pack[data-look='dopamine'] {
+  /* Golden hour overdose: gold -> orange -> hot pink -> magenta. */
+  --wrap: linear-gradient(170deg, #ffe07a 0%, #ffa82e 26%, #ff2d87 60%, #e040f0 86%, #8b4dff 100%);
+  --seal-top-c: #ff2d87;
+  --seal-bottom-c: #ffa82e;
+}
+
 .pack > * {
   position: absolute;
 }

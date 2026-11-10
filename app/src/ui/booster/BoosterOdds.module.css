@@ -1,0 +1,108 @@
+/* The odds of a booster: a white sticker sheet, like the confirmation dialogs. */
+.dialog {
+  width: min(92vw, 560px);
+  max-height: min(88dvh, 820px);
+  padding: 0;
+  border: var(--outline);
+  border-radius: var(--r-lg);
+  background: var(--g-card);
+  color: var(--c-ink);
+  box-shadow: var(--sh-float);
+}
+
+.dialog[open] {
+  animation: enter var(--dur-slow) var(--ease-bounce) both;
+}
+
+.dialog::backdrop {
+  background: var(--c-scrim);
+}
+
+.sheet {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+
+.title {
+  display: grid;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+}
+
+.subtitle {
+  margin-top: var(--sp-1);
+  font-family: var(--font-script);
+  font-size: var(--fs-2xl);
+  font-weight: 400;
+  color: var(--c-primary-lo);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-4);
+}
+
+.section {
+  display: grid;
+  gap: var(--sp-2);
+  align-content: start;
+}
+
+.sectionTitle {
+  font-size: var(--fs-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: #4a3a60;
+}
+
+.rows {
+  display: grid;
+  border: 2px solid var(--c-ink);
+  border-radius: var(--r-md);
+  background: #fff;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+.row + .row {
+  border-top: 1px solid var(--c-paper-dark);
+}
+
+.row dd {
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.row small {
+  display: block;
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-xs);
+  color: #6a5a80;
+}
+
+.tier {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: var(--fw-bold);
+}
+
+.tier svg {
+  color: var(--tier);
+}
+
+.note {
+  font-size: var(--fs-xs);
+  color: #6a5a80;
+}

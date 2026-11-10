@@ -27,6 +27,16 @@ describe('openBooster', () => {
     expect(catalog.byId.has(pulled.puffId)).toBe(true);
   });
 
+  it('uses as many boosters as the chosen booster costs', () => {
+    const state = createInitialState(NOW, config);
+    for (const type of config.boosterTypes) {
+      const { state: next } = openBooster(state, ctx(), type.id);
+      expect(next.boosters.stock).toBe(state.boosters.stock - type.cost);
+    }
+    const one = { ...state, boosters: { stock: 1, lastRegenAt: NOW } };
+    expect(() => openBooster(one, ctx(), 'dopamine')).toThrow();
+  });
+
   it('refuses to open without stock', () => {
     const empty = { ...createInitialState(NOW, config), boosters: { stock: 0, lastRegenAt: NOW } };
     expect(() => openBooster(empty, ctx())).toThrow();

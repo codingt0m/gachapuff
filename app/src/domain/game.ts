@@ -28,7 +28,7 @@ export interface Pull {
 }
 
 /** A player without a pseudo cannot sign: no signed puff for them. */
-function forPlayer(type: BoosterType, pseudo: string | undefined): BoosterType {
+export function forPlayer(type: BoosterType, pseudo: string | undefined): BoosterType {
   if (pseudo) return type;
   return { ...type, engravingWeights: { ...type.engravingWeights, signature: 0 } };
 }
@@ -61,11 +61,12 @@ function toInstance(
 }
 
 export function openBooster(state: SaveState, ctx: GameContext, typeId?: string): Pull {
+  const drawn = boosterType(ctx.config, typeId ?? ctx.config.defaultBoosterType);
   const boosters = ctx.unlimitedBoosters
     ? state.boosters
-    : consumeBooster(state.boosters, ctx.now, ctx.config.regen);
+    : consumeBooster(state.boosters, ctx.now, ctx.config.regen, drawn.cost);
   const pseudo = state.settings.pseudo;
-  const type = forPlayer(boosterType(ctx.config, typeId ?? ctx.config.defaultBoosterType), pseudo);
+  const type = forPlayer(drawn, pseudo);
   const instance = toInstance(
     rollBooster(ctx.catalog, type, ctx.config, ctx.rng),
     ctx,

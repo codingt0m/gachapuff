@@ -29,62 +29,86 @@
  * smoke kind, smoke shape, engraving) combinations worth rarity N+1, one is picked
  * proportionally to its booster probability, then the puff and the smoke colours are drawn as above.
  *
- * Default distribution with these values (exact, see the simulator):
- *   Commune 44.6% · Peu commune 18.5% · Rare 14.3% · Épique 9.7%
- *   Légendaire 9.3% · Mythique 3.2% · Divine 0.38% (≈ 1 in 260)
+ * Distribution of each booster with these values (exact, see the simulator):
+ *   Classique   Commune 63.7% · Peu commune 16.8% · Rare 10.3% · Épique 5.3%
+ *               Légendaire 3.3% · Mythique 0.48% · Divine 0.012% (≈ 1 in 8 400)
+ *   Nicotine    Commune 44.6% · Peu commune 18.5% · Rare 14.3% · Épique 9.7%
+ *               Légendaire 9.3% · Mythique 3.2% · Divine 0.38% (≈ 1 in 260)
+ *   Dopamine    Commune 28.8% · Peu commune 15.9% · Rare 15.0% · Épique 12.6%
+ *               Légendaire 16.0% · Mythique 9.5% · Divine 2.2% (≈ 1 in 45)
  */
-import { splitTiers, type WeightTier } from '../domain/dropRates.ts';
-import type {
-  EngravingKind,
-  FinishId,
-  GameConfig,
-  RevealChoreography,
-  SmokeKind,
-  SmokeShape,
-} from '../domain/types.ts';
+import { boosterWeights, type DropTable } from '../domain/dropRates.ts';
+import type { GameConfig, RevealChoreography } from '../domain/types.ts';
 
 const HOUR = 60 * 60 * 1000;
 
 /**
- * DROP RATES of the classic booster, in %. Each table sums to 100: checked by `npm test`
+ * DROP RATES of each booster type, in %. Each table sums to 100: checked by `npm test`
  * (src/config/dropRates.test.ts) and `npm run simulate`, which also simulates N openings.
+ * The "Probabilités" sheet of the booster screen reads these same values.
+ *
+ * Rules kept in every booster (checked by the tests):
+ *  - baseTiers: one weight per base tier (Mini -> Titan), bigger capacity = rarer;
+ *  - finishTiers: 7 rarity tiers, 1 = the commonest, each rarer than the one below. A tier's
+ *    weight is split evenly between its finishes, whose points (in `finishes`) follow the tier;
+ *  - engravings: signed puffs, between rubis and galaxie. Always signed with the pseudo of
+ *    the player who pulls it; a player without a pseudo pulls no signed puff;
+ *  - smokes: drawn independently of the finish, from white (50 % or more) to gachapuff;
+ *  - shapes: rings and hearts exactly as rare, spiral the rarest.
  */
 export const dropRates = {
+  /** Booster Classique: stingy. Dorée is the best you can really hope for. */
+  classic: {
+    baseTiers: [46, 30, 15, 7, 2],
+    finishTiers: [
+      { weight: 62, ids: ['normal'] }, // 1 · commune
+      { weight: 24, ids: ['glitch'] }, // 2 · première rareté, pas si rare
+      { weight: 7, ids: ['crystal', 'frost'] }, // 3 · 3,5 % chacune
+      { weight: 4.5, ids: ['chrome', 'chromatic'] }, // 4 · 2,25 % chacune
+      { weight: 2.3, ids: ['golden'] }, // 5 · le vrai objectif de ce booster
+      { weight: 0.18, ids: ['ruby'] }, // 6 · ≈ 1 sur 550 : coup de chance
+      { weight: 0.02, ids: ['cosmic'] }, // 7 · 1 sur 5 000 : miracle
+    ],
+    engravings: { none: 99.95, signature: 0.05 },
+    smokes: { white: 68, solid: 16, rainbow: 9, duo: 4, glitter: 2.5, gachapuff: 0.5 },
+    shapes: { cloud: 80, rings: 8, hearts: 8, spiral: 4 },
+  },
+  /** Boost de nicotine: the balanced, standard booster. */
+  nicotine: {
+    baseTiers: [40, 30, 18, 9, 3],
+    finishTiers: [
+      { weight: 50, ids: ['normal'] }, // 1 · commune
+      { weight: 25, ids: ['glitch'] }, // 2 · première rareté, pas si rare
+      { weight: 10, ids: ['crystal', 'frost'] }, // 3 · 5 % chacune
+      { weight: 7, ids: ['chrome', 'chromatic'] }, // 4 · 3,5 % chacune
+      { weight: 5, ids: ['golden'] }, // 5 · vraiment rare
+      { weight: 2.5, ids: ['ruby'] }, // 6 · très rare
+      { weight: 0.5, ids: ['cosmic'] }, // 7 · le graal
+    ],
+    engravings: { none: 99, signature: 1 },
+    smokes: { white: 55, solid: 20, rainbow: 12, duo: 7, glitter: 4.5, gachapuff: 1.5 },
+    shapes: { cloud: 70, rings: 12, hearts: 12, spiral: 6 },
+  },
   /**
-   * Finishes: 7 rarity tiers, 1 = the commonest. A tier's weight is split evenly between
-   * its finishes. Each finish's rarity points (in `finishes` below) follow its tier.
+   * Dopamine maxing: far fewer plain and glitch puffs, more of everything else. So generous
+   * that Légendaire outnumbers Épique here (the other tiers keep their order).
    */
-  finishTiers: [
-    { weight: 50, ids: ['normal'] }, // 1 · commune
-    { weight: 25, ids: ['glitch'] }, // 2 · première rareté, pas si rare
-    { weight: 10, ids: ['crystal', 'frost'] }, // 3 · 5 % chacune
-    { weight: 7, ids: ['chrome', 'chromatic'] }, // 4 · 3,5 % chacune
-    { weight: 5, ids: ['golden'] }, // 5 · vraiment rare
-    { weight: 2.5, ids: ['ruby'] }, // 6 · très rare
-    { weight: 0.5, ids: ['cosmic'] }, // 7 · le graal
-  ] satisfies WeightTier<FinishId>[],
-  /**
-   * Signed puffs: very rare, between rubis and galaxie. Always signed with the pseudo of the
-   * player who pulls it; a player without a pseudo pulls no signed puff.
-   */
-  engravings: { none: 99, signature: 1 } satisfies Record<EngravingKind, number>,
-  /** Smoke colours, drawn independently of the finish. White stays at 50 % or more. */
-  smokes: {
-    white: 55, // classique
-    solid: 20, // sympa, pas spécialement rare
-    rainbow: 12, // sympa ++
-    duo: 7, // vraiment rare
-    glitter: 4.5, // vraiment rare +
-    gachapuff: 1.5, // le graal
-  } satisfies Record<SmokeKind, number>,
-  /** Smoke shapes, drawn independently. Rings and hearts are exactly as rare; spiral is the rarest. */
-  shapes: {
-    cloud: 70, // classique
-    rings: 12, // un peu rare
-    hearts: 12, // un peu rare, comme l'anneau
-    spiral: 6, // la plus rare
-  } satisfies Record<SmokeShape, number>,
-};
+  dopamine: {
+    baseTiers: [38, 30, 18, 10, 4],
+    finishTiers: [
+      { weight: 32, ids: ['normal'] }, // 1 · commune
+      { weight: 22, ids: ['glitch'] }, // 2 · première rareté
+      { weight: 15, ids: ['crystal', 'frost'] }, // 3 · 7,5 % chacune
+      { weight: 12, ids: ['chrome', 'chromatic'] }, // 4 · 6 % chacune
+      { weight: 9, ids: ['golden'] }, // 5 · ≈ 1 sur 11
+      { weight: 6, ids: ['ruby'] }, // 6 · ≈ 1 sur 17
+      { weight: 4, ids: ['cosmic'] }, // 7 · 1 sur 25
+    ],
+    engravings: { none: 96, signature: 4 },
+    smokes: { white: 52, solid: 20, rainbow: 13, duo: 7.5, glitter: 5, gachapuff: 2.5 },
+    shapes: { cloud: 66, rings: 13, hearts: 13, spiral: 8 },
+  },
+} satisfies Record<string, DropTable>;
 
 const reveal = (r: Partial<RevealChoreography>): RevealChoreography => ({
   suspenseMs: 700,
@@ -273,22 +297,37 @@ export const gameConfig: GameConfig = {
     },
   ],
 
-  // One booster type at launch; add entries here to create new boosters.
+  // Three boosters, each with its own drop table (`dropRates`). Opening one uses `cost`
+  // boosters of the stock: the luckier the booster, the longer it takes to save up for it.
   boosterTypes: [
     {
       id: 'classic',
       name: 'Booster Classique',
-      baseTierWeights: [40, 30, 18, 9, 3],
-      finishWeights: splitTiers(dropRates.finishTiers),
-      smokeWeights: dropRates.smokes,
-      smokeShapeWeights: dropRates.shapes,
-      engravingWeights: dropRates.engravings,
+      tagline: 'Pas de chance, mais tout de suite.',
+      cost: 1,
+      ...boosterWeights(dropRates.classic),
+    },
+    {
+      id: 'nicotine',
+      name: 'Boost de nicotine',
+      tagline: 'L’équilibré : bien plus de chance.',
+      cost: 2,
+      ...boosterWeights(dropRates.nicotine),
+    },
+    {
+      id: 'dopamine',
+      name: 'Dopamine maxing',
+      tagline: 'Presque plus de normales ni de glitch.',
+      cost: 3,
+      ...boosterWeights(dropRates.dopamine),
     },
   ],
   defaultBoosterType: 'classic',
 
-  // One booster every 4 hours, up to 2 in stock. A new player starts full.
-  regen: { intervalMs: 4 * HOUR, maxStock: 2, initialStock: 2 },
+  // One booster every 4 hours, up to 3 in stock (enough for a Dopamine maxing).
+  // A new player starts full.
+  regen: { intervalMs: 4 * HOUR, maxStock: 3, initialStock: 3 },
 
-  recycle: { inputCount: 3, boosterType: 'classic' },
+  // Fusions draw with the balanced booster's rules (as before the three boosters).
+  recycle: { inputCount: 3, boosterType: 'nicotine' },
 };

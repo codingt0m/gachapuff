@@ -24,9 +24,14 @@ export function nextBoosterAt(s: BoosterStock, regen: Regen): number | null {
   return s.stock >= regen.maxStock ? null : s.lastRegenAt + regen.intervalMs;
 }
 
-/** Uses one booster (after regeneration). Throws when none is available. */
-export function consumeBooster(s: BoosterStock, now: number, regen: Regen): BoosterStock {
+/** When the stock reaches `count` boosters, or null when it already has them. */
+export function boostersReadyAt(s: BoosterStock, regen: Regen, count: number): number | null {
+  return s.stock >= count ? null : s.lastRegenAt + (count - s.stock) * regen.intervalMs;
+}
+
+/** Uses `cost` boosters (after regeneration). Throws when not enough are available. */
+export function consumeBooster(s: BoosterStock, now: number, regen: Regen, cost = 1): BoosterStock {
   const current = applyRegen(s, now, regen);
-  if (current.stock <= 0) throw new Error('No booster available');
-  return { stock: current.stock - 1, lastRegenAt: current.lastRegenAt };
+  if (current.stock < cost) throw new Error('Not enough boosters available');
+  return { stock: current.stock - cost, lastRegenAt: current.lastRegenAt };
 }

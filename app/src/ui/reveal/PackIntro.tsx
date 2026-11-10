@@ -22,6 +22,7 @@ const TAP_SLOP = 10;
 /** The pack, torn open with a swipe along its seam, a simple tap, or Enter / Space. */
 export function PackIntro({
   name,
+  look,
   phase,
   hintColor,
   charge,
@@ -30,6 +31,8 @@ export function PackIntro({
   onTorn,
 }: {
   name: string;
+  /** Booster type id: its pack design. */
+  look: string;
   phase: 'intro' | 'charging';
   hintColor: string;
   charge: number;
@@ -148,7 +151,14 @@ export function PackIntro({
         }}
         onPointerLeave={tilt.onPointerLeave}
       >
-        <BoosterPack name={name} tear={tear} open={torn} charge={charge} glow={hintColor} />
+        <BoosterPack
+          name={name}
+          look={look}
+          tear={tear}
+          open={torn}
+          charge={charge}
+          glow={hintColor}
+        />
         {!torn && <span className={styles.swipeHint} aria-hidden="true" />}
         {/* Only a special puff makes the pack shine, in its own colour. */}
         {fxColors && (

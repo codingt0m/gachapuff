@@ -117,11 +117,13 @@ function RevealRound({
 
   if (!puff || !tier) return null;
 
-  const canAgain = request.intro === 'pack' && (store.unlimitedBoosters || stock > 0);
+  const pack = request.intro === 'pack' ? boosterType(config, request.boosterType) : null;
+  const canAgain = pack !== null && (store.unlimitedBoosters || stock >= pack.cost);
   const again = () => {
-    const next = store.openBooster();
+    if (!pack) return;
+    const next = store.openBooster(pack.id);
     sound.play('whoosh');
-    onNext({ intro: 'pack', instance: next });
+    onNext({ intro: 'pack', instance: next, boosterType: pack.id });
   };
 
   const showPuff = phase === 'burst' || phase === 'revealed';
@@ -176,7 +178,8 @@ function RevealRound({
           {!showPuff &&
             (request.intro === 'pack' ? (
               <PackIntro
-                name={boosterType(config, config.defaultBoosterType).name}
+                name={boosterType(config, request.boosterType).name}
+                look={request.boosterType}
                 phase={phase === 'intro' ? 'intro' : 'charging'}
                 hintColor={timeline.hintColor}
                 charge={timeline.charge}
