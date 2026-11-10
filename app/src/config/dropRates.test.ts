@@ -6,7 +6,7 @@ import { finishDef } from '../domain/rarity.ts';
 import { createSeededRng } from '../domain/rng.ts';
 import { boosterType } from '../domain/roll.ts';
 import { definitions } from '../domain/testing/fixtures.ts';
-import { ENGRAVING_KINDS, FINISH_IDS, SMOKE_KINDS } from '../domain/types.ts';
+import { ENGRAVING_KINDS, FINISH_IDS, SMOKE_KINDS, SMOKE_SHAPES } from '../domain/types.ts';
 import { dropRates, gameConfig as config } from './gameConfig.ts';
 
 const classic = boosterType(config, 'classic');
@@ -70,12 +70,24 @@ describe('drop rates', () => {
     }
   });
 
+  it('shapes sum to 100 %: rings and hearts exactly as rare, spiral the rarest', () => {
+    const w = classic.smokeShapeWeights;
+    expect(sumsTo100(w)).toBe(true);
+    expect(w.rings).toBe(w.hearts);
+    for (const s of SMOKE_SHAPES.filter((s) => s !== 'spiral')) expect(w.spiral).toBeLessThan(w[s]);
+    expect(w.cloud).toBeGreaterThan(w.rings);
+  });
+
   it(`follows the finish rates over ${DRAWS.toLocaleString('en')} openings`, () => {
     for (const id of FINISH_IDS) expectNear(sim.finish[id], classic.finishWeights[id]);
   });
 
   it('follows the smoke rates', () => {
     for (const id of SMOKE_KINDS) expectNear(sim.smoke[id], classic.smokeWeights[id]);
+  });
+
+  it('follows the shape rates', () => {
+    for (const id of SMOKE_SHAPES) expectNear(sim.shape[id], classic.smokeShapeWeights[id]);
   });
 
   it('follows the signed puff rate', () => {

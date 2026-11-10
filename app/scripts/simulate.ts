@@ -73,15 +73,18 @@ const sums = [
     sim.smoke,
   ),
   table(
+    'Forme de fumée',
+    gameConfig.smokeShapes.map((s) => ({ id: s.shape, name: s.name })),
+    type.smokeShapeWeights,
+    sim.shape,
+  ),
+  table(
     'Puff signée',
     gameConfig.engravings.map((e) => ({ id: e.kind, name: e.name })),
     type.engravingWeights,
     sim.engraving,
   ),
 ];
-console.info('\nForme de fumée');
-for (const s of gameConfig.smokeShapes)
-  console.info(`${s.name.padEnd(NAME)} ${pct(sim.shape[s.shape] / draws)}`);
 console.info('\nPalier de base');
 gameConfig.baseTiers.tiers.forEach((t, i) => {
   const size = catalog.byBaseTier[i]?.length ?? 0;

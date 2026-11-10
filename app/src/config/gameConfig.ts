@@ -10,7 +10,7 @@
  *   a) base puff (model x flavour): its model's base tier, derived from capacity;
  *   b) finish: 7 rarity tiers, the finishes of a tier share its points;
  *   c) smoke colours (white; solid, rainbow; duo, glitter; gachapuff);
- *   d) smoke shape (cloud; rings / spiral; hearts / stars);
+ *   d) smoke shape (cloud; rings / hearts; spiral);
  *   e) engraving (none, signature: the pseudo of the player who pulled it).
  * points = baseTier + finish + smoke + smoke shape + engraving points
  * The global rarity is the highest tier whose `minPoints` <= points.
@@ -30,8 +30,8 @@
  * proportionally to its booster probability, then the puff and the smoke colours are drawn as above.
  *
  * Default distribution with these values (exact, see the simulator):
- *   Commune 44.3% · Peu commune 20.5% · Rare 15.0% · Épique 13.6%
- *   Légendaire 4.7% · Mythique 1.53% · Divine 0.33% (≈ 1 in 302)
+ *   Commune 44.6% · Peu commune 18.5% · Rare 14.3% · Épique 9.7%
+ *   Légendaire 9.3% · Mythique 3.2% · Divine 0.38% (≈ 1 in 260)
  */
 import { splitTiers, type WeightTier } from '../domain/dropRates.ts';
 import type {
@@ -40,6 +40,7 @@ import type {
   GameConfig,
   RevealChoreography,
   SmokeKind,
+  SmokeShape,
 } from '../domain/types.ts';
 
 const HOUR = 60 * 60 * 1000;
@@ -76,6 +77,13 @@ export const dropRates = {
     glitter: 4.5, // vraiment rare +
     gachapuff: 1.5, // le graal
   } satisfies Record<SmokeKind, number>,
+  /** Smoke shapes, drawn independently. Rings and hearts are exactly as rare; spiral is the rarest. */
+  shapes: {
+    cloud: 70, // classique
+    rings: 12, // un peu rare
+    hearts: 12, // un peu rare, comme l'anneau
+    spiral: 6, // la plus rare
+  } satisfies Record<SmokeShape, number>,
 };
 
 const reveal = (r: Partial<RevealChoreography>): RevealChoreography => ({
@@ -137,9 +145,8 @@ export const gameConfig: GameConfig = {
   smokeShapes: [
     { shape: 'cloud', name: 'Nuage', points: 0 },
     { shape: 'rings', name: 'Anneaux', points: 1 },
-    { shape: 'spiral', name: 'Spirale', points: 1 },
-    { shape: 'hearts', name: 'Cœurs', points: 2 },
-    { shape: 'stars', name: 'Étoiles', points: 2 },
+    { shape: 'hearts', name: 'Cœurs', points: 1 },
+    { shape: 'spiral', name: 'Spirale', points: 2 },
   ],
 
   // A mark printed on the puff: 4th rarity axis.
@@ -250,7 +257,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'divine',
       name: 'Divine',
-      minPoints: 10,
+      minPoints: 11,
       color: '#ffd23f',
       ink: '#140b2e',
       icon: 'crown',
@@ -274,7 +281,7 @@ export const gameConfig: GameConfig = {
       baseTierWeights: [40, 30, 18, 9, 3],
       finishWeights: splitTiers(dropRates.finishTiers),
       smokeWeights: dropRates.smokes,
-      smokeShapeWeights: { cloud: 90, rings: 4, spiral: 3, hearts: 1.8, stars: 1.2 },
+      smokeShapeWeights: dropRates.shapes,
       engravingWeights: dropRates.engravings,
     },
   ],

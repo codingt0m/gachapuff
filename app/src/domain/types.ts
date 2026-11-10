@@ -64,7 +64,7 @@ export type MonoSmokeKind = 'solid' | 'glitter';
 export type MultiSmokeKind = 'duo' | 'gachapuff';
 
 /** Shape of the exhaled smoke. */
-export const SMOKE_SHAPES = ['cloud', 'rings', 'spiral', 'hearts', 'stars'] as const;
+export const SMOKE_SHAPES = ['cloud', 'rings', 'hearts', 'spiral'] as const;
 export type SmokeShape = (typeof SMOKE_SHAPES)[number];
 
 export type Smoke = (

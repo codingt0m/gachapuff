@@ -117,7 +117,7 @@ describe('parseSave', () => {
     ]);
   });
 
-  it('migrates v3 smokes: halo becomes gachapuff, alternate duo, dropped smokes solid', () => {
+  it('migrates v3 smokes: halo → gachapuff, alternate → duo, dropped smokes and stars', () => {
     const state = playedState();
     const base = state.collection[0];
     const smokes = [
@@ -127,6 +127,8 @@ describe('parseSave', () => {
       { kind: 'swirl', colors: ['#0000aa', '#00aa00', '#aa0000'], shape: 'rings' },
       { kind: 'mystery' },
       { kind: 'solid', color: '#123456' },
+      { kind: 'glitter', color: '#123456', shape: 'stars' },
+      { kind: 'white', shape: 'spiral' },
     ];
     const v3 = structuredClone({
       ...state,
@@ -142,6 +144,8 @@ describe('parseSave', () => {
       { kind: 'solid', color: '#0000aa', shape: 'rings' },
       { kind: 'white' },
       { kind: 'solid', color: '#123456' },
+      { kind: 'glitter', color: '#123456' },
+      { kind: 'white', shape: 'spiral' },
     ]);
   });
 

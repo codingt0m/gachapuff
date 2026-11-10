@@ -457,7 +457,7 @@ void main() {
 export const SMOKE_FRAGMENT = /* glsl */ `
 ${PRECISION}
 varying vec2 vUv;
-varying vec4 vData;       // alpha, seed, position along the plume, sprite (0 cloud, 1 ring, 2 heart, 3 star)
+varying vec4 vData;       // alpha, seed, position along the plume, sprite (0 cloud, 1 ring, 2 heart)
 varying vec2 vClip;       // clip-space position, to fade out before the canvas edges
 // 0 white, 1 solid, 3 rainbow, 4 glitter, 5 gachapuff (brand colours, core -> edge),
 // 7 duo (one colour per puff)
@@ -504,19 +504,6 @@ float sdHeart(vec2 p) {
   return sqrt(min(dot2(p - vec2(0.0, 1.0)), dot2(p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y);
 }
 
-float sdStar5(vec2 p, float r, float rf) {
-  vec2 k1 = vec2(0.809016994375, -0.587785252292);
-  vec2 k2 = vec2(-k1.x, k1.y);
-  p.x = abs(p.x);
-  p -= 2.0 * max(dot(k1, p), 0.0) * k1;
-  p -= 2.0 * max(dot(k2, p), 0.0) * k2;
-  p.x = abs(p.x);
-  p.y -= r;
-  vec2 ba = rf * vec2(-k1.y, k1.x) - vec2(0.0, 1.0);
-  float h = clamp(dot(p, ba) / dot(ba, ba), 0.0, r);
-  return length(p - ba * h) * sign(p.y * ba.x - p.x * ba.y);
-}
-
 // A smoky filled shape: soft body, denser rim, edges frayed by the noise.
 float shapeAlpha(float d, float n) {
   float dd = d + (n - 0.5) * 0.12;
@@ -530,9 +517,7 @@ void main() {
   if (r > 1.0) discard;
   float n = fbm(vUv * 2.6 + vData.y * 13.7);
   float a;
-  if (vData.w > 2.5) {
-    a = shapeAlpha(sdStar5(vUv, 0.8, 0.45), n) * vData.x * 1.4;
-  } else if (vData.w > 1.5) {
+  if (vData.w > 1.5) {
     a = shapeAlpha(sdHeart(vUv * 0.75 + vec2(0.0, 0.5)) / 0.75, n) * vData.x * 1.4;
   } else if (vData.w > 0.5) {
     // Smoke ring: a soft, slightly wobbly torus seen from the side.

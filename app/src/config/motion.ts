@@ -111,12 +111,11 @@ export const smoke = {
   drift: 0.06,
   /** Sideways push when the puff tilts (puff units per second per radian). */
   wind: 0.9,
-  /** Rings / hearts / stars: share of the exhale cloud kept besides the shaped puff. */
+  /** Rings / hearts: share of the exhale cloud kept besides the shaped puff. */
   shapeBurstShare: 0.1,
   /** Start / end size of each shaped puff. */
   ringSize: [0.05, 0.3],
   heartSize: [0.04, 0.24],
-  starSize: [0.045, 0.26],
   /**
    * Spiral: a DNA double helix. Two strands of fine smoke wound around the column, joined by
    * rungs (base pairs), rising, slowly turning, then fraying apart into cloud at the top.
@@ -171,14 +170,14 @@ export const smoke = {
     lift: 0.4,
     opacity: 0.62,
     /**
-     * Shaped smoke (spiral, rings, hearts, stars): holding also boosts the shape, and the
+     * Shaped smoke (spiral, rings, hearts): holding also boosts the shape, and the
      * plain held cloud is cut down to this share so the shape stays readable.
      */
     shapedCloudShare: 0.3,
     /** Spiral at full hold: extra emission (x rate) and size / radius factor. */
     spiralBoost: 0.7,
     spiralScale: 1.6,
-    /** Rings / hearts / stars at full hold: seconds between two shaped puffs, size factor. */
+    /** Rings / hearts at full hold: seconds between two shaped puffs, size factor. */
     shapeEvery: 0.45,
     shapeScale: 1.5,
   },

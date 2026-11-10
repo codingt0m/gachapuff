@@ -56,20 +56,24 @@ le calcul. Après modification, vérifie la distribution avec `npm run simulate`
 
 Valeurs par défaut :
 
-- **Rareté globale** = points du palier de base (0–4, selon la capacité) + finition (0–7) + fumée (0–2).
-- **Paliers** : Commune 49 % · Peu commune 20 % · Rare 14 % · Épique 11 % · Légendaire 4 % ·
-  Mythique 1,25 % · Divine 0,19 % (≈ 1 sur 530).
+- **Rareté globale** = points du palier de base (0–4, selon la capacité) + finition (0–7) + fumée (0–4)
+  + forme (0–2) + signature (6).
+- **Paliers** : Commune 44,6 % · Peu commune 18,5 % · Rare 14,3 % · Épique 9,7 % · Légendaire 9,3 % ·
+  Mythique 3,2 % · Divine 0,38 % (≈ 1 sur 260).
 - **Finitions** (7 paliers, poids du palier partagé à parts égales, constantes `dropRates`) :
   Normale 50 % · Glitch 25 % · Cristal / Givre 10 % · Chrome liquide / Chromatique 7 % ·
   Dorée 5 % · Rubis 2,5 % · Galaxie 0,5 %.
 - **Fumées** (tirage indépendant) : blanche 55 % · colorée 20 % · arc-en-ciel 12 % · duo 7 % ·
   pailletée 4,5 % · gachapuff 1,5 %. Couleurs tirées dans une palette nommée (`smokeColors`),
   affichées dans les specs de la puff ; la fumée gachapuff a toujours les couleurs de la marque.
+- **Formes** (tirage indépendant) : nuage 70 % · anneaux 12 % · cœurs 12 % · spirale 6 %.
+- **Puff signée** : 1 %, toujours au pseudo du joueur qui la tire (aucune sans pseudo).
 - **Boosters** : 1 toutes les 4 h, stock max 2 (un nouveau joueur commence plein).
 - **Recyclage** : 3 puffs de rareté N → 1 puff de rareté N+1, tirée avec les règles du booster
   conditionnées à ce palier. Divine ne se recycle pas.
 
-Durées d'animation et réglages du rendu : [`app/src/config/motion.ts`](app/src/config/motion.ts).
+Durées d'animation (dont `OPENING_SLOWDOWN`, le ralenti de l'ouverture) et réglages du rendu :
+[`app/src/config/motion.ts`](app/src/config/motion.ts).
 Couleurs, typo, espacements : [`app/src/ui/styles/tokens.css`](app/src/ui/styles/tokens.css).
 
 ## Architecture

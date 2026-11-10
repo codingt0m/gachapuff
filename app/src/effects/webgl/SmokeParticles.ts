@@ -2,7 +2,7 @@ import { smoke as S } from '../../config/motion.ts';
 import type { SmokeShape } from '../../domain/types.ts';
 
 /** Sprite shapes drawn by SMOKE_FRAGMENT. */
-const SPRITE = { cloud: 0, ring: 1, heart: 2, star: 3 } as const;
+const SPRITE = { cloud: 0, ring: 1, heart: 2 } as const;
 const H = S.hold;
 const D = S.spiral;
 /** Vertical slowdown of the normal plume (1/s). */
@@ -57,7 +57,7 @@ const FIRST_EXHALE = 0.17;
  * rising, swelling, swirling and fading. Positions are kept in drawing-buffer pixels
  * (y up), so puffs already emitted stay put when the device tilts.
  *
- * Shapes: cloud (plain), rings / hearts / stars (one shaped puff blown at each exhale,
+ * Shapes: cloud (plain), rings / hearts (one shaped puff blown at each exhale,
  * with a lighter cloud around it), spiral (a DNA double helix: two strands joined by rungs).
  *
  * While `holding`, a big cloud billows out of the mouthpiece on top of the normal plume.
@@ -109,7 +109,7 @@ export class SmokeParticles {
     this.clock += dt;
     const phase = (this.clock / S.burstEvery) % 1;
     const exhale = Math.max(0, Math.sin(phase * Math.PI * 2)) ** 6;
-    const shaped = this.shape === 'rings' || this.shape === 'hearts' || this.shape === 'stars';
+    const shaped = this.shape === 'rings' || this.shape === 'hearts';
     const spiral = this.shape === 'spiral';
     const burst = S.burstRate * (shaped ? S.shapeBurstShare : spiral ? D.burstShare : 1);
     // The helix strands replace the thin stream.
@@ -344,16 +344,9 @@ export class SmokeParticles {
     const lean = scale > 1 ? rand(-0.12, 0.12) : 0;
     if (this.shape === 'rings') {
       this.push(origin, unit, headroom, SPRITE.ring, scaled(S.ringSize), lean, 0, rand(-0.15, 0.15));
-    } else if (this.shape === 'hearts') {
+    } else {
       const rot = rand(-0.15, 0.15);
       this.push(origin, unit, headroom, SPRITE.heart, scaled(S.heartSize), lean, rot, 0);
-    } else {
-      // A little cluster of stars of different sizes, slowly spinning.
-      for (let i = 0; i < 3; i++) {
-        const size = scaled(S.starSize, i === 0 ? 1 : rand(0.5, 0.65));
-        const dx = lean + (i === 0 ? 0 : (i === 1 ? -1 : 1) * rand(0.12, 0.18));
-        this.push(origin, unit, headroom, SPRITE.star, size, dx, rand(-0.3, 0.3), rand(-0.8, 0.8));
-      }
     }
   }
 

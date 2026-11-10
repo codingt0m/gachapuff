@@ -42,7 +42,9 @@ const isHex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{
 
 /** v4 smoke of a raw v3 smoke (see migration 3); anything unusable becomes a white smoke. */
 function migrateSmokeV4(smoke: RawInstance | undefined, config: GameConfig): RawInstance {
-  const shape = smoke?.shape === undefined ? {} : { shape: smoke.shape };
+  // Dropped 'stars' shape (or any unknown one): a plain cloud, stored as no shape.
+  const shape =
+    isOneOf(SMOKE_SHAPES, smoke?.shape) && smoke?.shape !== 'cloud' ? { shape: smoke?.shape } : {};
   const colors = Array.isArray(smoke?.colors) ? smoke.colors.filter(isHex) : [];
   const color = isHex(smoke?.color) ? smoke.color : colors[0];
   switch (smoke?.kind) {
@@ -56,7 +58,11 @@ function migrateSmokeV4(smoke: RawInstance | undefined, config: GameConfig): Raw
     case 'swirl':
       return color ? { kind: 'solid', color, ...shape } : { kind: 'white', ...shape };
     default:
-      return smoke && isOneOf(SMOKE_KINDS, smoke.kind) ? smoke : { kind: 'white', ...shape };
+      if (!smoke || !isOneOf(SMOKE_KINDS, smoke.kind)) return { kind: 'white', ...shape };
+      return {
+        ...Object.fromEntries(Object.entries(smoke).filter(([k]) => k !== 'shape')),
+        ...shape,
+      };
   }
 }
 
@@ -141,6 +147,7 @@ const migrations: Record<
   // Points and rarity are recomputed at boot (rescoreCollection).
   // Smokes: 'halo' is now the gachapuff smoke (brand colours), 'alternate' the duo (its first
   // two colours); the dropped gradient and marbled smokes become solid in their first colour.
+  // The dropped star shape becomes a plain cloud.
   3: (s, config) => ({
     ...s,
     version: 4,
