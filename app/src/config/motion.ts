@@ -7,8 +7,9 @@
  * suspense, burst, colour flood, confetti, sounds, result card) is multiplied by this factor,
  * the same for all, so the steps stay in sync. In CSS it is `--opening-slow` (set by the
  * reveal overlay, 1 elsewhere). The fusion (recycling) intro is not affected.
+ * 1.25 = the former ×2 slow motion played 60 % faster (2 / 1.6).
  */
-export const OPENING_SLOWDOWN = 2;
+export const OPENING_SLOWDOWN = 1.25;
 
 export const motion = {
   instant: 80,
