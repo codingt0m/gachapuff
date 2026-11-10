@@ -1,0 +1,61 @@
+import { describe, expect, it } from 'vitest';
+import { buildCatalog } from '../domain/catalog.ts';
+import { simulateBoosters } from '../domain/distribution.ts';
+import { sumsTo100, totalWeight } from '../domain/dropRates.ts';
+import { finishDef } from '../domain/rarity.ts';
+import { createSeededRng } from '../domain/rng.ts';
+import { boosterType } from '../domain/roll.ts';
+import { definitions } from '../domain/testing/fixtures.ts';
+import { FINISH_IDS } from '../domain/types.ts';
+import { dropRates, gameConfig as config } from './gameConfig.ts';
+
+const classic = boosterType(config, 'classic');
+const DRAWS = 100_000;
+const sim = simulateBoosters(
+  buildCatalog(definitions, config),
+  classic,
+  config,
+  createSeededRng(2026),
+  DRAWS,
+);
+
+/** Simulated share within 5 standard deviations of the expected one (p in %). */
+function expectNear(count: number, percent: number) {
+  const p = percent / 100;
+  const sigma = Math.sqrt((p * (1 - p)) / DRAWS);
+  expect(Math.abs(count / DRAWS - p)).toBeLessThanOrEqual(5 * sigma + 1e-9);
+}
+
+describe('drop rates', () => {
+  it('finish tiers sum to 100 % and cover every finish exactly once', () => {
+    expect(sumsTo100(classic.finishWeights)).toBe(true);
+    expect(
+      totalWeight(Object.fromEntries(dropRates.finishTiers.map((t, i) => [i, t.weight]))),
+    ).toBe(100);
+    const ids = dropRates.finishTiers.flatMap((t) => t.ids);
+    expect([...ids].sort()).toEqual([...FINISH_IDS].sort());
+  });
+
+  it('has 7 finish tiers, each rarer than the one below and worth at least as many points', () => {
+    const tiers = dropRates.finishTiers;
+    expect(tiers).toHaveLength(7);
+    tiers.slice(1).forEach((tier, i) => {
+      const below = tiers[i] as (typeof tiers)[number];
+      expect(tier.weight).toBeLessThan(below.weight);
+      const points = Math.min(...tier.ids.map((id) => finishDef(config, id).points));
+      const pointsBelow = Math.max(...below.ids.map((id) => finishDef(config, id).points));
+      expect(points).toBeGreaterThan(pointsBelow);
+    });
+    // Within a tier, every finish has the same weight and the same points.
+    for (const tier of tiers) {
+      const share = tier.weight / tier.ids.length;
+      const points = new Set(tier.ids.map((id) => finishDef(config, id).points));
+      expect(points.size).toBe(1);
+      for (const id of tier.ids) expect(classic.finishWeights[id]).toBeCloseTo(share, 12);
+    }
+  });
+
+  it(`follows the finish rates over ${DRAWS.toLocaleString('en')} openings`, () => {
+    for (const id of FINISH_IDS) expectNear(sim.finish[id], classic.finishWeights[id]);
+  });
+});

@@ -42,14 +42,14 @@ Pages de dev : `#/dev/design` (design system), `#/dev/vitrine` (les 6 finitions 
 | `npm run build` / `npm run preview`                     | build de production (PWA installable) et prévisualisation                              |
 | `npm run assets`                                        | génère les images et le manifeste depuis `dataset/`                                    |
 | `npm run icons`                                         | régénère les icônes PWA (versionnées)                                                  |
-| `npm run simulate`                                      | distribution des raretés en CLI (`-- --draws 100000 --seed 1`)                         |
+| `npm run simulate`                                      | vérifie que les taux font 100 % et simule N tirages (`-- --draws 100000 --seed 1`)     |
 | `npm test`                                              | tests unitaires (Vitest)                                                               |
 | `npm run e2e`                                           | test de bout en bout (Playwright ; `npx playwright install chromium` la première fois) |
 | `npm run lint` / `npm run format` / `npm run typecheck` | qualité                                                                                |
 
 ## Régler le jeu
 
-**Tout est dans [`app/src/config/gameConfig.ts`](app/src/config/gameConfig.ts)** : paliers de base
+**Tout est dans [`app/src/config/gameConfig.ts`](app/src/config/gameConfig.ts)** : taux de drop (`dropRates`, en %), paliers de base
 par capacité (et surcharges par modèle), finitions, fumées, points, seuils des 7 raretés, mise en scène
 des révélations, tables de drop des boosters, régénération, recyclage. Le haut du fichier explique
 le calcul. Après modification, vérifie la distribution avec `npm run simulate` ou `#/dev/simulateur`.
@@ -59,7 +59,9 @@ Valeurs par défaut :
 - **Rareté globale** = points du palier de base (0–4, selon la capacité) + finition (0–7) + fumée (0–2).
 - **Paliers** : Commune 49 % · Peu commune 20 % · Rare 14 % · Épique 11 % · Légendaire 4 % ·
   Mythique 1,25 % · Divine 0,19 % (≈ 1 sur 530).
-- **Finitions** : Normale, Glitch, Cristal, Givre, Chrome liquide, Chromatique, Dorée, Rubis, Galaxie.
+- **Finitions** (7 paliers, poids du palier partagé à parts égales, constantes `dropRates`) :
+  Normale 50 % · Glitch 25 % · Cristal / Givre 10 % · Chrome liquide / Chromatique 7 % ·
+  Dorée 5 % · Rubis 2,5 % · Galaxie 0,5 %.
 - **Fumées** : blanche 82 %, colorée 14 %, dégradée (2–3 couleurs) 4 %.
 - **Boosters** : 1 toutes les 4 h, stock max 2 (un nouveau joueur commence plein).
 - **Recyclage** : 3 puffs de rareté N → 1 puff de rareté N+1, tirée avec les règles du booster

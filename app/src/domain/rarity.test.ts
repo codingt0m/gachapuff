@@ -39,7 +39,8 @@ describe('global rarity', () => {
     expect(rarityForPoints(config, 0).id).toBe('common');
     expect(rarityForPoints(config, 1).id).toBe('common');
     expect(rarityForPoints(config, 2).id).toBe('uncommon');
-    expect(rarityForPoints(config, 9).id).toBe('mythic');
+    const divine = config.rarities.at(-1)?.minPoints ?? 0;
+    expect(rarityForPoints(config, divine - 1).id).toBe('mythic');
     expect(rarityForPoints(config, 99).id).toBe('divine');
   });
 

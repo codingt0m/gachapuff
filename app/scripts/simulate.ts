@@ -1,5 +1,6 @@
 /**
  * Simulates booster openings with the real catalog and src/config/gameConfig.ts.
+ * Checks that every drop table sums to 100 % and compares the simulated rates with them.
  * Usage: npm run simulate [-- --draws 100000 --seed 1 --booster classic]
  */
 import { readFile } from 'node:fs/promises';
@@ -7,6 +8,7 @@ import path from 'node:path';
 import { gameConfig } from '../src/config/gameConfig.ts';
 import { buildCatalog } from '../src/domain/catalog.ts';
 import { exactRarityDistribution, simulateBoosters } from '../src/domain/distribution.ts';
+import { totalWeight } from '../src/domain/dropRates.ts';
 import { createSeededRng } from '../src/domain/rng.ts';
 import { boosterType } from '../src/domain/roll.ts';
 import type { PuffDefinition } from '../src/domain/types.ts';
@@ -26,33 +28,61 @@ const catalog = buildCatalog(manifest.puffs, gameConfig);
 const exact = exactRarityDistribution(catalog, type, gameConfig);
 const sim = simulateBoosters(catalog, type, gameConfig, createSeededRng(seed), draws);
 
+const NAME = 16;
 const pct = (v: number) => `${(v * 100).toFixed(3).padStart(7)} %`;
 const oneIn = (v: number) => (v > 0 ? `1 / ${(1 / v).toFixed(1)}` : '—');
 
+/** Prints simulated vs expected rates of one axis; false when its weights miss 100 %. */
+function table<K extends string>(
+  title: string,
+  rows: readonly { id: K; name: string }[],
+  weights: Record<K, number>,
+  counts: Record<K, number>,
+): boolean {
+  const total = totalWeight(weights);
+  const ok = Math.abs(total - 100) < 1e-9;
+  const sum = ok ? `somme ${total} %` : `somme ${total} % ≠ 100 % !`;
+  console.info(`\n${title.padEnd(NAME)} simulée    attendue   (${sum})`);
+  for (const r of rows) {
+    const expected = pct((weights[r.id] ?? 0) / 100);
+    console.info(`${r.name.padEnd(NAME)} ${pct(counts[r.id] / draws)}  ${expected}`);
+  }
+  return ok;
+}
+
 console.info(`${type.name}: ${draws.toLocaleString('fr-FR')} ouvertures (graine ${seed})`);
 console.info(`Catalogue : ${catalog.puffs.length} puffs, ${catalog.models.length} modèles\n`);
-console.info('Rareté        simulée      exacte      fréquence');
+console.info(`${'Rareté'.padEnd(NAME)} simulée      exacte      fréquence`);
 for (const tier of gameConfig.rarities) {
   const p = sim.rarity[tier.id] / draws;
   console.info(
-    `${tier.name.padEnd(12)} ${pct(p)}  ${pct(exact[tier.id])}   ${oneIn(exact[tier.id])}`,
+    `${tier.name.padEnd(NAME)} ${pct(p)}  ${pct(exact[tier.id])}   ${oneIn(exact[tier.id])}`,
   );
 }
-console.info('\nFinition');
-for (const f of gameConfig.finishes)
-  console.info(`${f.name.padEnd(12)} ${pct(sim.finish[f.id] / draws)}`);
+const sums = [
+  table(
+    'Finition',
+    gameConfig.finishes.map((f) => ({ id: f.id, name: f.name })),
+    type.finishWeights,
+    sim.finish,
+  ),
+];
 console.info('\nFumée');
 for (const s of gameConfig.smokes)
-  console.info(`${s.name.padEnd(12)} ${pct(sim.smoke[s.kind] / draws)}`);
+  console.info(`${s.name.padEnd(NAME)} ${pct(sim.smoke[s.kind] / draws)}`);
 console.info('\nForme de fumée');
 for (const s of gameConfig.smokeShapes)
-  console.info(`${s.name.padEnd(12)} ${pct(sim.shape[s.shape] / draws)}`);
+  console.info(`${s.name.padEnd(NAME)} ${pct(sim.shape[s.shape] / draws)}`);
 console.info('\nGravure');
 for (const e of gameConfig.engravings)
-  console.info(`${e.name.padEnd(12)} ${pct(sim.engraving[e.kind] / draws)}`);
+  console.info(`${e.name.padEnd(NAME)} ${pct(sim.engraving[e.kind] / draws)}`);
 console.info('\nPalier de base');
 gameConfig.baseTiers.tiers.forEach((t, i) => {
   const size = catalog.byBaseTier[i]?.length ?? 0;
-  console.info(`${t.name.padEnd(12)} ${pct((sim.baseTier[i] ?? 0) / draws)}  (${size} puffs)`);
+  console.info(`${t.name.padEnd(NAME)} ${pct((sim.baseTier[i] ?? 0) / draws)}  (${size} puffs)`);
 });
 console.info(`\nPuffs distinctes vues : ${sim.distinctPuffs} / ${catalog.puffs.length}`);
+if (sums.includes(false)) {
+  console.error('\nUne table de drop ne fait pas 100 % : corrige src/config/gameConfig.ts.');
+  process.exitCode = 1;
+}

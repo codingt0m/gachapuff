@@ -8,7 +8,7 @@
  * HOW RARITY WORKS
  * A drawn puff combines five independent axes, each worth rarity points:
  *   a) base puff (model x flavour): its model's base tier, derived from capacity;
- *   b) finish, grouped in families that share their points;
+ *   b) finish: 7 rarity tiers, the finishes of a tier share its points;
  *   c) smoke colours (white; solid; the gradients, glitter and rainbow);
  *   d) smoke shape (cloud; rings / spiral; hearts / stars);
  *   e) engraving (none, signature).
@@ -17,7 +17,8 @@
  * That global rarity is what recycling (and, later, trading) uses.
  *
  * HOW A BOOSTER IS DRAWN
- * Each axis is drawn independently with the booster type's weights; then a puff
+ * Each axis is drawn independently with the booster type's weights (`dropRates`
+ * below, in %); then a puff
  * is picked uniformly among the puffs of the drawn base tier; then smoke colours
  * (random vivid HSL colours) are drawn.
  *
@@ -32,9 +33,30 @@
  *   Commune 44.3% · Peu commune 20.5% · Rare 15.0% · Épique 13.6%
  *   Légendaire 4.7% · Mythique 1.53% · Divine 0.33% (≈ 1 in 302)
  */
-import type { GameConfig, RevealChoreography } from '../domain/types.ts';
+import { splitTiers, type WeightTier } from '../domain/dropRates.ts';
+import type { FinishId, GameConfig, RevealChoreography } from '../domain/types.ts';
 
 const HOUR = 60 * 60 * 1000;
+
+/**
+ * DROP RATES of the classic booster, in %. Each table sums to 100: checked by `npm test`
+ * (src/config/dropRates.test.ts) and `npm run simulate`, which also simulates N openings.
+ */
+export const dropRates = {
+  /**
+   * Finishes: 7 rarity tiers, 1 = the commonest. A tier's weight is split evenly between
+   * its finishes. Each finish's rarity points (in `finishes` below) follow its tier.
+   */
+  finishTiers: [
+    { weight: 50, ids: ['normal'] }, // 1 · commune
+    { weight: 25, ids: ['glitch'] }, // 2 · première rareté, pas si rare
+    { weight: 10, ids: ['crystal', 'frost'] }, // 3 · 5 % chacune
+    { weight: 7, ids: ['chrome', 'chromatic'] }, // 4 · 3,5 % chacune
+    { weight: 5, ids: ['golden'] }, // 5 · vraiment rare
+    { weight: 2.5, ids: ['ruby'] }, // 6 · très rare
+    { weight: 0.5, ids: ['cosmic'] }, // 7 · le graal
+  ] satisfies WeightTier<FinishId>[],
+};
 
 const reveal = (r: Partial<RevealChoreography>): RevealChoreography => ({
   suspenseMs: 700,
@@ -68,14 +90,15 @@ export const gameConfig: GameConfig = {
   },
 
   finishes: [
+    // In tier order (see dropRates.finishTiers): rarer tier = more points.
     { id: 'normal', name: 'Normale', points: 0, description: 'La puff telle quelle.' },
-    { id: 'glitch', name: 'Glitch', points: 2, description: 'Cassette VHS déréglée.' },
-    { id: 'golden', name: 'Dorée', points: 3, description: 'Feuille d’or brossée.' },
+    { id: 'glitch', name: 'Glitch', points: 1, description: 'Cassette VHS déréglée.' },
+    { id: 'crystal', name: 'Cristal', points: 2, description: 'Taille brillant, feux et éclats.' },
+    { id: 'frost', name: 'Givre', points: 2, description: 'Gelée, fond sous le doigt.' },
     { id: 'chrome', name: 'Chrome liquide', points: 3, description: 'Miroir qui ondule.' },
-    { id: 'chromatic', name: 'Chromatique', points: 5, description: 'Irisation holo.' },
-    { id: 'crystal', name: 'Cristal', points: 6, description: 'Taille brillant, feux et éclats.' },
-    { id: 'ruby', name: 'Rubis', points: 6, description: 'Rouge profond, éclats rosés.' },
-    { id: 'frost', name: 'Givre', points: 6, description: 'Gelée, fond sous le doigt.' },
+    { id: 'chromatic', name: 'Chromatique', points: 3, description: 'Irisation holo.' },
+    { id: 'golden', name: 'Dorée', points: 4, description: 'Feuille d’or brossée.' },
+    { id: 'ruby', name: 'Rubis', points: 5, description: 'Rouge profond, éclats rosés.' },
     { id: 'cosmic', name: 'Galaxie', points: 7, description: 'Une nébuleuse dedans.' },
   ],
 
@@ -152,7 +175,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'legendary',
       name: 'Légendaire',
-      minPoints: 6,
+      minPoints: 5,
       color: '#e040f0',
       ink: '#140b2e',
       icon: 'star',
@@ -169,7 +192,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'mythic',
       name: 'Mythique',
-      minPoints: 8,
+      minPoints: 7,
       color: '#ff4d4d',
       ink: '#140b2e',
       icon: 'hexagon',
@@ -186,7 +209,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'divine',
       name: 'Divine',
-      minPoints: 10,
+      minPoints: 9,
       color: '#ffd23f',
       ink: '#140b2e',
       icon: 'crown',
@@ -208,17 +231,7 @@ export const gameConfig: GameConfig = {
       id: 'classic',
       name: 'Booster Classique',
       baseTierWeights: [40, 30, 18, 9, 3],
-      finishWeights: {
-        normal: 78,
-        glitch: 3,
-        golden: 1.2,
-        chrome: 1.2,
-        chromatic: 3,
-        crystal: 0.5,
-        ruby: 0.25,
-        frost: 0.25,
-        cosmic: 0.35,
-      },
+      finishWeights: splitTiers(dropRates.finishTiers),
       smokeWeights: {
         white: 82,
         solid: 14,
