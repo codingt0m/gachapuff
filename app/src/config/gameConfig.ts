@@ -9,7 +9,7 @@
  * A drawn puff combines five independent axes, each worth rarity points:
  *   a) base puff (model x flavour): its model's base tier, derived from capacity;
  *   b) finish: 7 rarity tiers, the finishes of a tier share its points;
- *   c) smoke colours (white; solid; the gradients, glitter and rainbow);
+ *   c) smoke colours (white; solid, rainbow; duo, glitter; gachapuff);
  *   d) smoke shape (cloud; rings / spiral; hearts / stars);
  *   e) engraving (none, signature: the pseudo of the player who pulled it).
  * points = baseTier + finish + smoke + smoke shape + engraving points
@@ -20,7 +20,7 @@
  * Each axis is drawn independently with the booster type's weights (`dropRates`
  * below, in %); then a puff
  * is picked uniformly among the puffs of the drawn base tier; then smoke colours
- * (random vivid HSL colours) are drawn.
+ * (random colours of `smokeColors.palette`) are drawn.
  *
  * HOW RECYCLING IS DRAWN
  * `recycle.inputCount` copies of rarity N -> 1 copy of rarity N+1 (the last tier
@@ -34,7 +34,13 @@
  *   Légendaire 4.7% · Mythique 1.53% · Divine 0.33% (≈ 1 in 302)
  */
 import { splitTiers, type WeightTier } from '../domain/dropRates.ts';
-import type { EngravingKind, FinishId, GameConfig, RevealChoreography } from '../domain/types.ts';
+import type {
+  EngravingKind,
+  FinishId,
+  GameConfig,
+  RevealChoreography,
+  SmokeKind,
+} from '../domain/types.ts';
 
 const HOUR = 60 * 60 * 1000;
 
@@ -61,6 +67,15 @@ export const dropRates = {
    * player who pulls it; a player without a pseudo pulls no signed puff.
    */
   engravings: { none: 99, signature: 1 } satisfies Record<EngravingKind, number>,
+  /** Smoke colours, drawn independently of the finish. White stays at 50 % or more. */
+  smokes: {
+    white: 55, // classique
+    solid: 20, // sympa, pas spécialement rare
+    rainbow: 12, // sympa ++
+    duo: 7, // vraiment rare
+    glitter: 4.5, // vraiment rare +
+    gachapuff: 1.5, // le graal
+  } satisfies Record<SmokeKind, number>,
 };
 
 const reveal = (r: Partial<RevealChoreography>): RevealChoreography => ({
@@ -108,15 +123,14 @@ export const gameConfig: GameConfig = {
   ],
 
   smokes: [
-    { kind: 'white', name: 'Blanche', points: 0, colorCount: { min: 0, max: 0 } },
-    { kind: 'solid', name: 'Colorée', points: 1, colorCount: { min: 1, max: 1 } },
-    // Gradients: 2-3 colours mixed in different ways.
-    { kind: 'gradient', name: 'Dégradée', points: 2, colorCount: { min: 2, max: 3 } },
-    { kind: 'halo', name: 'Auréolée', points: 2, colorCount: { min: 2, max: 3 } },
-    { kind: 'swirl', name: 'Marbrée', points: 2, colorCount: { min: 2, max: 3 } },
-    { kind: 'alternate', name: 'Alternée', points: 2, colorCount: { min: 2, max: 3 } },
-    { kind: 'glitter', name: 'Pailletée', points: 2, colorCount: { min: 1, max: 1 } },
-    { kind: 'rainbow', name: 'Arc-en-ciel', points: 2, colorCount: { min: 0, max: 0 } },
+    { kind: 'white', name: 'Blanche', points: 0, colorCount: 0 },
+    { kind: 'solid', name: 'Colorée', points: 1, colorCount: 1 },
+    { kind: 'rainbow', name: 'Arc-en-ciel', points: 1, colorCount: 0 },
+    // Two random colours, one per puff.
+    { kind: 'duo', name: 'Duo', points: 2, colorCount: 2 },
+    { kind: 'glitter', name: 'Pailletée', points: 2, colorCount: 1 },
+    // Always the brand colours (smokeColors.gachapuff), core to edge.
+    { kind: 'gachapuff', name: 'Gachapuff', points: 4, colorCount: 0 },
   ],
 
   // Shape of the exhaled smoke, drawn independently of its colours; its points add up.
@@ -139,8 +153,27 @@ export const gameConfig: GameConfig = {
     },
   ],
 
-  // Random smoke colours are vivid HSL colours within these ranges.
-  smokeColor: { saturation: [0.75, 1], lightness: [0.55, 0.7] },
+  smokeColors: {
+    // Sunset Drive neons. Names are shown in the puff's specs ("Couleurs : rose néon, orange").
+    palette: [
+      { name: 'rose néon', hex: '#ff2d87' },
+      { name: 'rose bonbon', hex: '#ff7ac6' },
+      { name: 'rouge', hex: '#ff3b5c' },
+      { name: 'pêche', hex: '#ff7a59' },
+      { name: 'orange', hex: '#ffa82e' },
+      { name: 'jaune soleil', hex: '#ffd23f' },
+      { name: 'vert lime', hex: '#b6f23a' },
+      { name: 'menthe', hex: '#5cf2c0' },
+      { name: 'turquoise', hex: '#22e0e6' },
+      { name: 'bleu ciel', hex: '#4fb8ff' },
+      { name: 'bleu océan', hex: '#2b6cff' },
+      { name: 'violet néon', hex: '#8b4dff' },
+      { name: 'lilas', hex: '#c58cff' },
+      { name: 'magenta', hex: '#e040f0' },
+    ],
+    // The brand sunset, from the core of the smoke to its edge: orange, rose néon, violet néon.
+    gachapuff: ['#ffa82e', '#ff2d87', '#8b4dff'],
+  },
 
   // CS:GO-like ladder. Never colour-only: each tier also has a name and an icon.
   rarities: [
@@ -156,7 +189,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'uncommon',
       name: 'Peu commune',
-      minPoints: 2,
+      minPoints: 3,
       color: '#5ea2e8',
       ink: '#140b2e',
       icon: 'square',
@@ -165,7 +198,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'rare',
       name: 'Rare',
-      minPoints: 3,
+      minPoints: 4,
       color: '#4b69ff',
       ink: '#ffffff',
       icon: 'triangle',
@@ -174,7 +207,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'epic',
       name: 'Épique',
-      minPoints: 4,
+      minPoints: 5,
       color: '#8847ff',
       ink: '#ffffff',
       icon: 'diamond',
@@ -183,7 +216,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'legendary',
       name: 'Légendaire',
-      minPoints: 5,
+      minPoints: 6,
       color: '#e040f0',
       ink: '#140b2e',
       icon: 'star',
@@ -200,7 +233,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'mythic',
       name: 'Mythique',
-      minPoints: 7,
+      minPoints: 8,
       color: '#ff4d4d',
       ink: '#140b2e',
       icon: 'hexagon',
@@ -217,7 +250,7 @@ export const gameConfig: GameConfig = {
     {
       id: 'divine',
       name: 'Divine',
-      minPoints: 9,
+      minPoints: 10,
       color: '#ffd23f',
       ink: '#140b2e',
       icon: 'crown',
@@ -240,17 +273,7 @@ export const gameConfig: GameConfig = {
       name: 'Booster Classique',
       baseTierWeights: [40, 30, 18, 9, 3],
       finishWeights: splitTiers(dropRates.finishTiers),
-      smokeWeights: {
-        white: 82,
-        solid: 14,
-        // 2 points: 4 in total
-        gradient: 1,
-        halo: 0.7,
-        swirl: 0.6,
-        alternate: 0.5,
-        glitter: 0.7,
-        rainbow: 0.5,
-      },
+      smokeWeights: dropRates.smokes,
       smokeShapeWeights: { cloud: 90, rings: 4, spiral: 3, hearts: 1.8, stars: 1.2 },
       engravingWeights: dropRates.engravings,
     },

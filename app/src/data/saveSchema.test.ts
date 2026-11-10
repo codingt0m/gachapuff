@@ -117,6 +117,34 @@ describe('parseSave', () => {
     ]);
   });
 
+  it('migrates v3 smokes: halo becomes gachapuff, alternate duo, dropped smokes solid', () => {
+    const state = playedState();
+    const base = state.collection[0];
+    const smokes = [
+      { kind: 'halo', colors: ['#112233', '#445566'], shape: 'hearts' },
+      { kind: 'alternate', colors: ['#112233', '#445566', '#778899'] },
+      { kind: 'gradient', colors: ['#aa0000', '#00aa00'] },
+      { kind: 'swirl', colors: ['#0000aa', '#00aa00', '#aa0000'], shape: 'rings' },
+      { kind: 'mystery' },
+      { kind: 'solid', color: '#123456' },
+    ];
+    const v3 = structuredClone({
+      ...state,
+      version: 3,
+      collection: smokes.map((smoke, n) => ({ ...base, uid: `s${n}`, smoke })),
+    });
+    const result = parseSave(v3, NOW, config);
+    expect(result.status).toBe('ok');
+    expect(result.state.collection.map((i) => i.smoke)).toEqual([
+      { kind: 'gachapuff', colors: config.smokeColors.gachapuff, shape: 'hearts' },
+      { kind: 'duo', colors: ['#112233', '#445566'] },
+      { kind: 'solid', color: '#aa0000' },
+      { kind: 'solid', color: '#0000aa', shape: 'rings' },
+      { kind: 'white' },
+      { kind: 'solid', color: '#123456' },
+    ]);
+  });
+
   it('repairs invalid settings without losing the collection', () => {
     const result = parseSave({ ...playedState(), settings: 'nope' }, NOW, config);
     expect(result.status).toBe('ok');

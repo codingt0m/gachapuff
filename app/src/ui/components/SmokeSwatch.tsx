@@ -9,13 +9,9 @@ export function smokeBackground(smoke: Smoke): string {
       return '#f4f2ff';
     case 'rainbow':
       return 'conic-gradient(#ff5a5a, #ffd23f, #3ddc84, #2de2e6, #6c5bff, #e040f0, #ff5a5a)';
-    case 'gradient':
-      return `linear-gradient(135deg, ${smoke.colors.join(', ')})`;
-    case 'halo':
+    case 'gachapuff':
       return `radial-gradient(circle, ${smoke.colors.join(', ')})`;
-    case 'swirl':
-      return `conic-gradient(from 30deg, ${[...smoke.colors, ...smoke.colors, smoke.colors[0]].join(', ')})`;
-    case 'alternate': {
+    case 'duo': {
       const step = 100 / smoke.colors.length;
       const stops = smoke.colors.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`);
       return `linear-gradient(90deg, ${stops.join(', ')})`;
@@ -37,7 +33,7 @@ export function SmokeSwatch({ smoke, size = 14 }: { smoke: Smoke; size?: number 
   );
 }
 
-/** "Fumée marbrée", "Fumée marbrée · cœurs". */
+/** "Fumée duo", "Fumée duo · cœurs". */
 export function smokeLabel(config: Parameters<typeof smokeDef>[0], smoke: Smoke): string {
   const name = `Fumée ${smokeDef(config, smoke.kind).name.toLowerCase()}`;
   if (!smoke.shape || smoke.shape === 'cloud') return name;

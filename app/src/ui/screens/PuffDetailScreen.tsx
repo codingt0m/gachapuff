@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { baseTierFor } from '../../domain/catalog.ts';
 import { compareInstances } from '../../domain/collection.ts';
 import { rarityTier } from '../../domain/rarity.ts';
+import { smokeColorNames } from '../../domain/smoke.ts';
 import { assetUrl } from '../../data/manifest.ts';
 import { gyroNeedsPermission, gyroSupported, requestGyroPermission } from '../../effects/tilt.ts';
 import { useGame, useGameState } from '../../store/GameProvider.tsx';
@@ -62,6 +63,7 @@ export default function PuffDetailScreen({ id, uid }: { id: string; uid: string 
 
   const tier = selected ? rarityTier(config, selected.rarity) : null;
   const base = config.baseTiers.tiers[baseTierFor(puff.model, puff.puffs, config)];
+  const colors = selected ? smokeColorNames(config, selected.smoke) : [];
 
   return (
     <article className={styles.screen}>
@@ -133,6 +135,12 @@ export default function PuffDetailScreen({ id, uid }: { id: string; uid: string 
                   <SmokeBadge smoke={selected.smoke} />
                 </dd>
               </div>
+              {colors.length > 0 && (
+                <div>
+                  <dt>Couleurs</dt>
+                  <dd>{colors.join(', ')}</dd>
+                </div>
+              )}
               {selected.engraving.kind !== 'none' && (
                 <div>
                   <dt>Gravure</dt>

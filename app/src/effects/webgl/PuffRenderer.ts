@@ -50,12 +50,10 @@ const FINISH_INDEX: Record<FinishId, number> = {
 const SMOKE_INDEX: Record<Smoke['kind'], number> = {
   white: 0,
   solid: 1,
-  gradient: 2,
   rainbow: 3,
   glitter: 4,
-  halo: 5,
-  swirl: 6,
-  alternate: 7,
+  gachapuff: 5,
+  duo: 7,
 };
 
 /** Side wall colour per finish (rgb, amount mixed over the print). */

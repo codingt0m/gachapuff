@@ -57,7 +57,7 @@ export default function DesignScreen() {
     uid: `demo-${finish}-${rarity}`,
     puffId: sample?.id ?? '',
     finish,
-    smoke: { kind: 'gradient', colors: ['#ff3d7f', '#2de2e6'] },
+    smoke: { kind: 'duo', colors: ['#ff2d87', '#22e0e6'] },
     engraving: { kind: 'none' },
     rarity,
     points: 0,
@@ -191,7 +191,7 @@ export default function DesignScreen() {
         <div className={styles.row}>
           <SmokeBadge smoke={{ kind: 'white' }} />
           <SmokeBadge smoke={{ kind: 'solid', color: '#2de2e6' }} />
-          <SmokeBadge smoke={{ kind: 'gradient', colors: ['#ff3d7f', '#ffd23f', '#2de2e6'] }} />
+          <SmokeBadge smoke={{ kind: 'duo', colors: ['#ff2d87', '#ffa82e'] }} />
         </div>
       </section>
 

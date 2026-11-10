@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type {
   Engraving,
   EngravingKind,
+  GameConfig,
   Smoke,
   SmokeKind,
   SmokeShape,
@@ -11,16 +12,14 @@ import { Button } from '../../components/Button.tsx';
 import { PuffStage } from '../../puff/PuffStage.tsx';
 import styles from './DevScreens.module.css';
 
-const SMOKES: Record<SmokeKind, Smoke> = {
+const smokeSamples = (config: GameConfig): Record<SmokeKind, Smoke> => ({
   white: { kind: 'white' },
-  solid: { kind: 'solid', color: '#2de2e6' },
-  gradient: { kind: 'gradient', colors: ['#ff3d7f', '#ffd23f', '#6c5bff'] },
-  halo: { kind: 'halo', colors: ['#ffd23f', '#ff3d7f', '#6c5bff'] },
-  swirl: { kind: 'swirl', colors: ['#2de2e6', '#ff3d7f'] },
-  alternate: { kind: 'alternate', colors: ['#ff3d7f', '#2de2e6', '#ffd23f'] },
-  glitter: { kind: 'glitter', color: '#6c5bff' },
+  solid: { kind: 'solid', color: '#22e0e6' },
   rainbow: { kind: 'rainbow' },
-};
+  duo: { kind: 'duo', colors: ['#ff2d87', '#22e0e6'] },
+  glitter: { kind: 'glitter', color: '#8b4dff' },
+  gachapuff: { kind: 'gachapuff', colors: config.smokeColors.gachapuff },
+});
 
 /** A signature is only ever the player's own: without a pseudo, nothing to sign. */
 function engravingFor(kind: EngravingKind, pseudo: string | undefined): Engraving {
@@ -150,7 +149,7 @@ export default function ShowcaseScreen() {
                 <PuffStage
                   puff={puff}
                   finish={f.id}
-                  smoke={{ ...SMOKES[smokeKind], shape: smokeShape }}
+                  smoke={{ ...smokeSamples(config)[smokeKind], shape: smokeShape }}
                   engraving={engravingFor(engravingKind, pseudo)}
                   seedKey={f.id}
                   glow={puff.color}

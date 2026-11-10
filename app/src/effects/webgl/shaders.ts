@@ -459,8 +459,8 @@ ${PRECISION}
 varying vec2 vUv;
 varying vec4 vData;       // alpha, seed, position along the plume, sprite (0 cloud, 1 ring, 2 heart, 3 star)
 varying vec2 vClip;       // clip-space position, to fade out before the canvas edges
-// 0 white, 1 solid, 2 gradient (along the plume), 3 rainbow, 4 glitter,
-// 5 halo (core -> edge), 6 swirl (marbled), 7 alternate (one colour per puff)
+// 0 white, 1 solid, 3 rainbow, 4 glitter, 5 gachapuff (brand colours, core -> edge),
+// 7 duo (one colour per puff)
 uniform float uKind;
 uniform float uColorCount;
 uniform float uTime;
@@ -490,14 +490,9 @@ vec3 pick(float i) {
 vec3 smokeColor(float k, float seed, float r, float n) {
   if (uKind < 0.5) return vec3(0.95, 0.96, 1.0);
   if (uKind < 1.5) return uC0;
-  if (uKind < 2.5) return ramp(k);
   if (uKind < 3.5) return hsv2rgb(vec3(fract(k * 0.9 + seed * 0.25 - uTime * 0.12), 0.7, 1.0));
   if (uKind < 4.5) return uC0;
   if (uKind < 5.5) return ramp(smoothstep(0.1, 0.9, r + (n - 0.5) * 0.4));
-  if (uKind < 6.5) {
-    float m = fbm(vUv * 2.2 + seed * 17.0 + vec2(uTime * 0.15, -uTime * 0.1));
-    return ramp(smoothstep(0.38, 0.62, fbm(vUv * 3.0 - m * 2.5 + seed * 5.0)));
-  }
   return pick(floor(fract(seed * 7.31) * uColorCount));
 }
 

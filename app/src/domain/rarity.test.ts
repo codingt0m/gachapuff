@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { baseTierFor, buildCatalog } from './catalog.ts';
 import { exactRarityDistribution } from './distribution.ts';
-import { nextRarity, rarityForPoints, rarityPoints } from './rarity.ts';
+import { finishDef, nextRarity, rarityForPoints, rarityPoints, smokeDef } from './rarity.ts';
 import { boosterType, enumerateOutcomes } from './roll.ts';
 import { catalog, config, definitions } from './testing/fixtures.ts';
 
@@ -32,13 +32,17 @@ describe('base tiers', () => {
 describe('global rarity', () => {
   it('sums the points of the three axes', () => {
     expect(rarityPoints(config, 0, 'normal', 'white')).toBe(0);
-    expect(rarityPoints(config, 4, 'cosmic', 'gradient')).toBe(4 + 7 + 2);
+    expect(rarityPoints(config, 4, 'cosmic', 'duo')).toBe(
+      4 + finishDef(config, 'cosmic').points + smokeDef(config, 'duo').points,
+    );
   });
 
   it('maps points to the highest reached tier', () => {
     expect(rarityForPoints(config, 0).id).toBe('common');
     expect(rarityForPoints(config, 1).id).toBe('common');
-    expect(rarityForPoints(config, 2).id).toBe('uncommon');
+    const uncommon = config.rarities[1]?.minPoints ?? 0;
+    expect(rarityForPoints(config, uncommon - 1).id).toBe('common');
+    expect(rarityForPoints(config, uncommon).id).toBe('uncommon');
     const divine = config.rarities.at(-1)?.minPoints ?? 0;
     expect(rarityForPoints(config, divine - 1).id).toBe('mythic');
     expect(rarityForPoints(config, 99).id).toBe('divine');

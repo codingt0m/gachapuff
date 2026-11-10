@@ -3,6 +3,7 @@ import { motion, OPENING_SLOWDOWN } from '../../config/motion.ts';
 import { assetUrl } from '../../data/manifest.ts';
 import { finishDef, rarityIndex } from '../../domain/rarity.ts';
 import { boosterType } from '../../domain/roll.ts';
+import { smokeColorNames } from '../../domain/smoke.ts';
 import { burstConfetti } from '../../effects/confetti.ts';
 import { engravingLabel } from '../../effects/engraving.ts';
 import { openingColors } from '../../effects/openingFx.ts';
@@ -129,7 +130,8 @@ function RevealRound({
   const fxColors = reduced ? null : openingColors(instance);
   const stretch = reduced ? 1 : tier.reveal.slowMotion;
   const engraving = engravingLabel(instance.engraving);
-  const announce = `${puff.flavor}, ${puff.model}. Rareté ${tier.name}, finition ${finishDef(config, instance.finish).name}, ${smokeLabel(config, instance.smoke).toLowerCase()}${engraving ? `, gravure ${engraving}` : ''}.`;
+  const colors = smokeColorNames(config, instance.smoke).join(', ');
+  const announce = `${puff.flavor}, ${puff.model}. Rareté ${tier.name}, finition ${finishDef(config, instance.finish).name}, ${smokeLabel(config, instance.smoke).toLowerCase()}${colors ? ` (${colors})` : ''}${engraving ? `, signée par ${engraving}` : ''}.`;
 
   return (
     <div

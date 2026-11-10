@@ -51,23 +51,17 @@ export const FINISH_IDS = [
 ] as const;
 export type FinishId = (typeof FINISH_IDS)[number];
 
-/** Smoke colouring. */
-export const SMOKE_KINDS = [
-  'white',
-  'solid',
-  'gradient',
-  'halo',
-  'swirl',
-  'alternate',
-  'glitter',
-  'rainbow',
-] as const;
+/** Smoke colouring, from the commonest to the rarest. */
+export const SMOKE_KINDS = ['white', 'solid', 'rainbow', 'duo', 'glitter', 'gachapuff'] as const;
 export type SmokeKind = (typeof SMOKE_KINDS)[number];
 
 /** Smoke kinds drawn with exactly one colour. */
 export type MonoSmokeKind = 'solid' | 'glitter';
-/** Smoke kinds drawn with 2-3 colours: along the plume, core/edge, marbled, one colour per puff. */
-export type MultiSmokeKind = 'gradient' | 'halo' | 'swirl' | 'alternate';
+/**
+ * Smoke kinds with several colours: duo (two random colours, one per puff) and gachapuff
+ * (the brand colours, core to edge, the same on every copy).
+ */
+export type MultiSmokeKind = 'duo' | 'gachapuff';
 
 /** Shape of the exhaled smoke. */
 export const SMOKE_SHAPES = ['cloud', 'rings', 'spiral', 'hearts', 'stars'] as const;
@@ -126,8 +120,14 @@ export interface SmokeDef {
   kind: SmokeKind;
   name: string;
   points: number;
-  /** Number of colours drawn at opening time (white smoke: 0). */
-  colorCount: { min: number; max: number };
+  /** Number of random colours drawn at opening time (white, rainbow, gachapuff: 0). */
+  colorCount: number;
+}
+
+/** A smoke colour with its readable French name ("rose néon"). */
+export interface NamedColor {
+  name: string;
+  hex: string;
 }
 
 export interface SmokeShapeDef {
@@ -195,7 +195,12 @@ export interface GameConfig {
   smokes: SmokeDef[];
   smokeShapes: SmokeShapeDef[];
   engravings: EngravingDef[];
-  smokeColor: { saturation: [number, number]; lightness: [number, number] };
+  smokeColors: {
+    /** Random smoke colours are drawn from this palette. */
+    palette: NamedColor[];
+    /** Fixed brand colours of the gachapuff smoke (hex, all in the palette). */
+    gachapuff: string[];
+  };
   rarities: RarityTier[];
   boosterTypes: BoosterType[];
   defaultBoosterType: string;

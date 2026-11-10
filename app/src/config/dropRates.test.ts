@@ -6,7 +6,7 @@ import { finishDef } from '../domain/rarity.ts';
 import { createSeededRng } from '../domain/rng.ts';
 import { boosterType } from '../domain/roll.ts';
 import { definitions } from '../domain/testing/fixtures.ts';
-import { ENGRAVING_KINDS, FINISH_IDS } from '../domain/types.ts';
+import { ENGRAVING_KINDS, FINISH_IDS, SMOKE_KINDS } from '../domain/types.ts';
 import { dropRates, gameConfig as config } from './gameConfig.ts';
 
 const classic = boosterType(config, 'classic');
@@ -61,8 +61,21 @@ describe('drop rates', () => {
     expect(classic.engravingWeights.signature).toBeGreaterThanOrEqual(classic.finishWeights.cosmic);
   });
 
+  it('smokes sum to 100 %, white stays the classic at 50 % or more, gachapuff is the rarest', () => {
+    expect(sumsTo100(classic.smokeWeights)).toBe(true);
+    expect(classic.smokeWeights.white).toBeGreaterThanOrEqual(50);
+    const others = SMOKE_KINDS.filter((k) => k !== 'gachapuff');
+    for (const k of others) {
+      expect(classic.smokeWeights.gachapuff).toBeLessThan(classic.smokeWeights[k]);
+    }
+  });
+
   it(`follows the finish rates over ${DRAWS.toLocaleString('en')} openings`, () => {
     for (const id of FINISH_IDS) expectNear(sim.finish[id], classic.finishWeights[id]);
+  });
+
+  it('follows the smoke rates', () => {
+    for (const id of SMOKE_KINDS) expectNear(sim.smoke[id], classic.smokeWeights[id]);
   });
 
   it('follows the signed puff rate', () => {

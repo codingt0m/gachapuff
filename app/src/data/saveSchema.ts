@@ -3,6 +3,7 @@ import { createInitialState, DEFAULT_SETTINGS, PSEUDO_MAX, SAVE_VERSION } from '
 import {
   FINISH_IDS,
   RARITY_IDS,
+  SMOKE_KINDS,
   SMOKE_SHAPES,
   type GameConfig,
   type SaveState,
@@ -11,16 +12,13 @@ import {
 const hex = z.string().regex(/^#[0-9a-f]{6}$/i);
 
 const shape = { shape: z.enum(SMOKE_SHAPES).optional() };
-const colors = z.array(hex).min(2);
 const smokeSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('white'), ...shape }),
   z.object({ kind: z.literal('rainbow'), ...shape }),
   z.object({ kind: z.literal('solid'), color: hex, ...shape }),
   z.object({ kind: z.literal('glitter'), color: hex, ...shape }),
-  z.object({ kind: z.literal('gradient'), colors, ...shape }),
-  z.object({ kind: z.literal('halo'), colors, ...shape }),
-  z.object({ kind: z.literal('swirl'), colors, ...shape }),
-  z.object({ kind: z.literal('alternate'), colors, ...shape }),
+  z.object({ kind: z.literal('duo'), colors: z.array(hex).length(2), ...shape }),
+  z.object({ kind: z.literal('gachapuff'), colors: z.array(hex).min(1), ...shape }),
 ]);
 
 /** Finishes dropped during development, mapped to one worth the same points. */
@@ -37,12 +35,34 @@ const engravingSchema = z.discriminatedUnion('kind', [
 
 type RawInstance = Record<string, unknown>;
 
+const isOneOf = <T extends string>(list: readonly T[], value: unknown): value is T =>
+  (list as readonly unknown[]).includes(value);
+
+const isHex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+
+/** v4 smoke of a raw v3 smoke (see migration 3); anything unusable becomes a white smoke. */
+function migrateSmokeV4(smoke: RawInstance | undefined, config: GameConfig): RawInstance {
+  const shape = smoke?.shape === undefined ? {} : { shape: smoke.shape };
+  const colors = Array.isArray(smoke?.colors) ? smoke.colors.filter(isHex) : [];
+  const color = isHex(smoke?.color) ? smoke.color : colors[0];
+  switch (smoke?.kind) {
+    case 'halo':
+      return { kind: 'gachapuff', colors: [...config.smokeColors.gachapuff], ...shape };
+    case 'alternate':
+      return colors.length >= 2
+        ? { kind: 'duo', colors: colors.slice(0, 2), ...shape }
+        : { kind: 'white', ...shape };
+    case 'gradient':
+    case 'swirl':
+      return color ? { kind: 'solid', color, ...shape } : { kind: 'white', ...shape };
+    default:
+      return smoke && isOneOf(SMOKE_KINDS, smoke.kind) ? smoke : { kind: 'white', ...shape };
+  }
+}
+
 /** Applies `fn` to every copy of a raw save (left as is when it is not a list). */
 const mapCollection = (s: Record<string, unknown>, fn: (i: RawInstance) => RawInstance) =>
   Array.isArray(s.collection) ? s.collection.map((i: RawInstance) => fn(i)) : s.collection;
-
-const isOneOf = <T extends string>(list: readonly T[], value: unknown): value is T =>
-  (list as readonly unknown[]).includes(value);
 
 const instanceSchema = z.object({
   uid: z.string().min(1),
@@ -82,7 +102,10 @@ export const saveStateSchema = z.object({
  * Migrations, keyed by the version they upgrade FROM.
  * Example for a future v2: `1: (s) => ({ ...s, version: 2, newField: defaultValue })`.
  */
-const migrations: Record<number, (save: Record<string, unknown>) => Record<string, unknown>> = {
+const migrations: Record<
+  number,
+  (save: Record<string, unknown>, config: GameConfig) => Record<string, unknown>
+> = {
   // v2: engraving axis (existing copies have none); 'rosegold' renamed 'bronze'.
   1: (s) => ({
     ...s,
@@ -116,13 +139,16 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
   // silver, bronze...) become plain ones; numbered copies lose their serial, and so do
   // copies with the house signature: a signature is now always the player's own.
   // Points and rarity are recomputed at boot (rescoreCollection).
-  3: (s) => ({
+  // Smokes: 'halo' is now the gachapuff smoke (brand colours), 'alternate' the duo (its first
+  // two colours); the dropped gradient and marbled smokes become solid in their first colour.
+  3: (s, config) => ({
     ...s,
     version: 4,
     collection: mapCollection(s, (i) => {
       const engraving = i.engraving as RawInstance | undefined;
       return {
         ...i,
+        smoke: migrateSmokeV4(i.smoke as RawInstance | undefined, config),
         finish: isOneOf(FINISH_IDS, i.finish) ? i.finish : 'normal',
         engraving:
           engraving?.kind === 'serial' || (engraving?.kind === 'signature' && !engraving.by)
@@ -138,13 +164,13 @@ export type LoadResult =
   | { status: 'empty'; state: SaveState }
   | { status: 'corrupted'; state: SaveState; error: string };
 
-function migrate(raw: Record<string, unknown>): Record<string, unknown> {
+function migrate(raw: Record<string, unknown>, config: GameConfig): Record<string, unknown> {
   let save = raw;
   let version = typeof save.version === 'number' ? save.version : 0;
   while (version < SAVE_VERSION) {
     const step = migrations[version];
     if (!step) throw new Error(`No migration from save version ${version}`);
-    save = step(save);
+    save = step(save, config);
     version = typeof save.version === 'number' ? save.version : version + 1;
   }
   return save;
@@ -157,7 +183,7 @@ export function parseSave(raw: unknown, now: number, config: GameConfig): LoadRe
   }
   try {
     if (typeof raw !== 'object') throw new Error('Save is not an object');
-    const parsed = saveStateSchema.safeParse(migrate(raw as Record<string, unknown>));
+    const parsed = saveStateSchema.safeParse(migrate(raw as Record<string, unknown>, config));
     if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? 'Invalid save');
     return { status: 'ok', state: parsed.data };
   } catch (error) {

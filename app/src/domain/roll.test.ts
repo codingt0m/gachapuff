@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildCatalog } from './catalog.ts';
 import { exactRarityDistribution, simulateBoosters } from './distribution.ts';
 import { createSeededRng } from './rng.ts';
-import { boosterType, rollBooster, rollForRarity } from './roll.ts';
+import { boosterType, enumerateOutcomes, rollBooster, rollForRarity } from './roll.ts';
 import { catalog, config, definitions } from './testing/fixtures.ts';
 import { FINISH_IDS, type BoosterType, type FinishId } from './types.ts';
 
@@ -24,15 +24,19 @@ describe('rollBooster', () => {
 
   it('draws smoke colours matching the smoke kind', () => {
     const rng = createSeededRng(12);
+    const palette = config.smokeColors.palette.map((c) => c.hex);
     for (let i = 0; i < 5_000; i++) {
       const { smoke } = rollBooster(catalog, classic, config, rng);
       if (smoke.kind === 'solid' || smoke.kind === 'glitter') {
-        expect(smoke.color).toMatch(/^#[0-9a-f]{6}$/);
+        expect(palette).toContain(smoke.color);
       }
-      if ('colors' in smoke) {
-        expect(smoke.colors.length).toBeGreaterThanOrEqual(2);
-        expect(smoke.colors.length).toBeLessThanOrEqual(3);
+      if (smoke.kind === 'duo') {
+        expect(smoke.colors).toHaveLength(2);
+        expect(smoke.colors[0]).not.toBe(smoke.colors[1]);
+        for (const c of smoke.colors) expect(palette).toContain(c);
       }
+      // The gachapuff smoke always has the brand colours.
+      if (smoke.kind === 'gachapuff') expect(smoke.colors).toEqual(config.smokeColors.gachapuff);
       // 'cloud' is stored as an absent shape.
       expect(smoke.shape).not.toBe('cloud');
     }
@@ -83,12 +87,19 @@ describe('rollForRarity', () => {
   });
 
   it('follows the booster odds within the tier', () => {
-    // Within "uncommon", most outcomes come from base tier 2 + normal + white.
+    // Share of plain finishes among the "uncommon" outcomes, exact vs drawn.
+    const uncommon = enumerateOutcomes(catalog, classic, config).filter(
+      (o) => o.rarity === 'uncommon',
+    );
+    const total = uncommon.reduce((s, o) => s + o.probability, 0);
+    const p =
+      uncommon.filter((o) => o.finish === 'normal').reduce((s, o) => s + o.probability, 0) / total;
     const rng = createSeededRng(8);
+    const draws = 5_000;
     let normal = 0;
-    for (let i = 0; i < 5_000; i++) {
+    for (let i = 0; i < draws; i++) {
       if (rollForRarity(catalog, classic, config, 'uncommon', rng).finish === 'normal') normal++;
     }
-    expect(normal / 5_000).toBeGreaterThan(0.5);
+    expect(Math.abs(normal / draws - p)).toBeLessThan(5 * Math.sqrt((p * (1 - p)) / draws));
   });
 });

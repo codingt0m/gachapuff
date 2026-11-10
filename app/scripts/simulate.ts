@@ -67,15 +67,18 @@ const sums = [
     sim.finish,
   ),
   table(
+    'Fumée',
+    gameConfig.smokes.map((s) => ({ id: s.kind, name: s.name })),
+    type.smokeWeights,
+    sim.smoke,
+  ),
+  table(
     'Puff signée',
     gameConfig.engravings.map((e) => ({ id: e.kind, name: e.name })),
     type.engravingWeights,
     sim.engraving,
   ),
 ];
-console.info('\nFumée');
-for (const s of gameConfig.smokes)
-  console.info(`${s.name.padEnd(NAME)} ${pct(sim.smoke[s.kind] / draws)}`);
 console.info('\nForme de fumée');
 for (const s of gameConfig.smokeShapes)
   console.info(`${s.name.padEnd(NAME)} ${pct(sim.shape[s.shape] / draws)}`);

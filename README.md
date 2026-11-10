@@ -31,7 +31,7 @@ Mode test : ajoute `?dev=1` à l'URL (boosters illimités + outils de dev dans l
 et `?seed=123` pour des tirages déterministes. Ex. `http://localhost:5173/?dev=1&seed=373#/`.
 `VITE_DEV_UNLIMITED=1` dans `app/.env.local` donne aussi des boosters illimités.
 
-Pages de dev : `#/dev/design` (design system), `#/dev/vitrine` (les 6 finitions × 3 fumées),
+Pages de dev : `#/dev/design` (design system), `#/dev/vitrine` (toutes les finitions, au choix de la fumée),
 `#/dev/simulateur` (100 000 ouvertures avec la config actuelle).
 
 ## Scripts (dans `app/`)
@@ -62,7 +62,9 @@ Valeurs par défaut :
 - **Finitions** (7 paliers, poids du palier partagé à parts égales, constantes `dropRates`) :
   Normale 50 % · Glitch 25 % · Cristal / Givre 10 % · Chrome liquide / Chromatique 7 % ·
   Dorée 5 % · Rubis 2,5 % · Galaxie 0,5 %.
-- **Fumées** : blanche 82 %, colorée 14 %, dégradée (2–3 couleurs) 4 %.
+- **Fumées** (tirage indépendant) : blanche 55 % · colorée 20 % · arc-en-ciel 12 % · duo 7 % ·
+  pailletée 4,5 % · gachapuff 1,5 %. Couleurs tirées dans une palette nommée (`smokeColors`),
+  affichées dans les specs de la puff ; la fumée gachapuff a toujours les couleurs de la marque.
 - **Boosters** : 1 toutes les 4 h, stock max 2 (un nouveau joueur commence plein).
 - **Recyclage** : 3 puffs de rareté N → 1 puff de rareté N+1, tirée avec les règles du booster
   conditionnées à ce palier. Divine ne se recycle pas.
