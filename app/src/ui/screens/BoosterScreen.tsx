@@ -12,7 +12,7 @@ import { ProgressBar } from '../components/ProgressBar.tsx';
 import { PuffThumb } from '../components/PuffThumb.tsx';
 import { feedback } from '../feedback.ts';
 import { useNow } from '../hooks.ts';
-import { useStartReveal } from '../reveal/RevealContext.tsx';
+import { useRevealingUid, useStartReveal } from '../reveal/RevealContext.tsx';
 import { paths } from '../router.ts';
 import { formatCountdown } from '../format.ts';
 import styles from './BoosterScreen.module.css';
@@ -48,9 +48,15 @@ export function BoosterScreen() {
 
   const owned = useMemo(() => new Set(collection.map((i) => i.puffId)), [collection]);
   const progress = globalProgress(catalog, owned);
+  // The puff being revealed is already in the collection: keep it out of the list (no spoiler).
+  const revealingUid = useRevealingUid();
   const recent = useMemo(
-    () => [...collection].sort((a, b) => b.obtainedAt - a.obtainedAt).slice(0, RECENT_COUNT),
-    [collection],
+    () =>
+      collection
+        .filter((i) => i.uid !== revealingUid)
+        .sort((a, b) => b.obtainedAt - a.obtainedAt)
+        .slice(0, RECENT_COUNT),
+    [collection, revealingUid],
   );
 
   const open = useCallback(() => {

@@ -8,6 +8,13 @@ export type RevealRequest =
 
 export const RevealContext = createContext<(request: RevealRequest) => void>(() => undefined);
 
+/** uid of the puff being revealed right now (null when no reveal is playing): not to be shown yet. */
+export const RevealingUidContext = createContext<string | null>(null);
+
+export function useRevealingUid() {
+  return useContext(RevealingUidContext);
+}
+
 export function useStartReveal() {
   return useContext(RevealContext);
 }

@@ -6,7 +6,7 @@ import { useGame, useGameState, useSaveError } from '../store/GameProvider.tsx';
 import { Header } from './components/Header.tsx';
 import { TABS, TabBar } from './components/TabBar.tsx';
 import { useToast } from './components/Toast.tsx';
-import { RevealContext, type RevealRequest } from './reveal/RevealContext.tsx';
+import { RevealContext, RevealingUidContext, type RevealRequest } from './reveal/RevealContext.tsx';
 import { navigate, parseHash, useHash, type Route } from './router.ts';
 import { BoosterScreen } from './screens/BoosterScreen.tsx';
 import { ScreenSkeleton } from './screens/ScreenSkeleton.tsx';
@@ -130,6 +130,7 @@ export function App({ notices }: { notices: BootNotice[] }) {
 
   return (
     <RevealContext.Provider value={setReveal}>
+      <RevealingUidContext.Provider value={reveal ? reveal.instance.uid : null}>
       <Header />
       <main id="main" tabIndex={-1} className={styles.main} inert={reveal ? true : undefined}>
         <Suspense fallback={<ScreenSkeleton />}>
@@ -142,6 +143,7 @@ export function App({ notices }: { notices: BootNotice[] }) {
           <RevealOverlay request={reveal} onClose={() => setReveal(null)} />
         </Suspense>
       )}
+      </RevealingUidContext.Provider>
     </RevealContext.Provider>
   );
 }
